@@ -26,6 +26,7 @@
     --warning:#e0aa3d;
     --info:#3d8fe0;
     --purple:#9b59b6;
+    --cruzamento:#e67e22;
   }
 
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -40,7 +41,7 @@
     min-height:100vh;
   }
 
-  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+  .wrap{max-width:1280px; margin:0 auto; padding:0 28px;}
 
   .masthead{
     border-bottom:1px solid var(--line);
@@ -84,7 +85,6 @@
   }
   .masthead p b{color:var(--text); font-weight:600;}
 
-  /* ===== TABS ===== */
   .tabs{
     display:flex;
     gap:2px;
@@ -92,6 +92,7 @@
     padding:2px;
     margin-top:26px;
     border-radius:4px;
+    flex-wrap:wrap;
   }
   .tab-btn{
     flex:1;
@@ -107,6 +108,7 @@
     color:var(--text-dim);
     transition:all .3s;
     border-radius:3px;
+    min-width:120px;
   }
   .tab-btn:hover{
     color:var(--text);
@@ -116,6 +118,9 @@
     background:var(--panel-alt);
     color:var(--text);
     box-shadow:inset 0 -3px 0 var(--plan);
+  }
+  .tab-btn.tab-cruzamento.active{
+    box-shadow:inset 0 -3px 0 var(--cruzamento);
   }
   .tab-content{
     display:none;
@@ -127,7 +132,6 @@
     100%{opacity:1; transform:translateY(0);}
   }
 
-  /* ===== STATUS BAR ===== */
   .status-bar{
     background:var(--panel);
     border:1px solid var(--line);
@@ -177,21 +181,9 @@
   }
   .btn-primary{background:var(--info); color:#fff;}
   .btn-primary:hover{opacity:.8;}
-  .btn-primary:disabled{opacity:.4; cursor:not-allowed;}
-  .btn-secondary{
-    background:transparent;
-    color:var(--text-dim);
-    border:1px solid var(--line-soft);
-  }
-  .btn-secondary:hover{border-color:var(--text); color:var(--text);}
-  .btn-success{background:var(--plan); color:#fff;}
-  .btn-success:hover{opacity:.8;}
-  .btn-danger{background:var(--faltante); color:#fff;}
-  .btn-danger:hover{opacity:.8;}
-  .btn-warning{background:var(--naoplan); color:#fff;}
-  .btn-warning:hover{opacity:.8;}
+  .btn-cruzamento{background:var(--cruzamento); color:#fff;}
+  .btn-cruzamento:hover{opacity:.8;}
 
-  /* ===== KPI ===== */
   .kpi-strip{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -240,8 +232,8 @@
   .kpi .num.warning{color:var(--warning);}
   .kpi .num.info{color:var(--info);}
   .kpi .num.purple{color:var(--purple);}
+  .kpi .num.cruzamento{color:var(--cruzamento);}
 
-  /* ===== CHARTS ===== */
   .charts-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -268,7 +260,6 @@
     position:relative;
   }
 
-  /* ===== TRANSPORTADORAS ===== */
   .transportadoras-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -301,7 +292,6 @@
   .transportadora-card .detalhes .qtd{color:var(--naoplan); font-weight:600;}
   .transportadora-card .detalhes .valor{color:var(--plan); font-weight:600;}
 
-  /* ===== ZONAS ===== */
   .zona-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -356,7 +346,204 @@
     margin-top:4px;
   }
 
-  /* ===== MODAL ===== */
+  /* ===== CRUZAMENTO ===== */
+  .cruzamento-stats{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:26px;
+  }
+  .cruzamento-stat{
+    background:var(--panel);
+    padding:20px;
+    text-align:center;
+  }
+  .cruzamento-stat .num{
+    font-family:'Oswald', sans-serif;
+    font-size:36px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .cruzamento-stat .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    margin-top:4px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
+  .cruzamento-stat .num.success{color:var(--success);}
+  .cruzamento-stat .num.danger{color:var(--danger);}
+  .cruzamento-stat .num.warning{color:var(--warning);}
+
+  /* Cards por transportadora no cruzamento */
+  .cruzamento-transp-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:26px;
+  }
+  .cruzamento-transp-card{
+    background:var(--panel);
+    padding:16px 18px;
+    transition:background .2s;
+  }
+  .cruzamento-transp-card:hover{background:var(--panel-alt);}
+  .cruzamento-transp-card .nome{
+    font-family:'Oswald', sans-serif;
+    font-size:15px;
+    font-weight:500;
+    color:var(--text);
+  }
+  .cruzamento-transp-card .detalhes{
+    display:flex;
+    justify-content:space-between;
+    margin-top:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .cruzamento-transp-card .detalhes .qtd{
+    color:var(--cruzamento);
+    font-weight:600;
+  }
+  .cruzamento-transp-card .detalhes .pct{
+    color:var(--text-faint);
+  }
+
+  .cruzamento-tabela-wrap{
+    border:1px solid var(--line);
+    background:var(--panel);
+    margin-top:26px;
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .cruzamento-tabela-wrap .header{
+    padding:16px 20px;
+    background:var(--panel-alt);
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .cruzamento-tabela-wrap .header h3{
+    font-family:'Oswald', sans-serif;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--text);
+  }
+  .cruzamento-tabela-wrap .header .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--text-faint);
+    background:var(--bg);
+    padding:4px 12px;
+    border:1px solid var(--line-soft);
+    border-radius:3px;
+  }
+  .cruzamento-tabela{
+    overflow-x:auto;
+    max-height:500px;
+    overflow-y:auto;
+  }
+  .cruzamento-tabela table{
+    width:100%;
+    font-size:12px;
+    border-collapse:collapse;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .cruzamento-tabela table th{
+    background:var(--panel-alt);
+    color:var(--text-dim);
+    padding:10px 14px;
+    text-align:left;
+    position:sticky;
+    top:0;
+    border-bottom:2px solid var(--line);
+    font-weight:600;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .cruzamento-tabela table td{
+    padding:8px 14px;
+    border-bottom:1px solid var(--line-soft);
+    color:var(--text);
+  }
+  .cruzamento-tabela table tr:hover td{
+    background:var(--panel-alt);
+  }
+  .cruzamento-tabela .status-badge{
+    display:inline-block;
+    padding:2px 10px;
+    border-radius:2px;
+    font-size:9px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    background:var(--cruzamento);
+    color:#fff;
+  }
+
+  .preview-box{
+    border:1px solid var(--line-soft);
+    background:var(--bg);
+    padding:12px;
+    min-height:80px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    max-height:200px;
+    overflow:auto;
+    margin-top:16px;
+    border-radius:4px;
+  }
+  .preview-box .empty-message{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+  .preview-box table{
+    width:100%;
+    font-size:10px;
+    border-collapse:collapse;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .preview-box table th{
+    background:var(--panel-alt);
+    color:var(--text-dim);
+    padding:4px 6px;
+    text-align:left;
+    position:sticky;
+    top:0;
+    border-bottom:1px solid var(--line);
+  }
+  .preview-box table td{
+    padding:3px 6px;
+    border-bottom:1px solid var(--line-soft);
+    color:var(--text);
+    white-space:nowrap;
+    max-width:120px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .preview-box table tr:hover td{background:var(--panel-alt);}
+  .preview-box .col-destaque{
+    background:var(--naoplan-dim);
+    color:var(--naoplan);
+    font-weight:600;
+  }
+
   .modal-overlay{
     display:none;
     position:fixed;
@@ -533,57 +720,6 @@
     100%{transform:rotate(360deg);}
   }
 
-  .preview-box{
-    border:1px solid var(--line-soft);
-    background:var(--bg);
-    padding:12px;
-    min-height:80px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    max-height:200px;
-    overflow:auto;
-    margin-top:16px;
-    border-radius:4px;
-  }
-  .preview-box .empty-message{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color:var(--text-faint);
-    text-align:center;
-  }
-  .preview-box table{
-    width:100%;
-    font-size:10px;
-    border-collapse:collapse;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .preview-box table th{
-    background:var(--panel-alt);
-    color:var(--text-dim);
-    padding:4px 6px;
-    text-align:left;
-    position:sticky;
-    top:0;
-    border-bottom:1px solid var(--line);
-  }
-  .preview-box table td{
-    padding:3px 6px;
-    border-bottom:1px solid var(--line-soft);
-    color:var(--text);
-    white-space:nowrap;
-    max-width:120px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .preview-box table tr:hover td{background:var(--panel-alt);}
-  .preview-box .col-destaque{
-    background:var(--naoplan-dim);
-    color:var(--naoplan);
-    font-weight:600;
-  }
-
   footer{
     margin-top:50px;
     padding-top:16px;
@@ -601,6 +737,8 @@
   @media (max-width:860px){
     .kpi-strip{grid-template-columns:1fr 1fr;}
     .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
+    .cruzamento-stats{grid-template-columns:1fr 1fr;}
+    .cruzamento-transp-grid{grid-template-columns:1fr 1fr;}
     .charts-grid{grid-template-columns:1fr;}
     .transportadoras-grid{grid-template-columns:1fr 1fr;}
     .zona-grid{grid-template-columns:1fr 1fr;}
@@ -609,6 +747,8 @@
   @media (max-width:480px){
     .kpi-strip{grid-template-columns:1fr;}
     .kpi-strip.kpi-5{grid-template-columns:1fr;}
+    .cruzamento-stats{grid-template-columns:1fr;}
+    .cruzamento-transp-grid{grid-template-columns:1fr;}
     .transportadoras-grid{grid-template-columns:1fr;}
     .zona-grid{grid-template-columns:1fr;}
     .tab-btn{font-size:12px; padding:10px 12px;}
@@ -621,13 +761,14 @@
   <div class="masthead">
     <div class="eyebrow"><span class="dot"></span>WMS DASHBOARD</div>
     <h1>Análise de Pacotes Pendentes & Inventário</h1>
-    <p>Dashboards integrados para análise de <b>pacotes pendentes por transportadora</b> e <b>status do inventário por zona</b>.</p>
+    <p>Dashboards integrados para análise de <b>pacotes pendentes por transportadora</b>, <b>status do inventário por zona</b> e <b>cruzamento</b> entre as duas bases.</p>
   </div>
 
   <!-- ===== TABS ===== -->
   <div class="tabs">
-    <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes Pendentes</button>
-    <button class="tab-btn" data-tab="tabInventario">📊 Inventário por Zona</button>
+    <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes</button>
+    <button class="tab-btn" data-tab="tabInventario">📊 Inventário</button>
+    <button class="tab-btn tab-cruzamento" data-tab="tabCruzamento">🔗 Cruzamento</button>
   </div>
 
   <!-- ========================================================== -->
@@ -652,10 +793,8 @@
       </div>
     </div>
 
-    <!-- KPI -->
     <div class="kpi-strip" id="kpiStripPacotes"></div>
 
-    <!-- GRÁFICOS -->
     <div class="charts-grid">
       <div class="chart-card">
         <h3>📊 Pacotes por Transportadora</h3>
@@ -667,7 +806,6 @@
       </div>
     </div>
 
-    <!-- TRANSPORTADORAS -->
     <div style="margin-top:30px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
         <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;">🚚 Transportadoras</h2>
@@ -704,10 +842,8 @@
       </div>
     </div>
 
-    <!-- KPI -->
     <div class="kpi-strip kpi-5" id="kpiStripInventario"></div>
 
-    <!-- GRÁFICOS -->
     <div class="charts-grid">
       <div class="chart-card">
         <h3>📊 Status por Zona</h3>
@@ -719,7 +855,6 @@
       </div>
     </div>
 
-    <!-- ZONAS -->
     <div style="margin-top:30px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
         <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;">📍 Zonas</h2>
@@ -734,7 +869,81 @@
     </footer>
   </div>
 
-  <!-- ===== MODAL (compartilhado) ===== -->
+  <!-- ========================================================== -->
+  <!-- TAB 3: CRUZAMENTO                                           -->
+  <!-- ========================================================== -->
+  <div class="tab-content" id="tabCruzamento">
+    <div class="status-bar">
+      <div class="info">
+        <span class="dot-status loading" id="statusDotCruzamento"></span>
+        <span id="statusTextCruzamento">Carregando dados para cruzamento...</span>
+        <span id="recordCountCruzamento" style="color:var(--text-faint);"></span>
+      </div>
+      <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
+    </div>
+
+    <!-- Stats do Cruzamento -->
+    <div class="cruzamento-stats" id="cruzamentoStats">
+      <div class="cruzamento-stat">
+        <div class="num">0</div>
+        <div class="label">📦 Total com Transportadora</div>
+      </div>
+      <div class="cruzamento-stat">
+        <div class="num">0</div>
+        <div class="label">❌ Total Faltantes no Inventário</div>
+      </div>
+      <div class="cruzamento-stat">
+        <div class="num cruzamento">0</div>
+        <div class="label">🔗 Em Ambos</div>
+      </div>
+      <div class="cruzamento-stat">
+        <div class="num success">0</div>
+        <div class="label">✅ Apenas com Transportadora</div>
+      </div>
+    </div>
+
+    <!-- Cards por transportadora -->
+    <div style="margin-top:30px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-family:'Oswald',sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.03em;font-weight:500;color:var(--text-dim);">🚚 Total por Transportadora (Em Ambos)</h2>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);">Pacotes que estão com transportadora E faltantes no inventário</span>
+      </div>
+      <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Tabela de Cruzamento -->
+    <div class="cruzamento-tabela-wrap">
+      <div class="header">
+        <h3>🔗 Detalhamento dos Pacotes em Ambos</h3>
+        <span class="badge" id="cruzamentoCount">0 registros</span>
+      </div>
+      <div class="cruzamento-tabela">
+        <table>
+          <thead>
+            <tr>
+              <th>ID do Envio</th>
+              <th>Transportadora</th>
+              <th>Status Inventário</th>
+              <th>Zona</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody id="cruzamentoTbody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Carregando dados do cruzamento...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      <span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span>
+      <span id="footerTotalCruzamento">0 registros</span>
+    </footer>
+  </div>
+
+  <!-- ===== MODAL ===== -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header">
@@ -1316,14 +1525,197 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  EVENTOS - PACOTES
+//  CRUZAMENTO - VARIÁVEIS E LÓGICA
 // ================================================================
-document.getElementById('refreshPacotes').addEventListener('click', carregarDadosPacotes);
+let dadosCruzamento = null;
+
+function realizarCruzamento(dadosPacotes, dadosInventario) {
+  // Mapeia os IDs do inventário que estão como FALTANTE
+  const faltantesSet = new Set();
+  const faltantesInfo = {};
+  
+  dadosInventario.forEach(row => {
+    const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
+    const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+    if (isFaltante) {
+      const shipment = String(row['SHIPMENT'] || '').trim();
+      if (shipment) {
+        faltantesSet.add(shipment);
+        faltantesInfo[shipment] = {
+          status: row['CLASIFICACION'] || 'FALTANTE',
+          zona: row['SHP_ZONE_NAME'] || 'Não especificado'
+        };
+      }
+    }
+  });
+
+  // Cruzamento: apenas pacotes que estão em ambos (com transportadora E faltantes)
+  const resultado = [];
+  const transportadoraCount = {};
+  
+  dadosPacotes.forEach(row => {
+    const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
+    const transportadora = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || 'Não especificado';
+    
+    if (id && faltantesSet.has(id)) {
+      const status = faltantesInfo[id]?.status || 'FALTANTE EN INVENTARIO';
+      const zona = faltantesInfo[id]?.zona || 'Não especificado';
+      
+      resultado.push({
+        id: id,
+        transportadora: transportadora,
+        status: status,
+        zona: zona,
+        situacao: '🔗 Em ambos'
+      });
+      
+      // Conta por transportadora
+      if (!transportadoraCount[transportadora]) {
+        transportadoraCount[transportadora] = 0;
+      }
+      transportadoraCount[transportadora]++;
+    }
+  });
+
+  // Ordena por ID
+  resultado.sort((a, b) => a.id.localeCompare(b.id));
+
+  // Converte o objeto de contagem para array e ordena
+  const transportadoraList = Object.entries(transportadoraCount)
+    .map(([nome, quantidade]) => ({ nome, quantidade }))
+    .sort((a, b) => b.quantidade - a.quantidade);
+
+  const totalComTransportadora = dadosPacotes.filter(r => String(r['ID do envio'] || '').trim()).length;
+  const totalFaltantes = faltantesSet.size;
+  const emAmbos = resultado.length;
+  const apenasComTransportadora = totalComTransportadora - emAmbos;
+
+  return {
+    dados: resultado,
+    totalComTransportadora,
+    totalFaltantes,
+    emAmbos,
+    apenasComTransportadora,
+    transportadoraList
+  };
+}
 
 // ================================================================
-//  EVENTOS - INVENTÁRIO
+//  CRUZAMENTO - RENDER
 // ================================================================
+function renderCruzamento(data) {
+  const statsDiv = document.getElementById('cruzamentoStats');
+  const transpGrid = document.getElementById('cruzamentoTranspGrid');
+  const tbody = document.getElementById('cruzamentoTbody');
+  const countSpan = document.getElementById('cruzamentoCount');
+  const footerSpan = document.getElementById('footerTotalCruzamento');
+
+  if (!data || data.dados.length === 0) {
+    statsDiv.innerHTML = `
+      <div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div></div>
+      <div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div></div>
+      <div class="cruzamento-stat"><div class="num cruzamento">0</div><div class="label">🔗 Em Ambos</div></div>
+      <div class="cruzamento-stat"><div class="num success">0</div><div class="label">✅ Apenas com Transportadora</div></div>
+    `;
+    transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Nenhum pacote em ambos</div>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Nenhum pacote encontrado em ambas as bases</td></tr>`;
+    countSpan.textContent = '0 registros';
+    footerSpan.textContent = '0 registros';
+    return;
+  }
+
+  statsDiv.innerHTML = `
+    <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div></div>
+    <div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div></div>
+    <div class="cruzamento-stat"><div class="num cruzamento">${data.emAmbos}</div><div class="label">🔗 Em Ambos</div></div>
+    <div class="cruzamento-stat"><div class="num success">${data.apenasComTransportadora}</div><div class="label">✅ Apenas com Transportadora</div></div>
+  `;
+
+  // Cards por transportadora
+  if (data.transportadoraList.length === 0) {
+    transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Nenhum pacote em ambas</div>`;
+  } else {
+    const totalEmAmbos = data.emAmbos;
+    transpGrid.innerHTML = data.transportadoraList.map(t => {
+      const pct = totalEmAmbos > 0 ? (t.quantidade / totalEmAmbos * 100) : 0;
+      return `
+        <div class="cruzamento-transp-card">
+          <div class="nome">${t.nome}</div>
+          <div class="detalhes">
+            <span class="qtd">🔗 ${t.quantidade}</span>
+            <span class="pct">${pct.toFixed(1)}%</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  countSpan.textContent = `${data.dados.length} registros`;
+  footerSpan.textContent = `${data.dados.length} registros`;
+
+  tbody.innerHTML = data.dados.map(row => `
+    <tr>
+      <td style="font-weight:500;">${row.id}</td>
+      <td>${row.transportadora}</td>
+      <td style="color:var(--danger);">${row.status}</td>
+      <td>${row.zona}</td>
+      <td><span class="status-badge">🔗 Em ambos</span></td>
+    </tr>
+  `).join('');
+}
+
+// ================================================================
+//  CRUZAMENTO - FUNÇÃO PRINCIPAL
+// ================================================================
+async function carregarCruzamento() {
+  const statusDot = document.getElementById('statusDotCruzamento');
+  const statusText = document.getElementById('statusTextCruzamento');
+  const recordCount = document.getElementById('recordCountCruzamento');
+  const tbody = document.getElementById('cruzamentoTbody');
+
+  try {
+    statusDot.className = 'dot-status loading';
+    statusText.textContent = 'Carregando dados para cruzamento...';
+    statusText.style.color = 'var(--text-dim)';
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Carregando...</td></tr>`;
+
+    const [pacotes, inventario] = await Promise.all([
+      lerPlanilhaGooglePacotes(),
+      lerPlanilhaGoogleInventario()
+    ]);
+
+    rawDataPacotes = pacotes;
+    rawDataInventario = inventario;
+    processarPacotes();
+    processedDataInventario = processarDadosInventario(inventario);
+    renderKPI_Inventario(processedDataInventario);
+    renderGraficos_Inventario(processedDataInventario);
+    renderZonas(processedDataInventario);
+    document.getElementById('footerTotalInventario').textContent = `${inventario.length} registros`;
+
+    dadosCruzamento = realizarCruzamento(pacotes, inventario);
+    renderCruzamento(dadosCruzamento);
+
+    statusDot.className = 'dot-status online';
+    statusText.textContent = `✅ Cruzamento concluído: ${dadosCruzamento.emAmbos} em ambos, ${dadosCruzamento.apenasComTransportadora} apenas com transportadora`;
+    statusText.style.color = 'var(--success)';
+    recordCount.textContent = `📦 ${dadosCruzamento.dados.length} registros cruzados`;
+
+  } catch (error) {
+    statusDot.className = 'dot-status offline';
+    statusText.textContent = `❌ Erro no cruzamento: ${error.message}`;
+    statusText.style.color = 'var(--danger)';
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:30px;">Erro: ${error.message}</td></tr>`;
+    console.error('Erro no cruzamento:', error);
+  }
+}
+
+// ================================================================
+//  EVENTOS
+// ================================================================
+document.getElementById('refreshPacotes').addEventListener('click', carregarDadosPacotes);
 document.getElementById('refreshInventario').addEventListener('click', carregarDadosInventario);
+document.getElementById('refreshCruzamento').addEventListener('click', carregarCruzamento);
 
 // ================================================================
 //  EVENTOS - MODAL
@@ -1338,7 +1730,6 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('active');
 });
 
-// Copiar apenas IDs
 document.getElementById('modalCopy').addEventListener('click', function() {
   if (!modalTransportadora) return;
   const ids = modalTransportadora.ids.join('\n');
@@ -1359,7 +1750,6 @@ document.getElementById('modalCopy').addEventListener('click', function() {
   });
 });
 
-// Copiar todos (com índice)
 document.getElementById('modalCopyAll').addEventListener('click', function() {
   if (!modalTransportadora) return;
   const text = modalTransportadora.ids.map((id, index) => `${String(index + 1).padStart(3, '0')} - ${id}`).join('\n');
@@ -1390,12 +1780,17 @@ document.addEventListener('DOMContentLoaded', function() {
   renderKPI_Inventario(null);
   renderGraficos_Inventario(null);
   renderZonas(null);
+  
   carregarDadosPacotes();
   carregarDadosInventario();
+  
+  setTimeout(carregarCruzamento, 2000);
 });
 
-// Atualizar inventário a cada 5 minutos
-setInterval(carregarDadosInventario, 300000);
+setInterval(() => {
+  carregarDadosInventario();
+  carregarCruzamento();
+}, 300000);
 </script>
 </body>
 </html>
