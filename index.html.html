@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Pacotes Pendentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#14161a;
+    --panel:#1b1e24;
+    --panel-alt:#1f232a;
+    --line:#2b2f37;
+    --line-soft:#22262d;
+    --text:#edeae2;
+    --text-dim:#8b8f99;
+    --text-faint:#565a63;
+    --faltante:#e8593f;
+    --intruso:#3d8fe0;
+    --naoplan:#e0aa3d;
+    --plan:#4fae7c;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    padding:0 0 80px 0;
+  }
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+
+  .masthead{
+    border-bottom:1px solid var(--line);
+    padding:38px 0 26px 0;
+    position:relative;
+    overflow:hidden;
+  }
+  .masthead::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:repeating-linear-gradient(90deg,
+      var(--faltante) 0 40px, var(--intruso) 40px 80px,
+      var(--naoplan) 80px 120px, var(--plan) 120px 160px);
+    opacity:.85;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:.16em;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    display:flex; gap:10px; align-items:center;
+  }
+  .eyebrow .dot{width:6px; height:6px; background:var(--faltante); border-radius:50%; display:inline-block;}
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    font-size:clamp(34px, 5vw, 54px);
+    letter-spacing:.01em;
+    text-transform:uppercase;
+    line-height:1.02;
+    margin-top:10px;
+    color:#fff;
+  }
+  .masthead p{
+    color:var(--text-dim);
+    max-width:620px;
+    margin-top:12px;
+    font-size:14.5px;
+    line-height:1.55;
+  }
+  .masthead p b{color:var(--text); font-weight:600;}
+
+  .upload-section{
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:24px;
+    margin-top:26px;
+    border-radius:4px;
+  }
+  .upload-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .upload-header h3{
+    font-family:'Oswald', sans-serif;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--text);
+  }
+  .upload-header .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--text-faint);
+    background:var(--bg);
+    padding:4px 12px;
+    border:1px solid var(--line-soft);
+  }
+  .upload-box{
+    border:2px dashed var(--line-soft);
+    padding:20px;
+    text-align:center;
+    cursor:pointer;
+    transition: border-color .2s, background .2s;
+    position:relative;
+    min-height:140px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+  }
+  .upload-box:hover{
+    border-color:var(--text-dim);
+    background:var(--panel-alt);
+  }
+  .upload-box .icon{
+    font-size:28px;
+    margin-bottom:8px;
+    opacity:.6;
+  }
+  .upload-box .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:.04em;
+  }
+  .upload-box .sub-label{
+    font-size:10px;
+    color:var(--text-faint);
+    margin-top:4px;
+  }
+  .upload-box input[type="file"]{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    cursor:pointer;
+  }
+  .upload-box .file-status{
+    position:absolute;
+    bottom:8px;
+    right:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    color:var(--plan);
+    background:var(--plan-dim);
+    padding:2px 10px;
+    border-radius:2px;
+  }
+
+  .upload-preview{
+    border:1px solid var(--line-soft);
+    background:var(--bg);
+    padding:12px;
+    min-height:80px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    max-height:200px;
+    overflow:auto;
+    margin-top:16px;
+  }
+  .upload-preview .empty-message{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+  .upload-preview table{
+    width:100%;
+    font-size:10px;
+    border-collapse:collapse;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .upload-preview table th{
+    background:var(--panel-alt);
+    color:var(--text-dim);
+    padding:4px 6px;
+    text-align:left;
+    position:sticky;
+    top:0;
+    border-bottom:1px solid var(--line);
+  }
+  .upload-preview table td{
+    padding:3px 6px;
+    border-bottom:1px solid var(--line-soft);
+    color:var(--text);
+    white-space:nowrap;
+    max-width:120px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .upload-preview table tr:hover td{
+    background:var(--panel-alt);
+  }
+  .upload-preview .col-destaque{
+    background:var(--naoplan-dim);
+    color:var(--naoplan);
+    font-weight:600;
+  }
+
+  .data-status{
+    margin-top:16px;
+    padding:12px 16px;
+    background:var(--bg);
+    border:1px solid var(--line-soft);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .data-status .info{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .data-status .info b{color:var(--text);}
+  .data-status .actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    padding:8px 20px;
+    font-family:'Oswald', sans-serif;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    border:none;
+    cursor:pointer;
+    transition:all .2s;
+    font-weight:600;
+  }
+  .btn-primary{
+    background:var(--intruso);
+    color:#fff;
+  }
+  .btn-primary:hover{opacity:.8;}
+  .btn-primary:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-secondary{
+    background:transparent;
+    color:var(--text-dim);
+    border:1px solid var(--line-soft);
+  }
+  .btn-secondary:hover{border-color:var(--text); color:var(--text);}
+  .btn-success{
+    background:var(--plan);
+    color:#fff;
+  }
+  .btn-success:hover{opacity:.8;}
+  .btn-danger{
+    background:var(--faltante);
+    color:#fff;
+  }
+  .btn-danger:hover{opacity:.8;}
+  .btn-warning{
+    background:var(--naoplan);
+    color:#fff;
+  }
+  .btn-warning:hover{opacity:.8;}
+
+  .kpi-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:26px;
+  }
+  .kpi{
+    background:var(--panel);
+    padding:18px 18px 16px;
+    position:relative;
+  }
+  .kpi .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    display:flex; align-items:center; gap:7px;
+  }
+  .kpi .num{
+    font-family:'Oswald', sans-serif;
+    font-size:32px;
+    font-weight:600;
+    margin-top:8px;
+    color:#fff;
+  }
+  .kpi .pct{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+  .kpi.total{background:var(--panel-alt);}
+  .kpi.total .num{font-size:36px;}
+
+  .charts-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:26px;
+  }
+  .chart-card{
+    background:var(--panel);
+    padding:22px;
+  }
+  .chart-card h3{
+    font-family:'Oswald', sans-serif;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--text-dim);
+    font-weight:500;
+    margin-bottom:16px;
+  }
+  .chart-card .chart-container{
+    height:220px;
+    position:relative;
+  }
+
+  .transportadoras-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:26px;
+  }
+  .transportadora-card{
+    background:var(--panel);
+    padding:18px 16px;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  .transportadora-card:hover{
+    background:var(--panel-alt);
+  }
+  .transportadora-card .nome{
+    font-family:'Oswald', sans-serif;
+    font-size:16px;
+    font-weight:500;
+    color:var(--text);
+  }
+  .transportadora-card .detalhes{
+    display:flex;
+    justify-content:space-between;
+    margin-top:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  .transportadora-card .detalhes .qtd{
+    color:var(--naoplan);
+    font-weight:600;
+  }
+  .transportadora-card .detalhes .valor{
+    color:var(--plan);
+    font-weight:600;
+  }
+
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    z-index:1000;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+  }
+  .modal-overlay.active{
+    display:flex;
+  }
+  .modal{
+    background:var(--panel);
+    border:1px solid var(--line);
+    max-width:800px;
+    width:100%;
+    max-height:90vh;
+    display:flex;
+    flex-direction:column;
+    border-radius:4px;
+  }
+  .modal-header{
+    padding:18px 24px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    background:var(--panel-alt);
+  }
+  .modal-header h2{
+    font-family:'Oswald', sans-serif;
+    font-size:18px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--text);
+  }
+  .modal-header .close-btn{
+    background:transparent;
+    border:1px solid var(--line-soft);
+    color:var(--text-dim);
+    width:32px;
+    height:32px;
+    font-size:18px;
+    cursor:pointer;
+    transition:all .2s;
+    border-radius:2px;
+  }
+  .modal-header .close-btn:hover{
+    border-color:var(--faltante);
+    color:var(--faltante);
+  }
+  .modal-body{
+    padding:20px 24px;
+    overflow-y:auto;
+    flex:1;
+  }
+  .modal-body .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .modal-body .stats .stat{
+    background:var(--bg);
+    padding:10px 14px;
+    text-align:center;
+    border:1px solid var(--line-soft);
+  }
+  .modal-body .stats .stat .num{
+    font-family:'Oswald', sans-serif;
+    font-size:20px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .modal-body .stats .stat .lbl{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .modal-body .ids-list{
+    background:var(--bg);
+    border:1px solid var(--line-soft);
+    padding:12px 16px;
+    max-height:300px;
+    overflow-y:auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text);
+  }
+  .modal-body .ids-list .id-item{
+    padding:4px 0;
+    border-bottom:1px solid var(--line-soft);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .modal-body .ids-list .id-item:last-child{border-bottom:none;}
+  .modal-body .ids-list .id-item .id-num{
+    color:var(--text);
+    font-weight:500;
+    letter-spacing:0.5px;
+  }
+  .modal-body .ids-list .id-item .id-index{
+    color:var(--text-faint);
+    font-size:10px;
+  }
+  .modal-body .ids-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--text-dim);
+    margin-bottom:8px;
+    display:block;
+  }
+  .modal-footer{
+    padding:14px 24px;
+    border-top:1px solid var(--line);
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    background:var(--panel-alt);
+  }
+  .modal-footer .btn-copy{
+    background:var(--intruso);
+    color:#fff;
+    border:none;
+    padding:8px 20px;
+    font-family:'Oswald', sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    cursor:pointer;
+    transition:opacity .2s;
+    font-weight:600;
+  }
+  .modal-footer .btn-copy:hover{opacity:.8;}
+  .modal-footer .btn-copy.copied{
+    background:var(--plan);
+  }
+  .modal-footer .btn-copy-all{
+    background:var(--naoplan);
+    color:#fff;
+    border:none;
+    padding:8px 20px;
+    font-family:'Oswald', sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    cursor:pointer;
+    transition:opacity .2s;
+    font-weight:600;
+  }
+  .modal-footer .btn-copy-all:hover{opacity:.8;}
+
+  .no-data{
+    color:var(--text-faint);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-align:center;
+    padding:20px 0;
+  }
+
+  .loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--line);
+    border-top: 2px solid var(--plan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  footer{
+    margin-top:50px;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--text-faint);
+    letter-spacing:.04em;
+  }
+
+  @media (max-width:860px){
+    .charts-grid{grid-template-columns:1fr;}
+    .transportadoras-grid{grid-template-columns:1fr;}
+    .kpi-strip{grid-template-columns:1fr;}
+    .modal-body .stats{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow"><span class="dot"></span>WMS DASHBOARD &nbsp;·&nbsp; PACOTES PENDENTES</div>
+    <h1>Análise de Pacotes Pendentes</h1>
+    <p>Análise detalhada dos <b>pacotes pendentes</b> por transportadora (coluna D), com valores e IDs numéricos de 11 dígitos.</p>
+  </div>
+
+  <div class="upload-section">
+    <div class="upload-header">
+      <h3>📊 Dados da planilha Google Sheets</h3>
+      <span class="badge">Atualização automática</span>
+    </div>
+
+    <div class="upload-box" id="uploadBox" style="margin-top:16px;">
+      <div class="icon">☁️</div>
+      <div class="label">CONECTADO À PLANILHA GOOGLE</div>
+      <div class="sub-label">Os dados são carregados automaticamente da planilha</div>
+      <input type="file" accept=".csv,.xlsx,.xls" id="fileUpload">
+      <div class="file-status" id="status">⏳ Carregando...</div>
+    </div>
+
+    <div class="upload-preview" id="dataPreview">
+      <div class="empty-message">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <span>Carregando dados da planilha...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-status">
+      <div class="info">
+        <span id="dataInfo">📌 Conectando à planilha...</span>
+      </div>
+      <div class="actions">
+        <button class="btn btn-success" id="processDataBtn" disabled>▶ Processar Dados</button>
+        <button class="btn btn-danger" id="clearDataBtn">🗑️ Limpar</button>
+        <button class="btn btn-primary" id="refreshDataBtn">🔄 Recarregar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-strip" id="kpiStrip"></div>
+
+  <!-- GRÁFICOS -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>📊 Pacotes por Transportadora</h3>
+      <div class="chart-container">
+        <canvas id="chartQuantidade"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>💰 Valor Total por Transportadora</h3>
+      <div class="chart-container">
+        <canvas id="chartValor"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSPORTADORAS -->
+  <div style="margin-top:30px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+      <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;">🚚 Transportadoras (Coluna D)</h2>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);">Clique em uma transportadora para ver os IDs</span>
+    </div>
+    <div class="transportadoras-grid" id="transportadorasGrid"></div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Transportadora</h2>
+        <button class="close-btn" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="stats" id="modalStats"></div>
+        <span class="ids-count" id="modalIdsCount"></span>
+        <div class="ids-list" id="modalIds"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-copy-all" id="modalCopyAll">📋 Copiar todos (com IDs)</button>
+        <button class="btn-copy" id="modalCopy">📋 Copiar apenas IDs</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>FONTE — PLANILHA GOOGLE SHEETS</span>
+    <span id="footerTotal">0 registros</span>
+  </footer>
+
+</div>
+
+<script>
+// ============================================================
+//  CONFIGURAÇÃO DA API DO GOOGLE SHEETS
+// ============================================================
+const API_KEY = 'AIzaSyBRfP_-4NQx-DfJbtNGYC0OqeDOT1rwyLA';
+const SPREADSHEET_ID = '1yNmMLDWijfqPh2u-90_BGr-kJk3kEdC8dF47DCowqvs';
+const RANGE = 'Página1!A1:Z';  // Ajuste para o nome da sua aba
+
+// ============================================================
+//  VARIÁVEIS GLOBAIS
+// ============================================================
+let rawData = null;
+let processedData = null;
+let chartQuantidade = null;
+let chartValor = null;
+let modalTransportadora = null;
+
+// ============================================================
+//  LEITURA DA PLANILHA VIA API
+// ============================================================
+async function lerPlanilhaGoogle() {
+    try {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Erro na API (${response.status}): ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.values || data.values.length === 0) {
+            throw new Error('Nenhum dado encontrado na planilha');
+        }
+        
+        // A primeira linha é o cabeçalho
+        const headers = data.values[0];
+        const rows = data.values.slice(1);
+        
+        // Converter para array de objetos
+        const jsonData = rows.map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index] || '';
+            });
+            return obj;
+        });
+        
+        return jsonData;
+    } catch (error) {
+        console.error('Erro ao ler a planilha:', error);
+        throw error;
+    }
+}
+
+// ============================================================
+//  CARREGAR DADOS AUTOMATICAMENTE
+// ============================================================
+async function carregarDadosDaPlanilha() {
+    const statusEl = document.getElementById('status');
+    const previewEl = document.getElementById('dataPreview');
+    const processBtn = document.getElementById('processDataBtn');
+    const infoEl = document.getElementById('dataInfo');
+    
+    try {
+        statusEl.textContent = '⏳ Carregando da planilha...';
+        statusEl.style.color = 'var(--text-dim)';
+        infoEl.textContent = '📌 Carregando dados da planilha...';
+        
+        previewEl.innerHTML = `
+            <div class="empty-message">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <span>Carregando dados da planilha...</span>
+                </div>
+            </div>
+        `;
+        
+        const data = await lerPlanilhaGoogle();
+        rawData = data;
+        
+        statusEl.textContent = `✅ ${data.length} registros carregados`;
+        statusEl.style.color = 'var(--plan)';
+        
+        renderPreview(data);
+        processBtn.disabled = false;
+        infoEl.innerHTML = `📊 <b>${data.length}</b> registros carregados da planilha. Clique em "Processar Dados" ou aguarde o processamento automático.`;
+        
+        // Processa automaticamente após carregar
+        processar();
+        
+    } catch (error) {
+        statusEl.textContent = '❌ Erro ao carregar';
+        statusEl.style.color = 'var(--faltante)';
+        infoEl.textContent = `⚠️ ${error.message}`;
+        
+        previewEl.innerHTML = `
+            <div class="empty-message">
+                <div style="font-size:24px; margin-bottom:6px;">⚠️</div>
+                Erro ao carregar planilha: ${error.message}<br>
+                <span style="font-size:9px; color:var(--text-faint);">
+                    Verifique se a planilha está pública (compartilhada como "Visualizador")
+                </span>
+            </div>
+        `;
+    }
+}
+
+// ============================================================
+//  PROCESSAMENTO DOS DADOS
+// ============================================================
+function processarDados(data) {
+    const transportadoras = {};
+    let totalGeral = 0;
+    let valorTotalGeral = 0;
+    let idsEncontrados = 0;
+    let idsNaoEncontrados = 0;
+
+    data.forEach(row => {
+        // Buscar transportadora - tentando várias variações
+        const transportadora = row['TRANSPORTADORA'] || 
+                              row['transportadora'] || 
+                              row['Transportadora'] || 
+                              row['Coluna D'] || 
+                              row['D'] ||
+                              'Não especificado';
+        
+        // Buscar ID do envio
+        const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
+        
+        // Buscar valor declarado
+        const valorStr = String(row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '0')
+            .replace(',', '.')
+            .replace(/[^0-9.]/g, '');
+        const valor = parseFloat(valorStr) || 0;
+        
+        if (!transportadoras[transportadora]) {
+            transportadoras[transportadora] = {
+                nome: transportadora,
+                ids: [],
+                quantidade: 0,
+                valorTotal: 0,
+                valorFormatado: 'R$ 0,00'
+            };
+        }
+        
+        if (id) {
+            transportadoras[transportadora].ids.push(id);
+            idsEncontrados++;
+        } else {
+            idsNaoEncontrados++;
+        }
+        
+        transportadoras[transportadora].quantidade++;
+        transportadoras[transportadora].valorTotal += valor;
+        totalGeral++;
+        valorTotalGeral += valor;
+    });
+
+    // Formatar valores
+    Object.values(transportadoras).forEach(t => {
+        t.valorFormatado = 'R$ ' + t.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    });
+
+    // Ordenar por quantidade (decrescente)
+    const lista = Object.values(transportadoras).sort((a, b) => b.quantidade - a.quantidade);
+
+    return {
+        transportadoras: lista,
+        totalGeral,
+        idsEncontrados,
+        idsNaoEncontrados,
+        valorTotalGeral: 'R$ ' + valorTotalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+    };
+}
+
+// ============================================================
+//  FUNÇÃO PRINCIPAL DE PROCESSAMENTO
+// ============================================================
+function processar() {
+    if (!rawData || rawData.length === 0) {
+        alert('Nenhum dado carregado. Aguarde o carregamento da planilha ou clique em "Recarregar".');
+        return;
+    }
+
+    try {
+        processedData = processarDados(rawData);
+        renderKPI(processedData);
+        renderGraficos(processedData);
+        renderTransportadoras(processedData);
+        document.getElementById('dataInfo').innerHTML = 
+            `✅ Processado! <b>${processedData.totalGeral}</b> pacotes · <b>${processedData.transportadoras.length}</b> transportadoras · Valor total: <b>${processedData.valorTotalGeral}</b>`;
+        document.getElementById('processDataBtn').disabled = true;
+    } catch(err) {
+        alert('Erro ao processar dados: ' + err.message);
+        console.error(err);
+    }
+}
+
+// ============================================================
+//  RENDER FUNCTIONS
+// ============================================================
+
+function renderKPI(data) {
+    const strip = document.getElementById('kpiStrip');
+    if (!data) {
+        strip.innerHTML = `
+            <div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">0</div></div>
+            <div class="kpi"><div class="tag">Transportadoras</div><div class="num">0</div></div>
+            <div class="kpi"><div class="tag">Valor Total</div><div class="num">R$ 0,00</div></div>
+        `;
+        return;
+    }
+    strip.innerHTML = `
+        <div class="kpi total">
+            <div class="tag">Total de Pacotes</div>
+            <div class="num">${data.totalGeral}</div>
+            <div class="pct">${data.idsEncontrados} IDs encontrados</div>
+        </div>
+        <div class="kpi">
+            <div class="tag">Transportadoras</div>
+            <div class="num">${data.transportadoras.length}</div>
+        </div>
+        <div class="kpi">
+            <div class="tag">Valor Total</div>
+            <div class="num" style="font-size:28px;">${data.valorTotalGeral}</div>
+        </div>
+    `;
+    document.getElementById('footerTotal').textContent = `${data.totalGeral} registros`;
+}
+
+function renderGraficos(data) {
+    if (!data || data.transportadoras.length === 0) {
+        if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; }
+        if (chartValor) { chartValor.destroy(); chartValor = null; }
+        return;
+    }
+
+    const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
+    const quantidades = data.transportadoras.map(t => t.quantidade);
+    const valores = data.transportadoras.map(t => t.valorTotal);
+
+    // Gráfico de Quantidade
+    if (chartQuantidade) chartQuantidade.destroy();
+    chartQuantidade = new Chart(document.getElementById('chartQuantidade'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Pacotes',
+                data: quantidades,
+                backgroundColor: '#e0aa3d',
+                borderColor: '#e0aa3d',
+                borderWidth: 1,
+                borderRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#8b8f99', font: { size: 10 } },
+                    grid: { color: '#2b2f37' }
+                },
+                x: {
+                    ticks: { color: '#8b8f99', font: { size: 9 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // Gráfico de Valor
+    if (chartValor) chartValor.destroy();
+    chartValor = new Chart(document.getElementById('chartValor'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Valor Total (R$)',
+                data: valores,
+                backgroundColor: '#4fae7c',
+                borderColor: '#4fae7c',
+                borderWidth: 1,
+                borderRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'R$ ' + context.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        color: '#8b8f99', 
+                        font: { size: 10 },
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        }
+                    },
+                    grid: { color: '#2b2f37' }
+                },
+                x: {
+                    ticks: { color: '#8b8f99', font: { size: 9 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function renderTransportadoras(data) {
+    const grid = document.getElementById('transportadorasGrid');
+    if (!data || data.transportadoras.length === 0) {
+        grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
+        return;
+    }
+
+    grid.innerHTML = data.transportadoras.map(t => `
+        <div class="transportadora-card" onclick="abrirModal('${t.nome.replace(/'/g, "\\'")}')">
+            <div class="nome">${t.nome}</div>
+            <div class="detalhes">
+                <span class="qtd">📦 ${t.quantidade} pacotes</span>
+                <span class="valor">💰 ${t.valorFormatado}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderPreview(data) {
+    const preview = document.getElementById('dataPreview');
+    if (!data || data.length === 0) {
+        preview.innerHTML = `
+            <div class="empty-message">
+                <div style="font-size:24px; margin-bottom:6px;">📋</div>
+                Nenhum dado carregado<br>
+                <span style="font-size:9px; color:var(--text-faint);">Clique em "Recarregar" para buscar os dados da planilha</span>
+            </div>
+        `;
+        return;
+    }
+
+    // Detectar cabeçalhos disponíveis
+    const headers = Object.keys(data[0]);
+    const hasId = headers.some(h => h.includes('ID') || h.includes('id'));
+    const hasTransportadora = headers.some(h => h.includes('TRANSPORTADORA') || h.includes('transportadora') || h.includes('Transportadora'));
+    const hasValor = headers.some(h => h.includes('Valor') || h.includes('valor'));
+
+    let html = `<div style="width:100%;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-dim); margin-bottom:4px; display:flex; gap:16px; flex-wrap:wrap;">
+            <span>📦 ${data.length} registros carregados</span>
+            ${hasId ? '<span style="color:var(--plan);">✅ ID encontrado</span>' : '<span style="color:var(--faltante);">⚠️ ID não encontrado</span>'}
+            ${hasTransportadora ? '<span style="color:var(--plan);">✅ Transportadora encontrada</span>' : '<span style="color:var(--faltante);">⚠️ Transportadora não encontrada</span>'}
+            ${hasValor ? '<span style="color:var(--plan);">✅ Valor encontrado</span>' : '<span style="color:var(--faltante);">⚠️ Valor não encontrado</span>'}
+        </div>
+        <table><thead><tr>
+            <th>ID do envio</th>
+            <th class="col-destaque">TRANSPORTADORA (Coluna D)</th>
+            <th>Valor declarado</th>
+            <th>Status</th>
+        </tr></thead><tbody>`;
+    
+    data.slice(0, 5).forEach(row => {
+        const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
+        const transportadora = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || row['Coluna D'] || row['D'] || 'Não especificado';
+        const valor = row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '';
+        const status = row['Status do envio'] || row['status_do_envio'] || row['Status'] || '';
+        
+        html += `<tr>
+            <td style="font-family:'IBM Plex Mono',monospace;">${id || '-'}</td>
+            <td class="col-destaque">${transportadora}</td>
+            <td>${valor}</td>
+            <td>${status}</td>
+        </tr>`;
+    });
+    
+    if (data.length > 5) {
+        html += `<tr><td colspan="4" style="text-align:center;color:var(--text-faint);font-size:10px;">... e mais ${data.length - 5} registros</td></tr>`;
+    }
+    html += `</tbody></table></div>`;
+    preview.innerHTML = html;
+}
+
+// ============================================================
+//  MODAL FUNCTIONS
+// ============================================================
+
+function abrirModal(nome) {
+    if (!processedData) return;
+    const t = processedData.transportadoras.find(t => t.nome === nome);
+    if (!t) return;
+
+    modalTransportadora = t;
+    document.getElementById('modalTitle').textContent = t.nome;
+    document.getElementById('modalStats').innerHTML = `
+        <div class="stat"><div class="num">${t.quantidade}</div><div class="lbl">Pacotes</div></div>
+        <div class="stat"><div class="num">${t.valorFormatado}</div><div class="lbl">Valor Total</div></div>
+        <div class="stat"><div class="num">${t.ids.length}</div><div class="lbl">IDs</div></div>
+    `;
+    
+    document.getElementById('modalIdsCount').textContent = `📋 ${t.ids.length} IDs numéricos de 11 dígitos`;
+    
+    document.getElementById('modalIds').innerHTML = t.ids.map((id, index) => 
+        `<div class="id-item">
+            <span class="id-num">${id}</span>
+            <span class="id-index">#${index + 1}</span>
+        </div>`
+    ).join('') || '<div style="color:var(--text-faint);">Nenhum ID encontrado</div>';
+    
+    document.getElementById('modalCopy').textContent = '📋 Copiar IDs';
+    document.getElementById('modalCopy').className = 'btn-copy';
+    document.getElementById('modalCopyAll').textContent = '📋 Copiar todos (com IDs)';
+    document.getElementById('modalCopyAll').className = 'btn-copy-all';
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+document.getElementById('modalClose').addEventListener('click', function() {
+    document.getElementById('modalOverlay').classList.remove('active');
+});
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.remove('active');
+    }
+});
+
+// Copiar apenas IDs
+document.getElementById('modalCopy').addEventListener('click', function() {
+    if (!modalTransportadora) return;
+    
+    const ids = modalTransportadora.ids.join('\n');
+    navigator.clipboard.writeText(ids).then(() => {
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy copied';
+        setTimeout(() => {
+            this.textContent = '📋 Copiar IDs';
+            this.className = 'btn-copy';
+        }, 2000);
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = ids;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy copied';
+        setTimeout(() => {
+            this.textContent = '📋 Copiar IDs';
+            this.className = 'btn-copy';
+        }, 2000);
+    });
+});
+
+// Copiar todos (com índice)
+document.getElementById('modalCopyAll').addEventListener('click', function() {
+    if (!modalTransportadora) return;
+    
+    const text = modalTransportadora.ids.map((id, index) => 
+        `${String(index + 1).padStart(3, '0')} - ${id}`
+    ).join('\n');
+    
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy-all copied';
+        setTimeout(() => {
+            this.textContent = '📋 Copiar todos (com IDs)';
+            this.className = 'btn-copy-all';
+        }, 2000);
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy-all copied';
+        setTimeout(() => {
+            this.textContent = '📋 Copiar todos (com IDs)';
+            this.className = 'btn-copy-all';
+        }, 2000);
+    });
+});
+
+// Tecla ESC para fechar modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+});
+
+// ============================================================
+//  EVENTOS DOS BOTÕES
+// ============================================================
+
+// Processar dados
+document.getElementById('processDataBtn').addEventListener('click', processar);
+
+// Limpar dados
+document.getElementById('clearDataBtn').addEventListener('click', function() {
+    rawData = null;
+    processedData = null;
+    document.getElementById('fileUpload').value = '';
+    document.getElementById('processDataBtn').disabled = true;
+    document.getElementById('status').textContent = '⏳ Aguardando';
+    document.getElementById('status').style.color = 'var(--text-faint)';
+    document.getElementById('dataInfo').textContent = '📌 Dados limpos. Clique em "Recarregar" para buscar novamente.';
+    document.getElementById('modalOverlay').classList.remove('active');
+    
+    renderPreview(null);
+    renderKPI(null);
+    renderGraficos(null);
+    renderTransportadoras(null);
+    document.getElementById('footerTotal').textContent = '0 registros';
+});
+
+// Recarregar dados
+document.getElementById('refreshDataBtn').addEventListener('click', function() {
+    carregarDadosDaPlanilha();
+});
+
+// ============================================================
+//  FILE UPLOAD (FALLBACK)
+// ============================================================
+document.getElementById('fileUpload').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+        // Usar XLSX para ler o arquivo
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            try {
+                const workbook = XLSX.read(ev.target.result, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(firstSheet);
+                rawData = data;
+                document.getElementById('status').textContent = `✅ ${data.length} registros (upload)`;
+                document.getElementById('status').style.color = 'var(--plan)';
+                renderPreview(data);
+                document.getElementById('processDataBtn').disabled = false;
+                document.getElementById('dataInfo').textContent = `📊 ${data.length} registros carregados via upload. Clique em "Processar Dados"`;
+            } catch(err) {
+                alert('Erro ao ler arquivo: ' + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } catch(err) {
+        alert('Erro ao ler arquivo: ' + err.message);
+    }
+});
+
+// ============================================================
+//  DRAG & DROP
+// ============================================================
+const uploadBox = document.getElementById('uploadBox');
+uploadBox.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.borderColor = 'var(--intruso)';
+    this.style.background = 'var(--panel-alt)';
+});
+uploadBox.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.style.borderColor = 'var(--line-soft)';
+    this.style.background = 'var(--bg)';
+});
+uploadBox.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = 'var(--line-soft)';
+    this.style.background = 'var(--bg)';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('fileUpload').files = files;
+        document.getElementById('fileUpload').dispatchEvent(new Event('change'));
+    }
+});
+
+// ============================================================
+//  INICIALIZAÇÃO
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    renderKPI(null);
+    renderGraficos(null);
+    renderTransportadoras(null);
+    carregarDadosDaPlanilha();
+});
+</script>
+</body>
+</html>
