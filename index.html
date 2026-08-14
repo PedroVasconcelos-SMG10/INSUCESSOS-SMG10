@@ -618,6 +618,7 @@
     border-radius:20px;
     font-size:12px;
   }
+  .filter-float-btn.hidden{display:none;}
 
   .filter-modal-overlay{
     display:none;
@@ -1483,7 +1484,7 @@
   </div>
 
   <!-- ===== FILTRO FLUTUANTE ===== -->
-  <button class="filter-float-btn" id="filterFloatBtn">🔍 Filtros <span class="badge-count" id="filterFloatBadge">0</span></button>
+  <button class="filter-float-btn hidden" id="filterFloatBtn">🔍 Filtros <span class="badge-count" id="filterFloatBadge">0</span></button>
   <div class="filter-modal-overlay" id="filterModalOverlay">
     <div class="filter-modal">
       <div class="filter-modal-header"><h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">✕</button></div>
@@ -1534,6 +1535,7 @@ const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47722655388', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
   { 'SHIPMENT': '47708000971', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
   { 'SHIPMENT': '47709693347', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
+  { 'SHIPMENT': '47751167939', 'CLASIFICACION': 'INTRUSO', 'SHP_ZONE_NAME': 'in_container' },
 ];
 
 // ================================================================
@@ -1573,28 +1575,25 @@ function isFileProtocol() { return window.location.protocol === 'file:'; }
 function initTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-    
-    if (!tabBtns.length || !tabContents.length) {
-        console.warn('⚠️ Elementos das abas não encontrados.');
-        return;
-    }
+    if (!tabBtns.length || !tabContents.length) return;
     
     tabBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {
-            console.log('🔄 Clicou na aba:', this.dataset.tab);
-            
             tabBtns.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
-            
             this.classList.add('active');
-            
             const targetId = this.dataset.tab;
             const targetContent = document.getElementById(targetId);
-            if (targetContent) {
-                targetContent.classList.add('active');
-                console.log('✅ Aba ativada:', targetId);
-            } else {
-                console.error('❌ Conteúdo da aba não encontrado:', targetId);
+            if (targetContent) targetContent.classList.add('active');
+            
+            // Mostrar/ocultar botão de filtro flutuante
+            const filterBtn = document.getElementById('filterFloatBtn');
+            if (filterBtn) {
+                if (targetId === 'tabCruzamento') {
+                    filterBtn.classList.remove('hidden');
+                } else {
+                    filterBtn.classList.add('hidden');
+                }
             }
             
             setTimeout(() => {
@@ -1603,57 +1602,39 @@ function initTabs() {
                     if (chartValor && typeof chartValor.resize === 'function') chartValor.resize();
                     if (chartZona && typeof chartZona.resize === 'function') chartZona.resize();
                     if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize();
-                } catch(e) {
-                    console.warn('Erro ao redimensionar gráficos:', e);
-                }
+                } catch(e) {}
             }, 100);
         });
     });
-    
-    console.log('✅ Tabs inicializadas com sucesso.');
 }
 
 // ================================================================
 //  AUTENTICAÇÃO OAuth COM PERSISTÊNCIA
 // ================================================================
 function initOAuth() {
-    console.log('🔄 Inicializando OAuth...');
-    
-    // Verifica se há um token salvo na sessão
     const savedToken = sessionStorage.getItem('accessToken');
     if (savedToken) {
-        console.log('🔑 Token encontrado na sessão. Tentando restaurar...');
         accessToken = savedToken;
         isAuthenticated = true;
         document.getElementById('statusTextPacotes').textContent = '✅ Autenticado! Carregando dados...';
         document.getElementById('statusTextPacotes').style.color = 'var(--success)';
         document.getElementById('statusDotPacotes').className = 'dot-status online';
         const btn = document.getElementById('loginBtn');
-        if (btn) {
-            btn.textContent = '✅ Conectado';
-            btn.classList.add('logged');
-            btn.disabled = true;
-        }
+        if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
         carregarTodosOsDados();
         return;
     }
     
     if (isFileProtocol()) {
-        console.warn('⚠️ Protocolo file:// detectado.');
         document.getElementById('statusTextPacotes').textContent = '⚠️ Abra este arquivo com um servidor local (ex: Live Server) para usar OAuth.';
         document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
         const btn = document.getElementById('loginBtn');
-        if (btn) {
-            btn.textContent = '❌ Origem inválida';
-            btn.classList.add('error');
-            btn.disabled = true;
-        }
+        if (btn) { btn.textContent = '❌ Origem inválida'; btn.classList.add('error'); btn.disabled = true; }
         carregarDadosExemplo();
         return;
     }
     
     if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-        console.error('❌ Biblioteca Google Identity Services não carregada.');
         document.getElementById('statusTextPacotes').textContent = '⏳ Carregando biblioteca de autenticação...';
         setTimeout(() => {
             if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
@@ -1673,7 +1654,6 @@ function initOAuth() {
             scope: SCOPES,
             callback: function(tokenResponse) {
                 if (tokenResponse.error) {
-                    console.error('❌ Erro no callback OAuth:', tokenResponse.error);
                     document.getElementById('statusTextPacotes').textContent = '❌ ' + tokenResponse.error;
                     document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
                     const btn = document.getElementById('loginBtn');
@@ -1684,7 +1664,6 @@ function initOAuth() {
                 accessToken = tokenResponse.access_token;
                 isAuthenticated = true;
                 sessionStorage.setItem('accessToken', accessToken);
-                console.log('✅ Autenticado com sucesso! Token salvo na sessão.');
                 document.getElementById('statusTextPacotes').textContent = '✅ Autenticado! Carregando dados...';
                 document.getElementById('statusTextPacotes').style.color = 'var(--success)';
                 document.getElementById('statusDotPacotes').className = 'dot-status online';
@@ -1693,9 +1672,7 @@ function initOAuth() {
                 carregarTodosOsDados();
             }
         });
-        console.log('✅ TokenClient inicializado com sucesso.');
     } catch (error) {
-        console.error('❌ Erro ao inicializar OAuth:', error);
         document.getElementById('statusTextPacotes').textContent = '❌ Erro ao inicializar OAuth. Carregando dados de exemplo.';
         document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
         carregarDadosExemplo();
@@ -1708,43 +1685,21 @@ function autenticar() {
         return;
     }
     if (!tokenClient) {
-        console.warn('⚠️ TokenClient não inicializado. Tentando reinicializar...');
         initOAuth();
         setTimeout(() => {
             if (tokenClient) { tokenClient.requestAccessToken(); }
-            else { alert('Não foi possível iniciar a autenticação. Recarregue a página e tente novamente.'); }
+            else { alert('Não foi possível iniciar a autenticação. Recarregue a página.'); }
         }, 500);
         return;
     }
     try { tokenClient.requestAccessToken(); }
-    catch (error) {
-        console.error('❌ Erro ao solicitar token:', error);
-        alert('Erro ao iniciar autenticação. Recarregue a página e tente novamente.');
-    }
-}
-
-function logout() {
-    sessionStorage.removeItem('accessToken');
-    accessToken = null;
-    isAuthenticated = false;
-    const btn = document.getElementById('loginBtn');
-    if (btn) {
-        btn.textContent = '🔑 Login com Google';
-        btn.classList.remove('logged');
-        btn.classList.remove('error');
-        btn.disabled = false;
-    }
-    document.getElementById('statusTextPacotes').textContent = '🔑 Desconectado. Clique em "Login com Google" para reconectar.';
-    document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
-    document.getElementById('statusDotPacotes').className = 'dot-status loading';
-    carregarDadosExemplo();
+    catch (error) { alert('Erro ao iniciar autenticação. Recarregue a página.'); }
 }
 
 // ================================================================
 //  CARREGAR DADOS DE EXEMPLO (FALLBACK)
 // ================================================================
 function carregarDadosExemplo() {
-    console.log('📊 Carregando dados de exemplo...');
     rawDataPacotes = DADOS_EXEMPLO_PACOTES;
     rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
     processarPacotes();
@@ -1798,7 +1753,7 @@ async function escreverPlanilhaOAuth(aba, range, values) {
 }
 
 // ================================================================
-//  PROCESSAMENTO E RENDER (PACOTES)
+//  PACOTES (mesmo código anterior, mantido)
 // ================================================================
 function processarDadosPacotes(data) {
     const transportadoras = {}, subTransportadoras = {};
@@ -1856,7 +1811,7 @@ function renderGraficos_Pacotes(data) {
     try {
         if (chartQuantidade && typeof chartQuantidade.destroy === 'function') { chartQuantidade.destroy(); chartQuantidade = null; }
         if (chartValor && typeof chartValor.destroy === 'function') { chartValor.destroy(); chartValor = null; }
-    } catch(e) { console.warn('Erro ao destruir gráficos:', e); }
+    } catch(e) {}
     if (!data || data.transportadoras.length === 0) return;
     const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
     const quantidades = data.transportadoras.map(t => t.quantidade);
@@ -1878,7 +1833,7 @@ function renderGraficos_Pacotes(data) {
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 }, callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
             });
         }
-    } catch(e) { console.warn('Erro ao criar gráficos de pacotes:', e); }
+    } catch(e) {}
 }
 
 function renderTransportadoras(data) {
@@ -1919,7 +1874,6 @@ function processarPacotes() {
         document.getElementById('statusTextPacotes').style.color = 'var(--success)';
         document.getElementById('statusDotPacotes').className = 'dot-status online';
     } catch(err) {
-        console.error('Erro ao processar pacotes:', err);
         document.getElementById('statusTextPacotes').textContent = '❌ Erro ao processar pacotes';
         document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
         document.getElementById('statusDotPacotes').className = 'dot-status offline';
@@ -1960,7 +1914,7 @@ async function carregarDadosPacotes() {
 }
 
 // ================================================================
-//  MODAL DE PACOTES (com paginação)
+//  MODAL DE PACOTES (paginação mantida)
 // ================================================================
 function abrirModalPacotes(nome) {
     if (!processedDataPacotes) return;
@@ -2195,26 +2149,43 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ================================================================
-//  INVENTÁRIO
+//  INVENTÁRIO - CORRIGIDO (INTRUSOS EXCLUÍDOS DO TOTAL)
 // ================================================================
 function processarDadosInventario(data) {
     const zonas = {};
-    let totalInventariado = 0, totalFaltante = 0, totalIntruso = 0, totalGeral = 0, naoClassificados = 0;
+    let totalInventariado = 0, totalFaltante = 0, totalIntruso = 0, totalNaoClassificado = 0;
+    
     data.forEach(row => {
         const statusRaw = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim();
         const zona = String(row['SHP_ZONE_NAME'] || row['shp_zone_name'] || '').trim() || 'Não especificado';
         const status = statusRaw.replace(/\s+/g, ' ').trim().toUpperCase();
+        
         const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
         const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
         const isIntruso = status === 'INTRUSO';
-        if (!zonas[zona]) { zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, total: 0 }; }
-        if (isInventariado) { zonas[zona].inventariado++; totalInventariado++; }
-        else if (isFaltante) { zonas[zona].faltante++; totalFaltante++; }
-        else if (isIntruso) { zonas[zona].intruso++; totalIntruso++; }
-        else { naoClassificados++; }
-        zonas[zona].total++;
-        totalGeral++;
+        
+        if (!zonas[zona]) {
+            zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, total: 0 };
+        }
+        
+        if (isInventariado) {
+            zonas[zona].inventariado++;
+            totalInventariado++;
+        } else if (isFaltante) {
+            zonas[zona].faltante++;
+            totalFaltante++;
+        } else if (isIntruso) {
+            zonas[zona].intruso++;
+            totalIntruso++;
+        } else {
+            totalNaoClassificado++;
+        }
+        zonas[zona].total++; // total da zona inclui todos os tipos
     });
+    
+    // Total geral de itens = inventariados + faltantes (exclui intrusos e não classificados)
+    const totalGeral = totalInventariado + totalFaltante;
+    
     const zonaList = Object.values(zonas).map(z => ({
         ...z,
         taxaInventariado: z.total > 0 ? (z.inventariado / z.total * 100) : 0,
@@ -2222,32 +2193,48 @@ function processarDadosInventario(data) {
         taxaIntruso: z.total > 0 ? (z.intruso / z.total * 100) : 0,
         taxaAcuracia: (z.inventariado + z.faltante) > 0 ? (z.inventariado / (z.inventariado + z.faltante) * 100) : 0
     })).sort((a, b) => b.total - a.total);
+    
     const totalParaAcuracia = totalInventariado + totalFaltante;
     const taxaAcuraciaGeral = totalParaAcuracia > 0 ? (totalInventariado / totalParaAcuracia * 100) : 0;
-    return { totalGeral, totalInventariado, totalFaltante, totalIntruso, naoClassificados, taxaAcuraciaGeral, zonas: zonaList };
+    
+    return { 
+        totalGeral, 
+        totalInventariado, 
+        totalFaltante, 
+        totalIntruso, 
+        totalNaoClassificado,
+        taxaAcuraciaGeral, 
+        zonas: zonaList 
+    };
 }
 
 function renderKPI_Inventario(data) {
     const grid = document.getElementById('kpiStripInventario');
     if (!data) {
-        grid.innerHTML = `<div class="kpi"><div class="tag">📦 Total</div><div class="num">0</div></div><div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">0</div></div><div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">0</div></div><div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">0</div></div><div class="kpi"><div class="tag">📊 Acurácia</div><div class="num warning">0%</div></div>`;
+        grid.innerHTML = `<div class="kpi"><div class="tag">📦 Total</div><div class="num">0</div></div>
+        <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">0</div></div>
+        <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">0</div></div>
+        <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">0</div></div>
+        <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num warning">0%</div></div>`;
         return;
     }
+    
+    const totalBase = data.totalGeral; // apenas inventariados + faltantes
     grid.innerHTML = `
-        <div class="kpi"><div class="tag">📦 Total de Itens</div><div class="num">${data.totalGeral}</div><div class="sub">${data.zonas.length} zonas</div></div>
-        <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">${data.totalInventariado}</div><div class="sub">${(data.totalGeral > 0 ? (data.totalInventariado / data.totalGeral * 100) : 0).toFixed(1)}% do total</div></div>
-        <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">${data.totalFaltante}</div><div class="sub">${(data.totalGeral > 0 ? (data.totalFaltante / data.totalGeral * 100) : 0).toFixed(1)}% do total</div></div>
-        <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${(data.totalGeral > 0 ? (data.totalIntruso / data.totalGeral * 100) : 0).toFixed(1)}% do total</div></div>
-        <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.naoClassificados > 0 ? `⚠️ ${data.naoClassificados} não classif.` : '✅ OK'}</div></div>
+        <div class="kpi"><div class="tag">📦 Total de Itens</div><div class="num">${totalBase}</div><div class="sub">${data.zonas.length} zonas</div></div>
+        <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">${data.totalInventariado}</div><div class="sub">${(totalBase > 0 ? (data.totalInventariado / totalBase * 100) : 0).toFixed(1)}% do total</div></div>
+        <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">${data.totalFaltante}</div><div class="sub">${(totalBase > 0 ? (data.totalFaltante / totalBase * 100) : 0).toFixed(1)}% do total</div></div>
+        <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${data.totalIntruso > 0 ? `+ ${data.totalIntruso} itens não contabilizados` : '✅ Nenhum intruso'}</div></div>
+        <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.totalNaoClassificado > 0 ? `⚠️ ${data.totalNaoClassificado} não classificados` : '✅ OK'}</div></div>
     `;
-    document.getElementById('footerTotalInventario').textContent = `${data.totalGeral} registros`;
+    document.getElementById('footerTotalInventario').textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
 
 function renderGraficos_Inventario(data) {
     try {
         if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; }
         if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; }
-    } catch(e) { console.warn('Erro ao destruir gráficos do inventário:', e); }
+    } catch(e) {}
     if (!data || data.zonas.length === 0) return;
     const labels = data.zonas.slice(0, 15).map(z => z.nome.length > 20 ? z.nome.substring(0, 18) + '...' : z.nome);
     const inventariado = data.zonas.slice(0, 15).map(z => z.inventariado);
@@ -2274,7 +2261,7 @@ function renderGraficos_Inventario(data) {
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 11 }, padding: 16 } } }, cutout: '60%' }
             });
         }
-    } catch(e) { console.warn('Erro ao criar gráficos do inventário:', e); }
+    } catch(e) {}
 }
 
 function renderZonas(data) {
@@ -2329,7 +2316,7 @@ async function carregarDadosInventario() {
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-        document.getElementById('footerTotalInventario').textContent = `${data.length} registros`;
+        document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
     } catch (error) {
         debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`;
         statusDot.className = 'dot-status offline';
@@ -2341,12 +2328,12 @@ async function carregarDadosInventario() {
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-        document.getElementById('footerTotalInventario').textContent = `${rawDataInventario.length} registros`;
+        document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
     }
 }
 
 // ================================================================
-//  CRUZAMENTO
+//  CRUZAMENTO (filtro corrigido)
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
@@ -2494,7 +2481,7 @@ async function carregarCruzamento() {
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-        document.getElementById('footerTotalInventario').textContent = `${inventario.length} registros`;
+        document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
         dadosCruzamento = realizarCruzamento(pacotes, inventario);
         renderCruzamento(dadosCruzamento);
         statusDot.className = 'dot-status online';
@@ -2519,7 +2506,6 @@ async function carregarTodosOsDados() {
         await carregarDadosInventario();
         await carregarCruzamento();
     } catch (error) {
-        console.error('Erro ao carregar dados:', error);
         carregarDadosExemplo();
     }
 }
@@ -2588,10 +2574,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loginBtn.onclick = autenticar;
     document.body.appendChild(loginBtn);
     
-    // Inicializa as abas
     initTabs();
     
-    // Estado inicial dos dashboards
     renderKPI_Pacotes(null);
     renderGraficos_Pacotes(null);
     renderTransportadoras(null);
@@ -2599,7 +2583,6 @@ document.addEventListener('DOMContentLoaded', function() {
     renderGraficos_Inventario(null);
     renderZonas(null);
     
-    // Inicializa OAuth (verifica token salvo)
     initOAuth();
 });
 
