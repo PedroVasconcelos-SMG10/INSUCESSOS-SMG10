@@ -301,10 +301,16 @@
   .transportadora-card{
     background:var(--panel);
     padding:18px 16px;
-    cursor:pointer;
     transition:background .2s;
   }
   .transportadora-card:hover{background:var(--panel-alt);}
+  /* Para viewers, não aplicar hover e cursor pointer */
+  .transportadora-card.viewer {
+    cursor: default !important;
+  }
+  .transportadora-card.viewer:hover {
+    background:var(--panel) !important;
+  }
   .transportadora-card .nome{
     font-family:'Oswald', sans-serif;
     font-size:16px;
@@ -1606,50 +1612,60 @@ let filtroTransportadorasResp = new Set();
 
 // ================================================================
 //  🔥 FUNÇÃO PARA GARANTIR QUE O USUÁRIO ESTEJA NA PLANILHA
-//  Se não existir, insere como viewer com transportadora vazia.
+//  (COM CRIAÇÃO AUTOMÁTICA DA ABA)
 // ================================================================
 async function garantirUsuarioNaPlanilha(email) {
     if (!email) return;
     try {
-        // Tenta ler a planilha USUARIOS
+        // 1. Verificar se a aba USUARIOS existe
+        let abaExiste = false;
+        try {
+            const spreadsheet = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const data = await spreadsheet.json();
+            const sheets = data.sheets || [];
+            abaExiste = sheets.some(s => s.properties.title === 'USUARIOS');
+        } catch (err) {
+            console.warn('Erro ao verificar abas:', err);
+        }
+
+        // 2. Se não existir, criar a aba
+        if (!abaExiste) {
+            const batchUpdate = {
+                requests: [{
+                    addSheet: {
+                        properties: { title: 'USUARIOS' }
+                    }
+                }]
+            };
+            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(batchUpdate)
+            });
+            console.log('✅ Aba USUARIOS criada com sucesso.');
+            
+            // Escreve o cabeçalho
+            await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
+            console.log('✅ Cabeçalho da aba USUARIOS criado.');
+        }
+
+        // 3. Ler os dados atuais
         let data;
         try {
             data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         } catch (err) {
-            // Se der erro 404 (planilha não encontrada), tentamos criar a aba?
-            // Por enquanto, apenas logamos e saímos.
-            console.warn('Aba USUARIOS não encontrada. O administrador deve criá-la.', err);
-            return;
-        }
-        // Se não houver dados ou apenas cabeçalho, vamos criar cabeçalho e depois inserir o usuário
-        if (!data || data.length === 0) {
-            // Cria cabeçalho e insere o primeiro usuário
+            console.warn('Erro ao ler USUARIOS, tentando recriar cabeçalho...', err);
+            // Se não conseguir ler, talvez a aba esteja vazia, escreve cabeçalho
             await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
-            // Agora insere o usuário na linha 2
-            await escreverPlanilhaOAuth('USUARIOS', 'A2:C2', [[email, 'viewer', '']]);
-            console.log(`✅ Usuário ${email} cadastrado como viewer (planilha criada).`);
-            return;
-        }
-        // Verifica se o cabeçalho está correto, se não, corrige?
-        const headerRow = data[0];
-        if (!headerRow || headerRow[0] !== 'EMAIL') {
-            // Se o cabeçalho não estiver no formato esperado, assume que a primeira linha é o cabeçalho e força
-            // Mas vamos apenas verificar se existe a coluna EMAIL
-            const emailIndex = headerRow ? headerRow.indexOf('EMAIL') : -1;
-            if (emailIndex === -1) {
-                // Se não encontrar, vamos reescrever o cabeçalho
-                await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
-                // e reinserir todos os dados? Isso seria drástico.
-                // Vamos apenas adicionar o usuário na próxima linha assumindo colunas A, B, C
-                // Mas precisamos saber quantas linhas existem
-                const nextRow = data.length + 1;
-                await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
-                console.log(`✅ Usuário ${email} cadastrado como viewer (cabeçalho corrigido).`);
-                return;
-            }
+            data = [['EMAIL', 'ROLE', 'TRANSPORTADORA']];
         }
 
-        // Verificar se o email já existe (case-insensitive)
+        // 4. Verificar se o email já existe (case-insensitive)
         let encontrado = false;
         for (let i = 1; i < data.length; i++) {
             const row = data[i];
@@ -1658,16 +1674,18 @@ async function garantirUsuarioNaPlanilha(email) {
                 break;
             }
         }
+
+        // 5. Se não existir, inserir novo usuário como viewer
         if (!encontrado) {
             const nextRow = data.length + 1;
             await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
-            console.log(`✅ Usuário ${email} cadastrado como viewer.`);
+            console.log(`✅ Usuário ${email} adicionado como viewer.`);
         } else {
             console.log(`ℹ️ Usuário ${email} já cadastrado.`);
         }
     } catch (error) {
-        console.error('Erro ao garantir usuário na planilha:', error);
-        // Não interrompe o fluxo, apenas loga.
+        console.error('❌ Erro ao garantir usuário na planilha:', error);
+        // Não interrompe o fluxo principal
     }
 }
 
@@ -1714,8 +1732,6 @@ async function carregarPermissoesDaPlanilha() {
             }
         }
         if (!encontrou) {
-            // Se o usuário não foi encontrado, significa que foi cadastrado agora?
-            // Vamos tentar ler novamente? Por segurança, definir como viewer.
             currentUserRole = 'viewer';
             usuarioTransportadora = null;
         }
@@ -1742,9 +1758,7 @@ async function getUserInfo() {
         if (data.email) {
             currentUserEmail = data.email;
             console.log('👤 Usuário logado:', currentUserEmail);
-            // 🔥 Primeiro, garante que o usuário está na planilha
             await garantirUsuarioNaPlanilha(currentUserEmail);
-            // 🔥 Depois, carrega as permissões
             await carregarPermissoesDaPlanilha();
             return data;
         }
@@ -2198,8 +2212,18 @@ function renderGraficos_Pacotes(data) {
 
 function renderTransportadoras(data) {
     const grid = document.getElementById('transportadorasGrid');
-    if (!data || data.transportadoras.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`; return; }
-    grid.innerHTML = data.transportadoras.map(t => `<div class="transportadora-card" onclick="abrirModalPacotes('${t.nome.replace(/'/g, "\\'")}')"><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div></div>`).join('');
+    if (!data || data.transportadoras.length === 0) {
+        grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
+        return;
+    }
+    // Verifica se o usuário é viewer
+    const isViewer = currentUserRole === 'viewer';
+    grid.innerHTML = data.transportadoras.map(t => {
+        // Se for viewer, não adiciona onclick e adiciona classe CSS para desabilitar clique
+        const onClickAttr = isViewer ? '' : `onclick="abrirModalPacotes('${t.nome.replace(/'/g, "\\'")}')"`;
+        const viewerClass = isViewer ? 'viewer' : '';
+        return `<div class="transportadora-card ${viewerClass}" ${onClickAttr}><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div></div>`;
+    }).join('');
 }
 
 function renderPreview_Pacotes(data) {
