@@ -290,6 +290,7 @@
     position:relative;
   }
 
+  /* 🔥 TRANSPORTADORAS GRID - COM BLOQUEIO PARA VIEWER */
   .transportadoras-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -302,14 +303,15 @@
     background:var(--panel);
     padding:18px 16px;
     transition:background .2s;
+    cursor:pointer;
   }
   .transportadora-card:hover{background:var(--panel-alt);}
-  /* Para viewers, não aplicar hover e cursor pointer */
-  .transportadora-card.viewer {
-    cursor: default !important;
+  .transportadora-card.blocked{
+    cursor:not-allowed;
+    opacity:0.7;
   }
-  .transportadora-card.viewer:hover {
-    background:var(--panel) !important;
+  .transportadora-card.blocked:hover{
+    background:var(--panel);
   }
   .transportadora-card .nome{
     font-family:'Oswald', sans-serif;
@@ -1611,8 +1613,8 @@ let filtroTransportadoras = new Set();
 let filtroTransportadorasResp = new Set();
 
 // ================================================================
-//  🔥 FUNÇÃO PARA GARANTIR QUE O USUÁRIO ESTEJA NA PLANILHA
-//  (COM CRIAÇÃO AUTOMÁTICA DA ABA)
+//  🔥 FUNÇÃO MELHORADA: GARANTIR QUE O USUÁRIO ESTEJA NA PLANILHA
+//  (CRIA A ABA SE NÃO EXISTIR, ESCREVE CABEÇALHO E INSERE O USUÁRIO)
 // ================================================================
 async function garantirUsuarioNaPlanilha(email) {
     if (!email) return;
@@ -1626,32 +1628,39 @@ async function garantirUsuarioNaPlanilha(email) {
             const data = await spreadsheet.json();
             const sheets = data.sheets || [];
             abaExiste = sheets.some(s => s.properties.title === 'USUARIOS');
+            console.log(`📋 Aba USUARIOS existe? ${abaExiste}`);
         } catch (err) {
             console.warn('Erro ao verificar abas:', err);
         }
 
         // 2. Se não existir, criar a aba
         if (!abaExiste) {
-            const batchUpdate = {
-                requests: [{
-                    addSheet: {
-                        properties: { title: 'USUARIOS' }
-                    }
-                }]
-            };
-            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(batchUpdate)
-            });
-            console.log('✅ Aba USUARIOS criada com sucesso.');
-            
-            // Escreve o cabeçalho
-            await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
-            console.log('✅ Cabeçalho da aba USUARIOS criado.');
+            try {
+                const batchUpdate = {
+                    requests: [{
+                        addSheet: {
+                            properties: { title: 'USUARIOS' }
+                        }
+                    }]
+                };
+                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(batchUpdate)
+                });
+                console.log('✅ Aba USUARIOS criada com sucesso.');
+                // Escreve o cabeçalho
+                await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
+                console.log('✅ Cabeçalho da aba USUARIOS criado.');
+                // Aguarda um momento para a planilha processar
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (err) {
+                console.error('❌ Erro ao criar aba USUARIOS:', err);
+                // Se não conseguir criar, talvez a planilha seja somente leitura? Vamos seguir.
+            }
         }
 
         // 3. Ler os dados atuais
@@ -1659,27 +1668,29 @@ async function garantirUsuarioNaPlanilha(email) {
         try {
             data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         } catch (err) {
-            console.warn('Erro ao ler USUARIOS, tentando recriar cabeçalho...', err);
-            // Se não conseguir ler, talvez a aba esteja vazia, escreve cabeçalho
+            console.warn('Erro ao ler USUARIOS, tentando criar cabeçalho...', err);
+            // Se não conseguir ler, tentamos escrever cabeçalho
             await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
             data = [['EMAIL', 'ROLE', 'TRANSPORTADORA']];
         }
 
         // 4. Verificar se o email já existe (case-insensitive)
         let encontrado = false;
-        for (let i = 1; i < data.length; i++) {
-            const row = data[i];
-            if (row[0] && row[0].trim().toLowerCase() === email.toLowerCase()) {
-                encontrado = true;
-                break;
+        if (data && data.length > 0) {
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (row && row[0] && row[0].trim().toLowerCase() === email.toLowerCase()) {
+                    encontrado = true;
+                    break;
+                }
             }
         }
 
         // 5. Se não existir, inserir novo usuário como viewer
         if (!encontrado) {
-            const nextRow = data.length + 1;
+            const nextRow = data ? data.length + 1 : 2;
             await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
-            console.log(`✅ Usuário ${email} adicionado como viewer.`);
+            console.log(`✅ Usuário ${email} adicionado como viewer na linha ${nextRow}.`);
         } else {
             console.log(`ℹ️ Usuário ${email} já cadastrado.`);
         }
@@ -1732,8 +1743,30 @@ async function carregarPermissoesDaPlanilha() {
             }
         }
         if (!encontrou) {
-            currentUserRole = 'viewer';
-            usuarioTransportadora = null;
+            // Se não encontrou, significa que o usuário acabou de ser cadastrado? 
+            // Vamos recarregar a planilha para garantir.
+            console.log('ℹ️ Usuário não encontrado após cadastro, tentando recarregar...');
+            const data2 = await lerPlanilhaOAuth('USUARIOS', 'A:C');
+            for (let i = 1; i < data2.length; i++) {
+                const row = data2[i];
+                const email = row[emailCol]?.trim() || '';
+                if (email === currentUserEmail) {
+                    const role = row[roleCol]?.trim().toLowerCase() || 'viewer';
+                    currentUserRole = role;
+                    if (transpCol !== -1) {
+                        const transp = row[transpCol]?.trim() || '';
+                        usuarioTransportadora = transp || null;
+                    } else {
+                        usuarioTransportadora = null;
+                    }
+                    encontrou = true;
+                    break;
+                }
+            }
+            if (!encontrou) {
+                currentUserRole = 'viewer';
+                usuarioTransportadora = null;
+            }
         }
         console.log(`📋 Permissões carregadas: role=${currentUserRole}, transportadora=${usuarioTransportadora || 'TODAS'}`);
         aplicarRestricoesPorPerfil();
@@ -1758,7 +1791,9 @@ async function getUserInfo() {
         if (data.email) {
             currentUserEmail = data.email;
             console.log('👤 Usuário logado:', currentUserEmail);
+            // 🔥 Primeiro, garante que o usuário está na planilha
             await garantirUsuarioNaPlanilha(currentUserEmail);
+            // 🔥 Depois, carrega as permissões
             await carregarPermissoesDaPlanilha();
             return data;
         }
@@ -2210,20 +2245,32 @@ function renderGraficos_Pacotes(data) {
     } catch(e) {}
 }
 
+// 🔥 RENDER TRANSPORTADORAS COM BLOQUEIO PARA VIEWER
 function renderTransportadoras(data) {
     const grid = document.getElementById('transportadorasGrid');
-    if (!data || data.transportadoras.length === 0) {
-        grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
-        return;
-    }
-    // Verifica se o usuário é viewer
+    if (!data || data.transportadoras.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`; return; }
+    
     const isViewer = currentUserRole === 'viewer';
+    
     grid.innerHTML = data.transportadoras.map(t => {
-        // Se for viewer, não adiciona onclick e adiciona classe CSS para desabilitar clique
-        const onClickAttr = isViewer ? '' : `onclick="abrirModalPacotes('${t.nome.replace(/'/g, "\\'")}')"`;
-        const viewerClass = isViewer ? 'viewer' : '';
-        return `<div class="transportadora-card ${viewerClass}" ${onClickAttr}><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div></div>`;
+        const cardClass = isViewer ? 'transportadora-card blocked' : 'transportadora-card';
+        const clickHandler = isViewer ? '' : `onclick="abrirModalPacotes('${t.nome.replace(/'/g, "\\'")}')"`;
+        const bloqueioMsg = isViewer ? '<span style="font-size:10px;color:var(--text-faint);display:block;margin-top:4px;">🔒 Acesso restrito</span>' : '';
+        return `<div class="${cardClass}" ${clickHandler}>
+            <div class="nome">${t.nome}</div>
+            <div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div>
+            ${bloqueioMsg}
+        </div>`;
     }).join('');
+    
+    // Se for viewer, adiciona evento de alerta ao clicar
+    if (isViewer) {
+        grid.querySelectorAll('.transportadora-card.blocked').forEach(card => {
+            card.addEventListener('click', function() {
+                alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
+            });
+        });
+    }
 }
 
 function renderPreview_Pacotes(data) {
@@ -2276,9 +2323,14 @@ async function carregarDadosPacotes() {
 }
 
 // ================================================================
-//  MODAL DE PACOTES (mantido)
+//  MODAL DE PACOTES (com verificação de permissão)
 // ================================================================
 function abrirModalPacotes(nome) {
+    // 🔥 Se for viewer, bloqueia
+    if (currentUserRole === 'viewer') {
+        alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
+        return;
+    }
     if (!processedDataPacotes) return;
     const t = processedDataPacotes.transportadoras.find(t => t.nome === nome);
     if (!t) return;
