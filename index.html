@@ -1245,6 +1245,21 @@
     letter-spacing:.04em;
   }
 
+  /* NOVO: Badge de perfil */
+  .role-badge {
+    margin-left: 10px;
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-block;
+  }
+  .role-badge.admin { background: var(--success); color: #fff; }
+  .role-badge.editor { background: var(--warning); color: #14161a; }
+  .role-badge.viewer { background: var(--text-faint); color: #fff; }
+
   @media (max-width:860px){
     .kpi-strip{grid-template-columns:1fr 1fr;}
     .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
@@ -1319,6 +1334,8 @@
         <span class="dot-status loading" id="statusDotPacotes"></span>
         <span id="statusTextPacotes">🔑 Clique em "Login com Google" para acessar os dados</span>
         <span id="recordCountPacotes" style="color:var(--text-faint);"></span>
+        <!-- BADGE DE PERFIL SERÁ INSERIDO AQUI PELO JS -->
+        <span id="roleBadgeContainer"></span>
       </div>
       <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
     </div>
@@ -1358,6 +1375,7 @@
         <span class="dot-status loading" id="statusDotInventario"></span>
         <span id="statusTextInventario">🔑 Clique em "Login com Google" para acessar os dados</span>
         <span id="recordCountInventario" style="color:var(--text-faint);"></span>
+        <span id="roleBadgeContainerInventario"></span>
       </div>
       <button class="btn btn-primary" id="refreshInventario">🔄 Atualizar</button>
     </div>
@@ -1397,6 +1415,7 @@
         <span class="dot-status loading" id="statusDotCruzamento"></span>
         <span id="statusTextCruzamento">🔑 Clique em "Login com Google" para acessar os dados</span>
         <span id="recordCountCruzamento" style="color:var(--text-faint);"></span>
+        <span id="roleBadgeContainerCruzamento"></span>
       </div>
       <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
     </div>
@@ -1506,12 +1525,19 @@
 //  CONFIGURAÇÃO OAuth 2.0
 // ================================================================
 const CLIENT_ID = '579820771518-347rvhvd3cic1h8nn1lb49rb9gejb20h.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+// 🔥 MODIFICADO: Incluído 'profile email' para pegar dados do usuário
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets profile email';
 const SPREADSHEET_ID = '1yNmMLDWijfqPh2u-90_BGr-kJk3kEdC8dF47DCowqvs';
 
 let tokenClient = null;
 let accessToken = null;
 let isAuthenticated = false;
+
+// ================================================================
+//  🔥 NOVO: VARIÁVEIS DE PERFIL E PERMISSÕES
+// ================================================================
+let currentUserEmail = '';
+let currentUserRole = 'viewer'; // padrão: visualizador
 
 // ================================================================
 //  DADOS DE EXEMPLO (FALLBACK)
@@ -1565,6 +1591,117 @@ let filtroTransportadoras = new Set();
 let filtroTransportadorasResp = new Set();
 
 // ================================================================
+//  🔥 NOVO: FUNÇÃO PARA BUSCAR INFORMAÇÕES DO USUÁRIO
+// ================================================================
+async function getUserInfo() {
+    if (!accessToken) return null;
+    try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        const data = await response.json();
+        if (data.email) {
+            currentUserEmail = data.email;
+            console.log('👤 Usuário logado:', currentUserEmail);
+            definirPermissoes(currentUserEmail);
+            return data;
+        }
+    } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+    }
+    return null;
+}
+
+// ================================================================
+//  🔥 NOVO: DEFINIÇÃO DE PERMISSÕES (HARDCODED)
+//  Edite os arrays abaixo com os e-mails dos usuários.
+// ================================================================
+function definirPermissoes(email) {
+    // 👇 Lista de e-mails que terão acesso ADMIN (total)
+    const admins = ['shamanoriginal@gmail.com', 'ext_pedrovas@mercadolivre.com'];
+    // 👇 Lista de e-mails que terão acesso EDITOR (pode responder)
+    const editores = ['antoniodonizete01@gmail.com', 'operador2@gmail.com'];
+
+    if (admins.includes(email)) {
+        currentUserRole = 'admin';
+    } else if (editores.includes(email)) {
+        currentUserRole = 'editor';
+    } else {
+        currentUserRole = 'viewer';
+    }
+
+    console.log(`🔒 Perfil definido: ${currentUserRole} para ${email}`);
+    aplicarRestricoesPorPerfil();
+}
+
+// ================================================================
+//  🔥 NOVO: APLICAR RESTRIÇÕES NA INTERFACE
+// ================================================================
+function aplicarRestricoesPorPerfil() {
+    console.log(`🔒 Aplicando restrições para perfil: ${currentUserRole}`);
+
+    // 1. Esconder a aba "Cruzamento" para VISUALIZADORES e EDITORES (se desejar)
+    //    Neste exemplo, apenas ADMIN vê a aba Cruzamento.
+    const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
+    if (currentUserRole === 'admin') {
+        if (tabCruzamento) tabCruzamento.style.display = 'block';
+    } else {
+        if (tabCruzamento) tabCruzamento.style.display = 'none';
+        // Se a aba Cruzamento estiver ativa e o usuário não é admin, mudar para Pacotes
+        const tabContentCruz = document.getElementById('tabCruzamento');
+        if (tabContentCruz && tabContentCruz.classList.contains('active')) {
+            document.querySelector('.tab-btn[data-tab="tabPacotes"]')?.click();
+        }
+    }
+
+    // 2. Bloquear a funcionalidade "Responder" para VISUALIZADORES
+    //    (a função será sobrescrita para verificar permissão)
+    const originalAbrirResposta = window.abrirModalResposta || function() {};
+    window.abrirModalResposta = function() {
+        if (currentUserRole === 'viewer') {
+            alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
+            return;
+        }
+        // Se for admin ou editor, chama a função original
+        originalAbrirResposta();
+    };
+
+    // 3. Atualizar o badge visual em todas as barras de status
+    const containers = [
+        document.getElementById('roleBadgeContainer'),
+        document.getElementById('roleBadgeContainerInventario'),
+        document.getElementById('roleBadgeContainerCruzamento')
+    ];
+    
+    const roleNames = {
+        'admin': '👑 Admin',
+        'editor': '📦 Operador',
+        'viewer': '👁️ Viewer'
+    };
+    const roleClasses = {
+        'admin': 'admin',
+        'editor': 'editor',
+        'viewer': 'viewer'
+    };
+
+    containers.forEach(container => {
+        if (!container) return;
+        // Remove badge antigo
+        container.innerHTML = '';
+        // Cria novo badge
+        const badge = document.createElement('span');
+        badge.className = `role-badge ${roleClasses[currentUserRole] || 'viewer'}`;
+        badge.textContent = roleNames[currentUserRole] || '👁️ Viewer';
+        // Adiciona também o e-mail (opcional)
+        badge.title = currentUserEmail;
+        container.appendChild(badge);
+    });
+
+    // 4. (Opcional) Desabilitar botões de envio de resposta se viewer
+    //    O botão é recriado dinamicamente, mas a função já está bloqueada.
+}
+
+// ================================================================
 //  VERIFICAÇÃO DE ORIGEM
 // ================================================================
 function isFileProtocol() { return window.location.protocol === 'file:'; }
@@ -1615,6 +1752,8 @@ function logout() {
     sessionStorage.removeItem('accessToken');
     accessToken = null;
     isAuthenticated = false;
+    currentUserEmail = '';
+    currentUserRole = 'viewer';
     const btn = document.getElementById('loginBtn');
     if (btn) {
         btn.textContent = '🔑 Login com Google';
@@ -1626,6 +1765,9 @@ function logout() {
     document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
     document.getElementById('statusDotPacotes').className = 'dot-status loading';
     carregarDadosExemplo();
+    // Remove badges
+    document.querySelectorAll('#roleBadgeContainer, #roleBadgeContainerInventario, #roleBadgeContainerCruzamento')
+        .forEach(el => { if(el) el.innerHTML = ''; });
 }
 
 // ================================================================
@@ -1641,7 +1783,10 @@ function initOAuth() {
         document.getElementById('statusDotPacotes').className = 'dot-status online';
         const btn = document.getElementById('loginBtn');
         if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
-        carregarTodosOsDados();
+        // 🔥 Busca perfil e carrega dados
+        getUserInfo().then(() => {
+            carregarTodosOsDados();
+        });
         return;
     }
     
@@ -1689,7 +1834,10 @@ function initOAuth() {
                 document.getElementById('statusDotPacotes').className = 'dot-status online';
                 const btn = document.getElementById('loginBtn');
                 if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
-                carregarTodosOsDados();
+                // 🔥 Busca perfil e carrega dados
+                getUserInfo().then(() => {
+                    carregarTodosOsDados();
+                });
             }
         });
     } catch (error) {
@@ -1732,6 +1880,8 @@ function carregarDadosExemplo() {
     document.getElementById('statusTextPacotes').textContent = '📊 Exibindo dados de exemplo (fallback)';
     document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
     document.getElementById('statusDotPacotes').className = 'dot-status offline';
+    // Aplica restrições mesmo no fallback (se já tiver perfil)
+    aplicarRestricoesPorPerfil();
 }
 
 // ================================================================
@@ -1743,7 +1893,6 @@ async function lerPlanilhaOAuth(aba, range) {
     const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
     if (!response.ok) {
         const error = await response.json();
-        // Se o token for inválido, fazer logout
         if (response.status === 401) {
             console.warn('Token inválido. Fazendo logout...');
             logout();
@@ -1789,7 +1938,7 @@ async function escreverPlanilhaOAuth(aba, range, values) {
 }
 
 // ================================================================
-//  PACOTES (mesmo código anterior, mantido)
+//  PACOTES (funções originais mantidas)
 // ================================================================
 function processarDadosPacotes(data) {
     const transportadoras = {}, subTransportadoras = {};
@@ -1950,7 +2099,7 @@ async function carregarDadosPacotes() {
 }
 
 // ================================================================
-//  MODAL DE PACOTES (paginação mantida - resumido)
+//  MODAL DE PACOTES (paginação mantida)
 // ================================================================
 function abrirModalPacotes(nome) {
     if (!processedDataPacotes) return;
@@ -2017,7 +2166,10 @@ function renderizarPaginaModal(t, page) {
         motoristasSelecionados = {};
         atualizarSelecao();
     });
-    document.getElementById('btnAbrirResposta').addEventListener('click', function() { abrirModalResposta(); });
+    document.getElementById('btnAbrirResposta').addEventListener('click', function() { 
+        // 🔥 Chama a função sobrescrita que verifica permissão
+        window.abrirModalResposta(); 
+    });
     const btnCarregarMais = document.getElementById('btnCarregarMais');
     if (btnCarregarMais) {
         btnCarregarMais.addEventListener('click', function() { modalCurrentPage++; renderizarPaginaModal(t, modalCurrentPage); });
@@ -2060,7 +2212,8 @@ function atualizarSelecao() {
 // ================================================================
 //  RESPOSTAS (mantido)
 // ================================================================
-function abrirModalResposta() {
+// 🔥 Função original renomeada para ser chamada pela sobrescrita
+const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
     const ids = Array.from(idsSelecionados);
     const motoristas = ids.map(id => motoristasSelecionados[id] || 'N/A');
@@ -2074,8 +2227,18 @@ function abrirModalResposta() {
     document.getElementById('respostaStatus').textContent = '';
     document.getElementById('respostaStatus').className = 'status-msg';
     document.getElementById('respostaModalOverlay').classList.add('active');
-}
+};
 
+// 🔥 Sobrescreve a função global com verificação de permissão
+window.abrirModalResposta = function() {
+    if (currentUserRole === 'viewer') {
+        alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
+        return;
+    }
+    originalAbrirResposta();
+};
+
+// Event listener do envio de resposta (mantido)
 document.getElementById('respostaEnviar').addEventListener('click', async function() {
     const nome = document.getElementById('respostaNome').value.trim();
     const justificativa = document.getElementById('respostaJustificativa').value.trim();
@@ -2185,7 +2348,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ================================================================
-//  INVENTÁRIO - CORRIGIDO (INTRUSOS EXCLUÍDOS DO TOTAL)
+//  INVENTÁRIO
 // ================================================================
 function processarDadosInventario(data) {
     const zonas = {};
@@ -2216,10 +2379,9 @@ function processarDadosInventario(data) {
         } else {
             totalNaoClassificado++;
         }
-        zonas[zona].total++; // total da zona inclui todos os tipos
+        zonas[zona].total++;
     });
     
-    // Total geral de itens = inventariados + faltantes (exclui intrusos e não classificados)
     const totalGeral = totalInventariado + totalFaltante;
     
     const zonaList = Object.values(zonas).map(z => ({
@@ -2255,7 +2417,7 @@ function renderKPI_Inventario(data) {
         return;
     }
     
-    const totalBase = data.totalGeral; // apenas inventariados + faltantes
+    const totalBase = data.totalGeral;
     grid.innerHTML = `
         <div class="kpi"><div class="tag">📦 Total de Itens</div><div class="num">${totalBase}</div><div class="sub">${data.zonas.length} zonas</div></div>
         <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">${data.totalInventariado}</div><div class="sub">${(totalBase > 0 ? (data.totalInventariado / totalBase * 100) : 0).toFixed(1)}% do total</div></div>
@@ -2369,7 +2531,7 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  CRUZAMENTO (com tratamento de erro de autenticação)
+//  CRUZAMENTO
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
