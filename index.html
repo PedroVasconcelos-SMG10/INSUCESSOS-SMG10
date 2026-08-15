@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
+  /* ===== ESTILOS (mesmo código anterior, mantido) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1245,7 +1246,6 @@
     letter-spacing:.04em;
   }
 
-  /* NOVO: Badge de perfil */
   .role-badge {
     margin-left: 10px;
     padding: 2px 12px;
@@ -1259,6 +1259,20 @@
   .role-badge.admin { background: var(--success); color: #fff; }
   .role-badge.editor { background: var(--warning); color: #14161a; }
   .role-badge.viewer { background: var(--text-faint); color: #fff; }
+  .role-badge.transportadora { background: var(--cruzamento); color: #fff; }
+
+  .filter-info-transp {
+    background: var(--panel-alt);
+    border-left: 3px solid var(--cruzamento);
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: inline-block;
+    margin-left: 8px;
+  }
+  .filter-info-transp strong { color: var(--text); }
 
   @media (max-width:860px){
     .kpi-strip{grid-template-columns:1fr 1fr;}
@@ -1334,8 +1348,8 @@
         <span class="dot-status loading" id="statusDotPacotes"></span>
         <span id="statusTextPacotes">🔑 Clique em "Login com Google" para acessar os dados</span>
         <span id="recordCountPacotes" style="color:var(--text-faint);"></span>
-        <!-- BADGE DE PERFIL SERÁ INSERIDO AQUI PELO JS -->
         <span id="roleBadgeContainer"></span>
+        <span id="filterInfoTransp" class="filter-info-transp" style="display:none;"></span>
       </div>
       <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
     </div>
@@ -1525,7 +1539,6 @@
 //  CONFIGURAÇÃO OAuth 2.0
 // ================================================================
 const CLIENT_ID = '579820771518-347rvhvd3cic1h8nn1lb49rb9gejb20h.apps.googleusercontent.com';
-// 🔥 MODIFICADO: Incluído 'profile email' para pegar dados do usuário
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets profile email';
 const SPREADSHEET_ID = '1yNmMLDWijfqPh2u-90_BGr-kJk3kEdC8dF47DCowqvs';
 
@@ -1534,10 +1547,11 @@ let accessToken = null;
 let isAuthenticated = false;
 
 // ================================================================
-//  🔥 NOVO: VARIÁVEIS DE PERFIL E PERMISSÕES
+//  VARIÁVEIS DE PERFIL E PERMISSÕES
 // ================================================================
 let currentUserEmail = '';
-let currentUserRole = 'viewer'; // padrão: visualizador
+let currentUserRole = 'viewer';
+let usuarioTransportadora = null;
 
 // ================================================================
 //  DADOS DE EXEMPLO (FALLBACK)
@@ -1591,7 +1605,132 @@ let filtroTransportadoras = new Set();
 let filtroTransportadorasResp = new Set();
 
 // ================================================================
-//  🔥 NOVO: FUNÇÃO PARA BUSCAR INFORMAÇÕES DO USUÁRIO
+//  🔥 FUNÇÃO PARA GARANTIR QUE O USUÁRIO ESTEJA NA PLANILHA
+//  Se não existir, insere como viewer com transportadora vazia.
+// ================================================================
+async function garantirUsuarioNaPlanilha(email) {
+    if (!email) return;
+    try {
+        // Tenta ler a planilha USUARIOS
+        let data;
+        try {
+            data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
+        } catch (err) {
+            // Se der erro 404 (planilha não encontrada), tentamos criar a aba?
+            // Por enquanto, apenas logamos e saímos.
+            console.warn('Aba USUARIOS não encontrada. O administrador deve criá-la.', err);
+            return;
+        }
+        // Se não houver dados ou apenas cabeçalho, vamos criar cabeçalho e depois inserir o usuário
+        if (!data || data.length === 0) {
+            // Cria cabeçalho e insere o primeiro usuário
+            await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
+            // Agora insere o usuário na linha 2
+            await escreverPlanilhaOAuth('USUARIOS', 'A2:C2', [[email, 'viewer', '']]);
+            console.log(`✅ Usuário ${email} cadastrado como viewer (planilha criada).`);
+            return;
+        }
+        // Verifica se o cabeçalho está correto, se não, corrige?
+        const headerRow = data[0];
+        if (!headerRow || headerRow[0] !== 'EMAIL') {
+            // Se o cabeçalho não estiver no formato esperado, assume que a primeira linha é o cabeçalho e força
+            // Mas vamos apenas verificar se existe a coluna EMAIL
+            const emailIndex = headerRow ? headerRow.indexOf('EMAIL') : -1;
+            if (emailIndex === -1) {
+                // Se não encontrar, vamos reescrever o cabeçalho
+                await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
+                // e reinserir todos os dados? Isso seria drástico.
+                // Vamos apenas adicionar o usuário na próxima linha assumindo colunas A, B, C
+                // Mas precisamos saber quantas linhas existem
+                const nextRow = data.length + 1;
+                await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
+                console.log(`✅ Usuário ${email} cadastrado como viewer (cabeçalho corrigido).`);
+                return;
+            }
+        }
+
+        // Verificar se o email já existe (case-insensitive)
+        let encontrado = false;
+        for (let i = 1; i < data.length; i++) {
+            const row = data[i];
+            if (row[0] && row[0].trim().toLowerCase() === email.toLowerCase()) {
+                encontrado = true;
+                break;
+            }
+        }
+        if (!encontrado) {
+            const nextRow = data.length + 1;
+            await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
+            console.log(`✅ Usuário ${email} cadastrado como viewer.`);
+        } else {
+            console.log(`ℹ️ Usuário ${email} já cadastrado.`);
+        }
+    } catch (error) {
+        console.error('Erro ao garantir usuário na planilha:', error);
+        // Não interrompe o fluxo, apenas loga.
+    }
+}
+
+// ================================================================
+//  FUNÇÃO PARA CARREGAR PERMISSÕES DA PLANILHA
+// ================================================================
+async function carregarPermissoesDaPlanilha() {
+    if (!accessToken) return;
+    try {
+        const data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
+        if (!data || data.length < 2) {
+            console.warn('Planilha USUARIOS vazia ou não encontrada. Usando permissão padrão (viewer).');
+            currentUserRole = 'viewer';
+            usuarioTransportadora = null;
+            aplicarRestricoesPorPerfil();
+            return;
+        }
+        const headers = data[0];
+        const emailCol = headers.indexOf('EMAIL');
+        const roleCol = headers.indexOf('ROLE');
+        const transpCol = headers.indexOf('TRANSPORTADORA');
+        if (emailCol === -1 || roleCol === -1) {
+            console.warn('Colunas EMAIL ou ROLE não encontradas na planilha USUARIOS. Usando padrão.');
+            currentUserRole = 'viewer';
+            usuarioTransportadora = null;
+            aplicarRestricoesPorPerfil();
+            return;
+        }
+        let encontrou = false;
+        for (let i = 1; i < data.length; i++) {
+            const row = data[i];
+            const email = row[emailCol]?.trim() || '';
+            if (email === currentUserEmail) {
+                const role = row[roleCol]?.trim().toLowerCase() || 'viewer';
+                currentUserRole = role;
+                if (transpCol !== -1) {
+                    const transp = row[transpCol]?.trim() || '';
+                    usuarioTransportadora = transp || null;
+                } else {
+                    usuarioTransportadora = null;
+                }
+                encontrou = true;
+                break;
+            }
+        }
+        if (!encontrou) {
+            // Se o usuário não foi encontrado, significa que foi cadastrado agora?
+            // Vamos tentar ler novamente? Por segurança, definir como viewer.
+            currentUserRole = 'viewer';
+            usuarioTransportadora = null;
+        }
+        console.log(`📋 Permissões carregadas: role=${currentUserRole}, transportadora=${usuarioTransportadora || 'TODAS'}`);
+        aplicarRestricoesPorPerfil();
+    } catch (error) {
+        console.error('Erro ao carregar permissões da planilha:', error);
+        currentUserRole = 'viewer';
+        usuarioTransportadora = null;
+        aplicarRestricoesPorPerfil();
+    }
+}
+
+// ================================================================
+//  FUNÇÃO PARA BUSCAR INFORMAÇÕES DO USUÁRIO
 // ================================================================
 async function getUserInfo() {
     if (!accessToken) return null;
@@ -1603,7 +1742,10 @@ async function getUserInfo() {
         if (data.email) {
             currentUserEmail = data.email;
             console.log('👤 Usuário logado:', currentUserEmail);
-            definirPermissoes(currentUserEmail);
+            // 🔥 Primeiro, garante que o usuário está na planilha
+            await garantirUsuarioNaPlanilha(currentUserEmail);
+            // 🔥 Depois, carrega as permissões
+            await carregarPermissoesDaPlanilha();
             return data;
         }
     } catch (error) {
@@ -1613,66 +1755,39 @@ async function getUserInfo() {
 }
 
 // ================================================================
-//  🔥 NOVO: DEFINIÇÃO DE PERMISSÕES (HARDCODED)
-//  Edite os arrays abaixo com os e-mails dos usuários.
-// ================================================================
-function definirPermissoes(email) {
-    // 👇 Lista de e-mails que terão acesso ADMIN (total)
-    const admins = ['shamamoriginal@gmail.com', 'ext_pedrovas@mercadolivre.com','leticiasousa.aaraujo@gmail.com'];
-    // 👇 Lista de e-mails que terão acesso EDITOR (pode responder)
-    const editores = ['antoniodonizete01@gmail.com', 'operador2@gmail.com'];
-
-    if (admins.includes(email)) {
-        currentUserRole = 'admin';
-    } else if (editores.includes(email)) {
-        currentUserRole = 'editor';
-    } else {
-        currentUserRole = 'viewer';
-    }
-
-    console.log(`🔒 Perfil definido: ${currentUserRole} para ${email}`);
-    aplicarRestricoesPorPerfil();
-}
-
-// ================================================================
-//  🔥 NOVO: APLICAR RESTRIÇÕES NA INTERFACE
+//  APLICAR RESTRIÇÕES NA INTERFACE
 // ================================================================
 function aplicarRestricoesPorPerfil() {
-    console.log(`🔒 Aplicando restrições para perfil: ${currentUserRole}`);
+    console.log(`🔒 Aplicando restrições: role=${currentUserRole}, transp=${usuarioTransportadora || 'TODAS'}`);
 
-    // 1. Esconder a aba "Cruzamento" para VISUALIZADORES e EDITORES (se desejar)
-    //    Neste exemplo, apenas ADMIN vê a aba Cruzamento.
+    // 1. Esconder aba Cruzamento para não-admins
     const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
     if (currentUserRole === 'admin') {
         if (tabCruzamento) tabCruzamento.style.display = 'block';
     } else {
         if (tabCruzamento) tabCruzamento.style.display = 'none';
-        // Se a aba Cruzamento estiver ativa e o usuário não é admin, mudar para Pacotes
         const tabContentCruz = document.getElementById('tabCruzamento');
         if (tabContentCruz && tabContentCruz.classList.contains('active')) {
             document.querySelector('.tab-btn[data-tab="tabPacotes"]')?.click();
         }
     }
 
-    // 2. Bloquear a funcionalidade "Responder" para VISUALIZADORES
-    //    (a função será sobrescrita para verificar permissão)
+    // 2. Bloquear "Responder" para viewers
     const originalAbrirResposta = window.abrirModalResposta || function() {};
     window.abrirModalResposta = function() {
         if (currentUserRole === 'viewer') {
             alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
             return;
         }
-        // Se for admin ou editor, chama a função original
         originalAbrirResposta();
     };
 
-    // 3. Atualizar o badge visual em todas as barras de status
+    // 3. Atualizar badges
     const containers = [
         document.getElementById('roleBadgeContainer'),
         document.getElementById('roleBadgeContainerInventario'),
         document.getElementById('roleBadgeContainerCruzamento')
     ];
-    
     const roleNames = {
         'admin': '👑 Admin',
         'editor': '📦 Operador',
@@ -1683,22 +1798,71 @@ function aplicarRestricoesPorPerfil() {
         'editor': 'editor',
         'viewer': 'viewer'
     };
-
     containers.forEach(container => {
         if (!container) return;
-        // Remove badge antigo
         container.innerHTML = '';
-        // Cria novo badge
         const badge = document.createElement('span');
         badge.className = `role-badge ${roleClasses[currentUserRole] || 'viewer'}`;
         badge.textContent = roleNames[currentUserRole] || '👁️ Viewer';
-        // Adiciona também o e-mail (opcional)
         badge.title = currentUserEmail;
         container.appendChild(badge);
     });
 
-    // 4. (Opcional) Desabilitar botões de envio de resposta se viewer
-    //    O botão é recriado dinamicamente, mas a função já está bloqueada.
+    // 4. Mostrar filtro de transportadora (se tiver uma específica)
+    const filterInfo = document.getElementById('filterInfoTransp');
+    if (usuarioTransportadora) {
+        filterInfo.style.display = 'inline-block';
+        filterInfo.innerHTML = `🚚 <strong>${usuarioTransportadora}</strong> (filtro automático)`;
+    } else {
+        filterInfo.style.display = 'none';
+    }
+
+    // 5. Recarregar dados para aplicar filtro (se já autenticado)
+    if (isAuthenticated && rawDataPacotes) {
+        processarPacotesComFiltro();
+    }
+}
+
+// ================================================================
+//  FUNÇÃO PARA PROCESSAR PACOTES COM FILTRO DE TRANSPORTADORA
+// ================================================================
+function processarPacotesComFiltro() {
+    if (!rawDataPacotes || rawDataPacotes.length === 0) return;
+    let dadosFiltrados = rawDataPacotes;
+    if (usuarioTransportadora) {
+        dadosFiltrados = rawDataPacotes.filter(row => {
+            let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
+            const normTransp = transp.trim().toUpperCase();
+            const normUser = usuarioTransportadora.trim().toUpperCase();
+            if (normUser === 'ENVIOS EXTRA') {
+                return normTransp.includes('ENVIOS EXTRA');
+            }
+            return normTransp === normUser;
+        });
+    }
+    processedDataPacotes = processarDadosPacotes(dadosFiltrados);
+    renderKPI_Pacotes(processedDataPacotes);
+    renderGraficos_Pacotes(processedDataPacotes);
+    renderTransportadoras(processedDataPacotes);
+    renderPreview_Pacotes(dadosFiltrados);
+
+    const total = dadosFiltrados.length;
+    document.getElementById('statusTextPacotes').textContent = `✅ ${total} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
+    document.getElementById('statusTextPacotes').style.color = 'var(--success)';
+    document.getElementById('statusDotPacotes').className = 'dot-status online';
+    document.getElementById('recordCountPacotes').textContent = `📦 ${total} registros`;
+    document.getElementById('footerTotalPacotes').textContent = `${total} registros`;
+
+    if (usuarioTransportadora) {
+        const filterInfo = document.getElementById('filterInfoTransp');
+        filterInfo.style.display = 'inline-block';
+        filterInfo.innerHTML = `🚚 <strong>${usuarioTransportadora}</strong> (filtro automático)`;
+    }
+
+    if (rawDataInventario) {
+        dadosCruzamento = realizarCruzamento(dadosFiltrados, rawDataInventario);
+        renderCruzamento(dadosCruzamento);
+    }
 }
 
 // ================================================================
@@ -1723,7 +1887,6 @@ function initTabs() {
             const targetContent = document.getElementById(targetId);
             if (targetContent) targetContent.classList.add('active');
             
-            // Mostrar/ocultar botão de filtro flutuante
             const filterBtn = document.getElementById('filterFloatBtn');
             if (filterBtn) {
                 if (targetId === 'tabCruzamento') {
@@ -1754,6 +1917,7 @@ function logout() {
     isAuthenticated = false;
     currentUserEmail = '';
     currentUserRole = 'viewer';
+    usuarioTransportadora = null;
     const btn = document.getElementById('loginBtn');
     if (btn) {
         btn.textContent = '🔑 Login com Google';
@@ -1765,9 +1929,9 @@ function logout() {
     document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
     document.getElementById('statusDotPacotes').className = 'dot-status loading';
     carregarDadosExemplo();
-    // Remove badges
-    document.querySelectorAll('#roleBadgeContainer, #roleBadgeContainerInventario, #roleBadgeContainerCruzamento')
+    document.querySelectorAll('#roleBadgeContainer, #roleBadgeContainerInventario, #roleBadgeContainerCruzamento, #filterInfoTransp')
         .forEach(el => { if(el) el.innerHTML = ''; });
+    document.getElementById('filterInfoTransp').style.display = 'none';
 }
 
 // ================================================================
@@ -1783,7 +1947,6 @@ function initOAuth() {
         document.getElementById('statusDotPacotes').className = 'dot-status online';
         const btn = document.getElementById('loginBtn');
         if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
-        // 🔥 Busca perfil e carrega dados
         getUserInfo().then(() => {
             carregarTodosOsDados();
         });
@@ -1834,7 +1997,6 @@ function initOAuth() {
                 document.getElementById('statusDotPacotes').className = 'dot-status online';
                 const btn = document.getElementById('loginBtn');
                 if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
-                // 🔥 Busca perfil e carrega dados
                 getUserInfo().then(() => {
                     carregarTodosOsDados();
                 });
@@ -1870,17 +2032,30 @@ function autenticar() {
 function carregarDadosExemplo() {
     rawDataPacotes = DADOS_EXEMPLO_PACOTES;
     rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
-    processarPacotes();
+    let dadosPacotes = rawDataPacotes;
+    if (usuarioTransportadora) {
+        dadosPacotes = rawDataPacotes.filter(row => {
+            let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
+            const normTransp = transp.trim().toUpperCase();
+            const normUser = usuarioTransportadora.trim().toUpperCase();
+            if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
+            return normTransp === normUser;
+        });
+    }
+    processedDataPacotes = processarDadosPacotes(dadosPacotes);
+    renderKPI_Pacotes(processedDataPacotes);
+    renderGraficos_Pacotes(processedDataPacotes);
+    renderTransportadoras(processedDataPacotes);
+    renderPreview_Pacotes(dadosPacotes);
     processedDataInventario = processarDadosInventario(rawDataInventario);
     renderKPI_Inventario(processedDataInventario);
     renderGraficos_Inventario(processedDataInventario);
     renderZonas(processedDataInventario);
-    dadosCruzamento = realizarCruzamento(rawDataPacotes, rawDataInventario);
+    dadosCruzamento = realizarCruzamento(dadosPacotes, rawDataInventario);
     renderCruzamento(dadosCruzamento);
     document.getElementById('statusTextPacotes').textContent = '📊 Exibindo dados de exemplo (fallback)';
     document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
     document.getElementById('statusDotPacotes').className = 'dot-status offline';
-    // Aplica restrições mesmo no fallback (se já tiver perfil)
     aplicarRestricoesPorPerfil();
 }
 
@@ -1938,7 +2113,7 @@ async function escreverPlanilhaOAuth(aba, range, values) {
 }
 
 // ================================================================
-//  PACOTES (funções originais mantidas)
+//  PACOTES (funções adaptadas)
 // ================================================================
 function processarDadosPacotes(data) {
     const transportadoras = {}, subTransportadoras = {};
@@ -2048,23 +2223,6 @@ function renderPreview_Pacotes(data) {
     preview.innerHTML = html;
 }
 
-function processarPacotes() {
-    if (!rawDataPacotes || rawDataPacotes.length === 0) return;
-    try {
-        processedDataPacotes = processarDadosPacotes(rawDataPacotes);
-        renderKPI_Pacotes(processedDataPacotes);
-        renderGraficos_Pacotes(processedDataPacotes);
-        renderTransportadoras(processedDataPacotes);
-        document.getElementById('statusTextPacotes').textContent = `✅ ${processedDataPacotes.totalGeral} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
-        document.getElementById('statusTextPacotes').style.color = 'var(--success)';
-        document.getElementById('statusDotPacotes').className = 'dot-status online';
-    } catch(err) {
-        document.getElementById('statusTextPacotes').textContent = '❌ Erro ao processar pacotes';
-        document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
-        document.getElementById('statusDotPacotes').className = 'dot-status offline';
-    }
-}
-
 async function carregarDadosPacotes() {
     const statusDot = document.getElementById('statusDotPacotes');
     const statusText = document.getElementById('statusTextPacotes');
@@ -2081,11 +2239,7 @@ async function carregarDadosPacotes() {
         rawDataPacotes = data;
         debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Cabeçalhos:</span> <span class="value">${Object.keys(data[0] || {}).join(', ')}</span></div>`;
         statusDot.className = 'dot-status online';
-        statusText.textContent = `✅ ${data.length} registros carregados`;
-        statusText.style.color = 'var(--success)';
-        recordCount.textContent = `📦 ${data.length} registros`;
-        renderPreview_Pacotes(data);
-        processarPacotes();
+        processarPacotesComFiltro();
     } catch (error) {
         debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`;
         statusDot.className = 'dot-status offline';
@@ -2093,13 +2247,12 @@ async function carregarDadosPacotes() {
         statusText.style.color = 'var(--danger)';
         preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataPacotes = DADOS_EXEMPLO_PACOTES;
-        renderPreview_Pacotes(rawDataPacotes);
-        processarPacotes();
+        processarPacotesComFiltro();
     }
 }
 
 // ================================================================
-//  MODAL DE PACOTES (paginação mantida)
+//  MODAL DE PACOTES (mantido)
 // ================================================================
 function abrirModalPacotes(nome) {
     if (!processedDataPacotes) return;
@@ -2167,7 +2320,6 @@ function renderizarPaginaModal(t, page) {
         atualizarSelecao();
     });
     document.getElementById('btnAbrirResposta').addEventListener('click', function() { 
-        // 🔥 Chama a função sobrescrita que verifica permissão
         window.abrirModalResposta(); 
     });
     const btnCarregarMais = document.getElementById('btnCarregarMais');
@@ -2210,9 +2362,8 @@ function atualizarSelecao() {
 }
 
 // ================================================================
-//  RESPOSTAS (mantido)
+//  RESPOSTAS (com verificação de permissão)
 // ================================================================
-// 🔥 Função original renomeada para ser chamada pela sobrescrita
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
     const ids = Array.from(idsSelecionados);
@@ -2229,7 +2380,6 @@ const originalAbrirResposta = function() {
     document.getElementById('respostaModalOverlay').classList.add('active');
 };
 
-// 🔥 Sobrescreve a função global com verificação de permissão
 window.abrirModalResposta = function() {
     if (currentUserRole === 'viewer') {
         alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
@@ -2237,115 +2387,6 @@ window.abrirModalResposta = function() {
     }
     originalAbrirResposta();
 };
-
-// Event listener do envio de resposta (mantido)
-document.getElementById('respostaEnviar').addEventListener('click', async function() {
-    const nome = document.getElementById('respostaNome').value.trim();
-    const justificativa = document.getElementById('respostaJustificativa').value.trim();
-    const motorista = document.getElementById('respostaMotorista').value.trim();
-    const statusEl = document.getElementById('respostaStatus');
-    if (!nome) { statusEl.textContent = '⚠️ Por favor, preencha seu nome.'; statusEl.className = 'status-msg error'; return; }
-    if (!justificativa) { statusEl.textContent = '⚠️ Por favor, preencha a justificativa.'; statusEl.className = 'status-msg error'; return; }
-    const ids = Array.from(idsSelecionados);
-    const transportadora = modalTransportadora ? modalTransportadora.nome : '';
-    const dataAtual = new Date().toLocaleString('pt-BR');
-    const dadosResposta = ids.map(id => ({ ID: id, Transportadora: transportadora, Motorista: motorista || motoristasSelecionados[id] || 'N/A', Nome_Responsavel: nome, Justificativa: justificativa, Data_Hora: dataAtual }));
-    statusEl.textContent = '⏳ Enviando dados para a planilha...';
-    statusEl.className = 'status-msg loading';
-    this.disabled = true;
-    try {
-        const rows = dadosResposta.map(d => [d.ID, d.Transportadora, d.Motorista, d.Nome_Responsavel, d.Justificativa, d.Data_Hora]);
-        const readUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/RESPOSTAS!A:A`;
-        const readResponse = await fetch(readUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
-        const readData = await readResponse.json();
-        let nextRow = 2;
-        if (readData.values && readData.values.length > 0) nextRow = readData.values.length + 1;
-        await escreverPlanilhaOAuth('RESPOSTAS', `A${nextRow}:F${nextRow + rows.length - 1}`, rows);
-        statusEl.textContent = '✅ Respostas enviadas com sucesso!';
-        statusEl.className = 'status-msg success';
-        setTimeout(() => {
-            document.getElementById('respostaModalOverlay').classList.remove('active');
-            document.getElementById('modalOverlay').classList.remove('active');
-            idsSelecionados.clear();
-            motoristasSelecionados = {};
-            this.disabled = false;
-        }, 1500);
-    } catch (error) {
-        statusEl.textContent = `❌ Erro: ${error.message}`;
-        statusEl.className = 'status-msg error';
-        this.disabled = false;
-        console.error('Erro ao enviar respostas:', error);
-    }
-});
-
-document.getElementById('respostaCancelar').addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
-document.getElementById('respostaModalClose').addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
-document.getElementById('respostaModalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-
-// ================================================================
-//  CÓPIA
-// ================================================================
-document.getElementById('modalCopy').addEventListener('click', function() {
-    const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
-    if (!ids || ids.length === 0) return;
-    const text = ids.join('\n');
-    navigator.clipboard.writeText(text).then(() => {
-        this.textContent = '✅ Copiado!';
-        this.className = 'btn-copy copied';
-        setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000);
-    }).catch(() => {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        this.textContent = '✅ Copiado!';
-        this.className = 'btn-copy copied';
-        setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000);
-    });
-});
-
-document.getElementById('modalCopyAll').addEventListener('click', function() {
-    const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
-    const valores = window._valoresFiltrados || (modalTransportadora ? modalTransportadora.valores : []);
-    const motoristas = window._motoristasFiltrados || (modalTransportadora ? modalTransportadora.motoristas : []);
-    if (!ids || ids.length === 0) return;
-    const text = ids.map((id, index) => {
-        const valor = valores[index] || 0;
-        const motorista = motoristas[index] || 'N/A';
-        const motoristaStr = motorista !== 'N/A' ? ` - ${motorista}` : '';
-        return `${String(index + 1).padStart(3, '0')} - ${id} - R$ ${valor.toFixed(2)}${motoristaStr}`;
-    }).join('\n');
-    navigator.clipboard.writeText(text).then(() => {
-        this.textContent = '✅ Copiado!';
-        this.className = 'btn-copy-all copied';
-        setTimeout(() => { this.textContent = '📋 Copiar todos (com IDs)'; this.className = 'btn-copy-all'; }, 2000);
-    }).catch(() => {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        this.textContent = '✅ Copiado!';
-        this.className = 'btn-copy-all copied';
-        setTimeout(() => { this.textContent = '📋 Copiar todos (com IDs)'; this.className = 'btn-copy-all'; }, 2000);
-    });
-});
-
-// ================================================================
-//  MODAL FECHAR
-// ================================================================
-document.getElementById('modalClose').addEventListener('click', function() { document.getElementById('modalOverlay').classList.remove('active'); });
-document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        document.getElementById('modalOverlay').classList.remove('active');
-        document.getElementById('respostaModalOverlay').classList.remove('active');
-        document.getElementById('filterModalOverlay').classList.remove('active');
-    }
-});
 
 // ================================================================
 //  INVENTÁRIO
@@ -2674,13 +2715,23 @@ async function carregarCruzamento() {
         const [pacotes, inventario] = await Promise.all([ lerPlanilhaGooglePacotes(), lerPlanilhaGoogleInventario() ]);
         rawDataPacotes = pacotes;
         rawDataInventario = inventario;
-        processarPacotes();
+        processarPacotesComFiltro();
         processedDataInventario = processarDadosInventario(inventario);
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
         document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
-        dadosCruzamento = realizarCruzamento(pacotes, inventario);
+        let dadosFiltrados = rawDataPacotes;
+        if (usuarioTransportadora) {
+            dadosFiltrados = rawDataPacotes.filter(row => {
+                let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
+                const normTransp = transp.trim().toUpperCase();
+                const normUser = usuarioTransportadora.trim().toUpperCase();
+                if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
+                return normTransp === normUser;
+            });
+        }
+        dadosCruzamento = realizarCruzamento(dadosFiltrados, inventario);
         renderCruzamento(dadosCruzamento);
         statusDot.className = 'dot-status online';
         statusText.textContent = `✅ Cruzamento concluído: ${dadosCruzamento.emAmbos} em ambos, ${dadosCruzamento.responsabilidadeId} responsabilidade ID`;
