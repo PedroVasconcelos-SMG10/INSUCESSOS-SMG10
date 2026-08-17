@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
-  /* ===== ESTILOS (completos, mantidos) ===== */
+  /* ===== ESTILOS (mesmo código anterior, mantido) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1654,7 +1654,7 @@ async function getUserInfo() {
 }
 
 // ================================================================
-//  APLICAR RESTRIÇÕES
+//  APLICAR RESTRIÇÕES (incluindo ocultar debug-box)
 // ================================================================
 function aplicarRestricoesPorPerfil() {
     const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
@@ -1702,6 +1702,14 @@ function aplicarRestricoesPorPerfil() {
         filterInfo.style.display = 'none';
     }
 
+    // 🔥 OCULTAR DEBUG-BOX PARA USUÁRIOS COM TRANSPORTADORA ESPECÍFICA
+    const debugBoxes = document.querySelectorAll('.debug-box');
+    if (usuarioTransportadora) {
+        debugBoxes.forEach(el => el.style.display = 'none');
+    } else {
+        debugBoxes.forEach(el => el.style.display = 'block');
+    }
+
     if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
 }
 
@@ -1724,7 +1732,7 @@ function processarPacotesComFiltro() {
     renderKPI_Pacotes(processedDataPacotes);
     renderGraficos_Pacotes(processedDataPacotes);
     renderTransportadoras(processedDataPacotes);
-    renderPreviewPacotes(dadosFiltrados); // função de preview modificada
+    renderPreviewPacotes(dadosFiltrados);
     document.getElementById('statusTextPacotes').textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
     document.getElementById('statusTextPacotes').style.color = 'var(--success)';
     document.getElementById('statusDotPacotes').className = 'dot-status online';
@@ -1737,7 +1745,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  PREVIEW DE PACOTES (OCULTA DADOS SENSÍVEIS)
+//  PREVIEW DE PACOTES (resumida, sem dados sensíveis)
 // ================================================================
 function renderPreviewPacotes(data) {
     const preview = document.getElementById('previewPacotes');
@@ -1745,7 +1753,6 @@ function renderPreviewPacotes(data) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
     }
-    // Apenas mostra uma mensagem genérica, sem expor IDs, transportadoras, valores
     const total = data.length;
     preview.innerHTML = `
         <div style="text-align:center; padding:20px 0;">
@@ -1761,7 +1768,7 @@ function renderPreviewPacotes(data) {
 }
 
 // ================================================================
-//  PREVIEW DE INVENTÁRIO (OCULTA DADOS SENSÍVEIS)
+//  PREVIEW DE INVENTÁRIO (resumida, sem dados sensíveis)
 // ================================================================
 function renderPreviewInventario(data) {
     const preview = document.getElementById('previewInventario');
@@ -1804,6 +1811,8 @@ function logout() {
     document.querySelectorAll('#roleBadgeContainer, #roleBadgeContainerInventario, #roleBadgeContainerCruzamento, #filterInfoTransp')
         .forEach(el => { if(el) el.innerHTML = ''; });
     document.getElementById('filterInfoTransp').style.display = 'none';
+    // Re-exibir debug boxes após logout
+    document.querySelectorAll('.debug-box').forEach(el => el.style.display = 'block');
 }
 
 function initOAuth() {
