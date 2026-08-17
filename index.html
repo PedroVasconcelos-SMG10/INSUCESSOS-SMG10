@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
-  /* ===== ESTILOS (mesmos de antes, mantidos) ===== */
+  /* ===== ESTILOS ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -399,6 +399,29 @@
   .ids-tabela .status-badge.pendente{
     background:var(--faltante);
     color:#fff;
+  }
+  /* 🔥 NOVO: Botão alternar status */
+  .btn-toggle-status{
+    background:transparent;
+    border:1px solid var(--line-soft);
+    border-radius:3px;
+    color:var(--text-dim);
+    cursor:pointer;
+    font-size:10px;
+    padding:2px 8px;
+    transition:all .2s;
+  }
+  .btn-toggle-status:hover{
+    border-color:var(--cruzamento);
+    color:var(--text);
+  }
+  .btn-toggle-status.justificar{
+    border-color:var(--success);
+    color:var(--success);
+  }
+  .btn-toggle-status.desjustificar{
+    border-color:var(--danger);
+    color:var(--danger);
   }
   .zona-grid{
     display:grid;
@@ -1418,7 +1441,7 @@
       </div>
       <div id="containerTransportadoras"></div>
     </div>
-    <footer><span>FONTE — Análise diária de inventário </span><span id="footerTotalPacotes">0 registros</span></footer>
+    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (Página1)</span><span id="footerTotalPacotes">0 registros</span></footer>
   </div>
 
   <!-- TAB 2: INVENTÁRIO -->
@@ -1565,7 +1588,7 @@ let isAuthenticated = false;
 // ================================================================
 let currentUserEmail = '';
 let currentUserRole = 'viewer';
-let usuarioTransportadora = null;
+let usuarioTransportadoras = []; // 🔥 ALTERADO: array de transportadoras
 
 // ================================================================
 //  DADOS DAS ABAS ADICIONAIS
@@ -1578,8 +1601,8 @@ let respostasSet = new Set();
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
   { 'ID do envio': '47732842817', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '627.35', 'Status do envio': 'sorting', 'MOTORISTA': 'João Silva', 'Cod_Motorista': '123' },
-  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456' },
-  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789' }, // sem nome
+  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'ENVIOS EXTRA | NEXBRNMG631', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456' },
+  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA | NEXBRNMG9402', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789' },
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47732842817', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
@@ -1588,7 +1611,6 @@ const DADOS_EXEMPLO_INVENTARIO = [
 const DADOS_EXEMPLO_DESCRICAO = {
   '47732842817': 'Modulo Taramps Hd 3800 2 Ohms Amplificador 3800w Hd3800 Branco',
   '47790714531': 'Bancada Balcão/ilha Cozinha 1 Porta E Adega Menu',
-  // sem descrição para 47673879300
 };
 const DADOS_EXEMPLO_RESPOSTAS = ['47732842817'];
 
@@ -1670,7 +1692,7 @@ async function garantirUsuarioNaPlanilha(email) {
 }
 
 // ================================================================
-//  CARREGAR PERMISSÕES
+//  CARREGAR PERMISSÕES (com múltiplas transportadoras)
 // ================================================================
 async function carregarPermissoesDaPlanilha() {
     if (!accessToken) return;
@@ -1678,7 +1700,7 @@ async function carregarPermissoesDaPlanilha() {
         const data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         if (!data || data.length < 2) {
             currentUserRole = 'viewer';
-            usuarioTransportadora = null;
+            usuarioTransportadoras = [];
             aplicarRestricoesPorPerfil();
             return;
         }
@@ -1688,7 +1710,7 @@ async function carregarPermissoesDaPlanilha() {
         const transpCol = headers.indexOf('TRANSPORTADORA');
         if (emailCol === -1 || roleCol === -1) {
             currentUserRole = 'viewer';
-            usuarioTransportadora = null;
+            usuarioTransportadoras = [];
             aplicarRestricoesPorPerfil();
             return;
         }
@@ -1698,19 +1720,22 @@ async function carregarPermissoesDaPlanilha() {
             const email = row[emailCol]?.trim() || '';
             if (email === currentUserEmail) {
                 currentUserRole = row[roleCol]?.trim().toLowerCase() || 'viewer';
-                usuarioTransportadora = (transpCol !== -1) ? (row[transpCol]?.trim() || null) : null;
+                // 🔥 ALTERADO: suporte a múltiplas transportadoras separadas por ;
+                const transpString = row[transpCol]?.trim() || '';
+                usuarioTransportadoras = transpString.split(';').map(s => s.trim()).filter(s => s.length > 0);
                 encontrou = true;
                 break;
             }
         }
         if (!encontrou) {
             currentUserRole = 'viewer';
-            usuarioTransportadora = null;
+            usuarioTransportadoras = [];
         }
+        console.log(`📋 Permissões: role=${currentUserRole}, transportadoras=${usuarioTransportadoras.join(', ')}`);
         aplicarRestricoesPorPerfil();
     } catch (error) {
         currentUserRole = 'viewer';
-        usuarioTransportadora = null;
+        usuarioTransportadoras = [];
         aplicarRestricoesPorPerfil();
     }
 }
@@ -1823,15 +1848,15 @@ function aplicarRestricoesPorPerfil() {
     });
 
     const filterInfo = document.getElementById('filterInfoTransp');
-    if (usuarioTransportadora) {
+    if (usuarioTransportadoras.length > 0) {
         filterInfo.style.display = 'inline-block';
-        filterInfo.innerHTML = `🚚 <strong>${usuarioTransportadora}</strong> (filtro automático)`;
+        filterInfo.innerHTML = `🚚 <strong>${usuarioTransportadoras.join('; ')}</strong> (filtro automático)`;
     } else {
         filterInfo.style.display = 'none';
     }
 
     const debugBoxes = document.querySelectorAll('.debug-box');
-    if (usuarioTransportadora) {
+    if (usuarioTransportadoras.length > 0) {
         debugBoxes.forEach(el => el.style.display = 'none');
     } else {
         debugBoxes.forEach(el => el.style.display = 'block');
@@ -1841,23 +1866,25 @@ function aplicarRestricoesPorPerfil() {
 }
 
 // ================================================================
-//  PROCESSAR PACOTES COM FILTRO
+//  PROCESSAR PACOTES COM FILTRO (múltiplas transportadoras)
 // ================================================================
 function processarPacotesComFiltro() {
     if (!rawDataPacotes || rawDataPacotes.length === 0) return;
     let dadosFiltrados = rawDataPacotes;
-    if (usuarioTransportadora) {
+    if (usuarioTransportadoras.length > 0) {
         dadosFiltrados = rawDataPacotes.filter(row => {
             let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
             const normTransp = transp.trim().toUpperCase();
-            const normUser = usuarioTransportadora.trim().toUpperCase();
-            if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
-            return normTransp === normUser;
+            return usuarioTransportadoras.some(transpUser => {
+                const normUser = transpUser.trim().toUpperCase();
+                if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
+                return normTransp === normUser;
+            });
         });
     }
     processedDataPacotes = processarDadosPacotes(dadosFiltrados);
     renderKPI_Pacotes(processedDataPacotes);
-    renderGraficosPacotes(processedDataPacotes, dadosFiltrados); // 🔥 ALTERADO: passando dados filtrados
+    renderGraficosPacotes(processedDataPacotes, dadosFiltrados);
     renderSecaoTransportadoras(processedDataPacotes);
     renderPreviewPacotes(dadosFiltrados);
     document.getElementById('statusTextPacotes').textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
@@ -1872,7 +1899,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  🔥 ALTERADO: GRÁFICOS COM SUPORTE PARA VISÃO POR MOTORISTA
+//  GRÁFICOS (com múltiplas transportadoras)
 // ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
@@ -1880,14 +1907,14 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         if (chartValor) { chartValor.destroy(); chartValor = null; }
     } catch(e) {}
 
-    // Se não houver dados, limpa os gráficos e define títulos padrão
     if (!data || data.transportadoras.length === 0) {
         document.querySelector('.chart-card:first-child h3').textContent = '📊 Pacotes por Transportadora';
         document.querySelector('.chart-card:last-child h3').textContent = '💰 Valor Total por Transportadora';
         return;
     }
 
-    const isTranspView = !!usuarioTransportadora;
+    // Verifica se há filtro por transportadora (visão específica)
+    const isTranspView = usuarioTransportadoras.length > 0;
 
     if (isTranspView && dadosFiltrados && dadosFiltrados.length > 0) {
         // Agrupar por motorista (com fallback para Cod_Motorista)
@@ -1912,10 +1939,8 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         const counts = labels.map(m => motoristaMap[m].count);
         const totals = labels.map(m => motoristaMap[m].total);
 
-        // Cores para pizza
         const cores = ['#4fae7c', '#e0aa3d', '#3d8fe0', '#e8593f', '#9b59b6', '#e67e22', '#1abc9c', '#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#95a5a6', '#d35400', '#2c3e50'];
 
-        // Gráfico 1: pizza de quantidade
         const ctx1 = document.getElementById('chartQuantidade');
         if (ctx1) {
             chartQuantidade = new Chart(ctx1, {
@@ -1933,10 +1958,7 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#8b8f99', font: { size: 10 } }
-                        },
+                        legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 10 } } },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -1953,7 +1975,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             });
         }
 
-        // Gráfico 2: pizza de valores
         const ctx2 = document.getElementById('chartValor');
         if (ctx2) {
             chartValor = new Chart(ctx2, {
@@ -1971,10 +1992,7 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#8b8f99', font: { size: 10 } }
-                        },
+                        legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 10 } } },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -1991,7 +2009,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             });
         }
 
-        // Atualizar títulos
         document.querySelector('.chart-card:first-child h3').textContent = '📊 Pacotes por Motorista';
         document.querySelector('.chart-card:last-child h3').textContent = '💰 Valor Total por Motorista';
 
@@ -2018,7 +2035,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             });
         }
 
-        // Restaurar títulos
         document.querySelector('.chart-card:first-child h3').textContent = '📊 Pacotes por Transportadora';
         document.querySelector('.chart-card:last-child h3').textContent = '💰 Valor Total por Transportadora';
     }
@@ -2037,13 +2053,27 @@ function renderSecaoTransportadoras(data) {
         return;
     }
 
-    if (usuarioTransportadora) {
-        const transpObj = data.transportadoras.find(t => t.nome === usuarioTransportadora);
-        if (!transpObj) {
-            container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Dados da transportadora não encontrados</div>`;
-            return;
-        }
-        titulo.textContent = `📦 Pacotes - ${usuarioTransportadora}`;
+    if (usuarioTransportadoras.length > 0) {
+        // Se o usuário tem uma ou mais transportadoras, mostramos a lista combinada
+        // Pegamos todos os IDs de todas as transportadoras do usuário
+        const idsCombinados = [];
+        const valoresCombinados = [];
+        const motoristasCombinados = [];
+        data.transportadoras.forEach(t => {
+            if (usuarioTransportadoras.includes(t.nome)) {
+                idsCombinados.push(...t.ids);
+                valoresCombinados.push(...t.valores);
+                motoristasCombinados.push(...t.motoristas);
+            }
+        });
+        // Criamos um objeto transportadora combinado
+        const transpObj = {
+            nome: usuarioTransportadoras.join('; '),
+            ids: idsCombinados,
+            valores: valoresCombinados,
+            motoristas: motoristasCombinados
+        };
+        titulo.textContent = `📦 Pacotes - ${usuarioTransportadoras.join('; ')}`;
         legenda.textContent = `Total: ${transpObj.ids.length} pacotes`;
         renderListaIdsTransportadora(transpObj);
     } else {
@@ -2054,7 +2084,7 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  RENDERIZAR LISTA DE IDs (com descrição, valor, motorista, justificado)
+//  RENDERIZAR LISTA DE IDs (com botão toggle status)
 // ================================================================
 function renderListaIdsTransportadora(transpObj) {
     const container = document.getElementById('containerTransportadoras');
@@ -2115,6 +2145,7 @@ function renderListaIdsTransportadora(transpObj) {
                             <th>Valor (R$)</th>
                             <th>Motorista</th>
                             <th>Status</th>
+                            <th style="width:80px;">Ação</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -2126,6 +2157,10 @@ function renderListaIdsTransportadora(transpObj) {
             const justificado = justificadosPagina[index];
             const statusClass = justificado ? 'justificado' : 'pendente';
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
+            // 🔥 NOVO: botão alternar status
+            const btnToggle = justificado
+                ? `<button class="btn-toggle-status desjustificar" onclick="toggleStatusPacote('${id}', false)" title="Marcar como pendente">⬅️ Pendente</button>`
+                : `<button class="btn-toggle-status justificar" onclick="toggleStatusPacote('${id}', true)" title="Marcar como justificado">✅ Justificar</button>`;
             tableWithCheckboxes += `<tr>
                 <td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}', '${motorista.replace(/'/g, "\\'")}')"></td>
                 <td>${globalIndex}</td>
@@ -2134,6 +2169,7 @@ function renderListaIdsTransportadora(transpObj) {
                 <td>R$ ${valor.toFixed(2)}</td>
                 <td>${motorista}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${btnToggle}</td>
             </tr>`;
         });
         tableWithCheckboxes += `</tbody></table>${footerHtml}</div></div>`;
@@ -2191,6 +2227,71 @@ function renderListaIdsTransportadora(transpObj) {
         }
         modalTransportadora = transpObj;
         abrirModalResposta();
+    };
+
+    // 🔥 NOVO: Função para alternar status (justificado ↔ pendente)
+    window.toggleStatusPacote = async function(id, justificar) {
+        if (!accessToken) {
+            alert('Você precisa estar autenticado.');
+            return;
+        }
+        try {
+            if (justificar) {
+                // Adicionar à planilha RESPOSTAS (como já fazemos)
+                const dataAtual = new Date().toLocaleString('pt-BR');
+                const nome = currentUserEmail || 'Sistema';
+                const transportadora = transpObj.nome || '';
+                const motorista = window._listaMotoristas[window._listaIds.indexOf(id)] || 'N/A';
+                // Precisamos escrever na planilha RESPOSTAS
+                const rows = [[id, transportadora, motorista, nome, 'Justificado via botão', dataAtual]];
+                // Descobrir próxima linha
+                const readUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/RESPOSTAS!A:A`;
+                const readResponse = await fetch(readUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                const readData = await readResponse.json();
+                let nextRow = 2;
+                if (readData.values && readData.values.length > 0) nextRow = readData.values.length + 1;
+                await escreverPlanilhaOAuth('RESPOSTAS', `A${nextRow}:F${nextRow}`, rows);
+                // Atualizar localmente
+                respostasSet.add(id);
+                window._listaJustificados[window._listaIds.indexOf(id)] = true;
+                // Recarregar a página da lista
+                renderPaginaIds();
+                // Atualizar gráficos (opcional)
+                if (dadosCruzamento) renderCruzamento(dadosCruzamento);
+            } else {
+                // Remover da planilha RESPOSTAS (todos os registros com esse ID)
+                // Ler todas as linhas, filtrar e reescrever
+                const readUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/RESPOSTAS!A:F`;
+                const readResponse = await fetch(readUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                const readData = await readResponse.json();
+                if (readData.values && readData.values.length > 1) {
+                    const headers = readData.values[0];
+                    const rows = readData.values.slice(1);
+                    const filteredRows = rows.filter(row => row[0]?.trim() !== id);
+                    // Limpar a aba e reescrever
+                    const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/RESPOSTAS!A:F:clear`;
+                    await fetch(clearUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}` } });
+                    // Reescrever cabeçalho + dados filtrados
+                    await escreverPlanilhaOAuth('RESPOSTAS', `A1:F1`, [headers]);
+                    if (filteredRows.length > 0) {
+                        await escreverPlanilhaOAuth('RESPOSTAS', `A2:F${filteredRows.length+1}`, filteredRows);
+                    }
+                    // Atualizar localmente
+                    respostasSet.delete(id);
+                    window._listaJustificados[window._listaIds.indexOf(id)] = false;
+                    renderPaginaIds();
+                    if (dadosCruzamento) renderCruzamento(dadosCruzamento);
+                } else {
+                    // Se não houver dados, apenas remover do set local
+                    respostasSet.delete(id);
+                    window._listaJustificados[window._listaIds.indexOf(id)] = false;
+                    renderPaginaIds();
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao alternar status:', error);
+            alert('Erro ao alterar status: ' + error.message);
+        }
     };
 
     renderPaginaIds();
@@ -2280,7 +2381,7 @@ function isFileProtocol() { return window.location.protocol === 'file:'; }
 function logout() {
     sessionStorage.removeItem('accessToken');
     accessToken = null; isAuthenticated = false;
-    currentUserEmail = ''; currentUserRole = 'viewer'; usuarioTransportadora = null;
+    currentUserEmail = ''; currentUserRole = 'viewer'; usuarioTransportadoras = [];
     descricaoMap = {}; respostasSet = new Set();
     const btn = document.getElementById('loginBtn');
     if (btn) { btn.textContent = '🔑 Login com Google'; btn.classList.remove('logged', 'error'); btn.disabled = false; }
@@ -2373,18 +2474,20 @@ function carregarDadosExemplo() {
     descricaoMap = DADOS_EXEMPLO_DESCRICAO;
     respostasSet = new Set(DADOS_EXEMPLO_RESPOSTAS);
     let dadosPacotes = rawDataPacotes;
-    if (usuarioTransportadora) {
+    if (usuarioTransportadoras.length > 0) {
         dadosPacotes = rawDataPacotes.filter(row => {
             let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
             const normTransp = transp.trim().toUpperCase();
-            const normUser = usuarioTransportadora.trim().toUpperCase();
-            if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
-            return normTransp === normUser;
+            return usuarioTransportadoras.some(transpUser => {
+                const normUser = transpUser.trim().toUpperCase();
+                if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
+                return normTransp === normUser;
+            });
         });
     }
     processedDataPacotes = processarDadosPacotes(dadosPacotes);
     renderKPI_Pacotes(processedDataPacotes);
-    renderGraficosPacotes(processedDataPacotes, dadosPacotes); // 🔥 ALTERADO: passando dados filtrados
+    renderGraficosPacotes(processedDataPacotes, dadosPacotes);
     renderSecaoTransportadoras(processedDataPacotes);
     renderPreviewPacotes(dadosPacotes);
     processedDataInventario = processarDadosInventario(rawDataInventario);
@@ -2462,7 +2565,6 @@ function processarDadosPacotes(data) {
         const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
         const valorStr = String(row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '0').replace(',', '.').replace(/[^0-9.]/g, '');
         const valor = parseFloat(valorStr) || 0;
-        // 🔥 ALTERADO: fallback para Cod_Motorista se MOTORISTA estiver vazio
         let motorista = String(row['MOTORISTA'] || row['motorista'] || '').trim();
         if (!motorista || motorista === 'N/A') {
             motorista = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
@@ -3111,13 +3213,15 @@ async function carregarCruzamento() {
         renderZonas(processedDataInventario);
         document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
         let dadosFiltrados = rawDataPacotes;
-        if (usuarioTransportadora) {
+        if (usuarioTransportadoras.length > 0) {
             dadosFiltrados = rawDataPacotes.filter(row => {
                 let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
                 const normTransp = transp.trim().toUpperCase();
-                const normUser = usuarioTransportadora.trim().toUpperCase();
-                if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
-                return normTransp === normUser;
+                return usuarioTransportadoras.some(transpUser => {
+                    const normUser = transpUser.trim().toUpperCase();
+                    if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
+                    return normTransp === normUser;
+                });
             });
         }
         dadosCruzamento = realizarCruzamento(dadosFiltrados, inventario);
