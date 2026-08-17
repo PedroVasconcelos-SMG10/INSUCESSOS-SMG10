@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
-  /* ===== ESTILOS COMPLETOS (mantidos) ===== */
+  /* ===== ESTILOS (completos, mantidos) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1724,7 +1724,7 @@ function processarPacotesComFiltro() {
     renderKPI_Pacotes(processedDataPacotes);
     renderGraficos_Pacotes(processedDataPacotes);
     renderTransportadoras(processedDataPacotes);
-    renderPreview_Pacotes(dadosFiltrados);
+    renderPreviewPacotes(dadosFiltrados); // função de preview modificada
     document.getElementById('statusTextPacotes').textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
     document.getElementById('statusTextPacotes').style.color = 'var(--success)';
     document.getElementById('statusDotPacotes').className = 'dot-status online';
@@ -1737,10 +1737,56 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
+//  PREVIEW DE PACOTES (OCULTA DADOS SENSÍVEIS)
+// ================================================================
+function renderPreviewPacotes(data) {
+    const preview = document.getElementById('previewPacotes');
+    if (!data || data.length === 0) {
+        preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
+        return;
+    }
+    // Apenas mostra uma mensagem genérica, sem expor IDs, transportadoras, valores
+    const total = data.length;
+    preview.innerHTML = `
+        <div style="text-align:center; padding:20px 0;">
+            <div style="font-size:24px; margin-bottom:8px;">✅</div>
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--success);">
+                ${total} registros carregados com sucesso
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+                Dados disponíveis para análise nos gráficos e transportadoras
+            </div>
+        </div>
+    `;
+}
+
+// ================================================================
+//  PREVIEW DE INVENTÁRIO (OCULTA DADOS SENSÍVEIS)
+// ================================================================
+function renderPreviewInventario(data) {
+    const preview = document.getElementById('previewInventario');
+    if (!data || data.length === 0) {
+        preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
+        return;
+    }
+    const total = data.length;
+    preview.innerHTML = `
+        <div style="text-align:center; padding:20px 0;">
+            <div style="font-size:24px; margin-bottom:8px;">✅</div>
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--success);">
+                ${total} registros carregados com sucesso
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+                Dados disponíveis para análise nos gráficos e zonas
+            </div>
+        </div>
+    `;
+}
+
+// ================================================================
 //  UTILIDADES
 // ================================================================
 function isFileProtocol() { return window.location.protocol === 'file:'; }
-function initTabs() { /* já definido antes */ }
 
 // ================================================================
 //  LOGIN / LOGOUT
@@ -1847,11 +1893,12 @@ function carregarDadosExemplo() {
     renderKPI_Pacotes(processedDataPacotes);
     renderGraficos_Pacotes(processedDataPacotes);
     renderTransportadoras(processedDataPacotes);
-    renderPreview_Pacotes(dadosPacotes);
+    renderPreviewPacotes(dadosPacotes);
     processedDataInventario = processarDadosInventario(rawDataInventario);
     renderKPI_Inventario(processedDataInventario);
     renderGraficos_Inventario(processedDataInventario);
     renderZonas(processedDataInventario);
+    renderPreviewInventario(rawDataInventario);
     dadosCruzamento = realizarCruzamento(dadosPacotes, rawDataInventario);
     renderCruzamento(dadosCruzamento);
     document.getElementById('statusTextPacotes').textContent = '📊 Exibindo dados de exemplo (fallback)';
@@ -1983,7 +2030,9 @@ function renderGraficos_Pacotes(data) {
     } catch(e) {}
 }
 
-// 🔥 RENDER TRANSPORTADORAS (COM BLOQUEIO PARA VIEWER)
+// ================================================================
+//  RENDER TRANSPORTADORAS (COM BLOQUEIO PARA VIEWER)
+// ================================================================
 function renderTransportadoras(data) {
     const grid = document.getElementById('transportadorasGrid');
     if (!data || data.transportadoras.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`; return; }
@@ -2009,27 +2058,9 @@ function renderTransportadoras(data) {
     }
 }
 
-function renderPreview_Pacotes(data) {
-    const preview = document.getElementById('previewPacotes');
-    if (!data || data.length === 0) { preview.innerHTML = `<div class="empty-message"><div style="font-size:24px; margin-bottom:6px;">📋</div>Nenhum dado carregado</div>`; return; }
-    const headers = Object.keys(data[0]);
-    const hasId = headers.some(h => h.includes('ID') || h.includes('id'));
-    const hasTransp = headers.some(h => h.includes('TRANSPORTADORA') || h.includes('transportadora'));
-    const hasValor = headers.some(h => h.includes('Valor') || h.includes('valor'));
-    let html = `<div style="width:100%;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:4px;display:flex;gap:16px;flex-wrap:wrap;"><span>📦 ${data.length} registros carregados</span>${hasId ? '<span style="color:var(--plan);">✅ ID encontrado</span>' : '<span style="color:var(--faltante);">⚠️ ID não encontrado</span>'}${hasTransp ? '<span style="color:var(--plan);">✅ Transportadora encontrada</span>' : '<span style="color:var(--faltante);">⚠️ Transportadora não encontrada</span>'}${hasValor ? '<span style="color:var(--plan);">✅ Valor encontrado</span>' : '<span style="color:var(--faltante);">⚠️ Valor não encontrado</span>'}</div><table><thead><tr><th>ID do envio</th><th class="col-destaque">TRANSPORTADORA</th><th>Valor declarado</th><th>Status</th></tr></thead><tbody>`;
-    data.slice(0, 5).forEach(row => {
-        const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-        let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || row['Coluna D'] || row['D'] || 'Não especificado';
-        if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
-        const valor = row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '';
-        const status = row['Status do envio'] || row['status_do_envio'] || row['Status'] || '';
-        html += `<tr><td style="font-family:'IBM Plex Mono',monospace;">${id || '-'}</td><td class="col-destaque">${transp}</td><td>${valor}</td><td>${status}</td></tr>`;
-    });
-    if (data.length > 5) html += `<tr><td colspan="4" style="text-align:center;color:var(--text-faint);font-size:10px;">... e mais ${data.length - 5} registros</td></tr>`;
-    html += `</tbody></table></div>`;
-    preview.innerHTML = html;
-}
-
+// ================================================================
+//  CARREGAR DADOS DE PACOTES (USA NOVA PREVIEW)
+// ================================================================
 async function carregarDadosPacotes() {
     const statusDot = document.getElementById('statusDotPacotes');
     const statusText = document.getElementById('statusTextPacotes');
@@ -2100,7 +2131,6 @@ function abrirModalPacotes(nome) {
     document.getElementById('modalOverlay').classList.add('active');
 }
 
-// 🔥 FUNÇÃO RENDERIZAR PÁGINA MODAL (COM ONCLICK DIRETO)
 function renderizarPaginaModal(t, page) {
     const start = (page - 1) * ITEMS_PER_PAGE;
     const end = Math.min(start + ITEMS_PER_PAGE, modalTotalIds.length);
@@ -2137,7 +2167,6 @@ function renderizarPaginaModal(t, page) {
     atualizarSelecao();
 }
 
-// 🔥 FUNÇÕES AUXILIARES DOS BOTÕES DO MODAL (globais)
 function selecionarTodosPagina() {
     document.querySelectorAll('.id-checkbox-input').forEach(cb => {
         cb.checked = true;
@@ -2189,7 +2218,7 @@ function atualizarSelecao() {
 }
 
 // ================================================================
-//  MODAL DE RESPOSTA (com verificação de permissão)
+//  MODAL DE RESPOSTA
 // ================================================================
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
@@ -2409,24 +2438,10 @@ function renderZonas(data) {
         return `<div class="zona-card"><div class="nome">${z.nome}</div><div class="detalhes"><span class="total">📦 ${z.total}</span><span class="inventariado">✅ ${z.inventariado}</span><span class="faltante">❌ ${z.faltante}</span><span class="intruso">🟣 ${z.intruso}</span></div><div class="barra"><div class="fill-success" style="width:${pctInv}%;"></div><div class="fill-danger" style="width:${pctFalt}%;"></div><div class="fill-intruso" style="width:${pctInt}%;"></div></div><div class="status-labels"><span>✅ ${pctInv.toFixed(1)}%</span><span>❌ ${pctFalt.toFixed(1)}%</span><span>🟣 ${pctInt.toFixed(1)}%</span><span style="color:${pctAcuracia >= 95 ? 'var(--success)' : pctAcuracia >= 80 ? 'var(--warning)' : 'var(--danger)'};">🎯 ${pctAcuracia.toFixed(1)}%</span></div></div>`;
     }).join('');
 }
-function renderPreview_Inventario(data) {
-    const preview = document.getElementById('previewInventario');
-    if (!data || data.length === 0) { preview.innerHTML = `<div class="empty-message"><div style="font-size:24px; margin-bottom:6px;">📋</div>Nenhum dado carregado</div>`; return; }
-    let html = `<div style="width:100%;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:4px;display:flex;gap:16px;flex-wrap:wrap;"><span>📦 ${data.length} registros carregados</span></div><table><thead><tr><th>SHIPMENT (F)</th><th>CLASIFICACION (H)</th><th>SHP_ZONE_NAME (I)</th></tr></thead><tbody>`;
-    data.slice(0, 5).forEach(row => {
-        const shipment = String(row['SHIPMENT'] || '').trim();
-        const clasificacion = String(row['CLASIFICACION'] || '').trim();
-        const zona = String(row['SHP_ZONE_NAME'] || '').trim() || 'Não especificado';
-        let color = 'var(--text-dim)';
-        if (clasificacion.includes('INVENTARIADO')) color = 'var(--success)';
-        else if (clasificacion.includes('FALTANTE')) color = 'var(--danger)';
-        else if (clasificacion.includes('INTRUSO')) color = 'var(--purple)';
-        html += `<tr><td style="font-family:'IBM Plex Mono',monospace;">${shipment || '-'}</td><td style="color:${color};">${clasificacion || '-'}</td><td>${zona}</td></tr>`;
-    });
-    if (data.length > 5) html += `<tr><td colspan="3" style="text-align:center;color:var(--text-faint);font-size:10px;">... e mais ${data.length - 5} registros</td></tr>`;
-    html += `</tbody></table></div>`;
-    preview.innerHTML = html;
-}
+
+// ================================================================
+//  CARREGAR DADOS DE INVENTÁRIO (USA NOVA PREVIEW)
+// ================================================================
 async function carregarDadosInventario() {
     const statusDot = document.getElementById('statusDotInventario');
     const statusText = document.getElementById('statusTextInventario');
@@ -2447,7 +2462,7 @@ async function carregarDadosInventario() {
         statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`;
         statusText.style.color = 'var(--success)';
         recordCount.textContent = `📦 ${data.length} registros`;
-        renderPreview_Inventario(data);
+        renderPreviewInventario(data);
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
@@ -2460,6 +2475,7 @@ async function carregarDadosInventario() {
         preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
         processedDataInventario = processarDadosInventario(rawDataInventario);
+        renderPreviewInventario(rawDataInventario);
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
@@ -2468,7 +2484,7 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  CRUZAMENTO (COM FILTRO CORRIGIDO)
+//  CRUZAMENTO (com filtro corrigido)
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
@@ -2501,7 +2517,6 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
     return { dados: resultado, totalComTransportadora, totalFaltantes, emAmbos, responsabilidadeId, transportadoraList };
 }
 
-// 🔥 RENDER FILTRO DE TRANSPORTADORAS (COM ONCLICK)
 function renderFiltroTransportadoras(data) {
     const container = document.getElementById('transpFilterContainer');
     if (!data || data.transportadoraList.length === 0) {
@@ -2531,7 +2546,6 @@ function renderFiltroTransportadoras(data) {
     document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
 }
 
-// 🔥 TOGGLE TRANSPORTADORA (GLOBAL)
 function toggleTransportadora(nome, tipo) {
     if (tipo === 'ambos') {
         if (filtroTransportadoras.has(nome)) filtroTransportadoras.delete(nome);
@@ -2556,7 +2570,6 @@ function toggleTransportadora(nome, tipo) {
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
 
-// 🔥 FUNÇÕES GLOBAIS PARA OS BOTÕES "SELECIONAR TODAS" E "LIMPAR TODAS"
 function selecionarTodasTransportadoras() {
     const container = document.getElementById('transpFilterContainer');
     container.querySelectorAll('.transp-filter-item').forEach(item => {
@@ -2710,7 +2723,6 @@ document.getElementById('filterFloatBtn').addEventListener('click', function() {
 document.getElementById('filterModalClose').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.remove('active'); });
 document.getElementById('filterModalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 document.getElementById('filterApplyBtn').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.remove('active'); if (dadosCruzamento) renderCruzamento(dadosCruzamento); });
-// 🔥 Botões da modal de filtro usando as funções globais
 document.getElementById('filterSelectAll').onclick = selecionarTodasTransportadoras;
 document.getElementById('filterClearAll').onclick = limparTodasTransportadoras;
 
@@ -2741,7 +2753,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loginBtn.onclick = autenticar;
     document.body.appendChild(loginBtn);
 
-    // Inicializa tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2767,9 +2778,11 @@ document.addEventListener('DOMContentLoaded', function() {
     renderKPI_Pacotes(null);
     renderGraficos_Pacotes(null);
     renderTransportadoras(null);
+    renderPreviewPacotes(null);
     renderKPI_Inventario(null);
     renderGraficos_Inventario(null);
     renderZonas(null);
+    renderPreviewInventario(null);
 
     initOAuth();
 });
