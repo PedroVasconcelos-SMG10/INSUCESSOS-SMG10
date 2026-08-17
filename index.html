@@ -1568,7 +1568,7 @@ let isAuthenticated = false;
 // ================================================================
 let currentUserEmail = '';
 let currentUserRole = 'viewer';
-let usuarioTransportadora = null; // string com múltiplos nomes separados por ';'
+let usuarioTransportadora = null;
 
 // ================================================================
 //  DADOS DAS ABAS ADICIONAIS
@@ -1577,12 +1577,12 @@ let descricaoMap = {};
 let respostasSet = new Set();
 
 // ================================================================
-//  DADOS DE EXEMPLO
+//  DADOS DE EXEMPLO (com link na coluna T – 'LINK')
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
-  { 'ID do envio': '47732842817', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '627.35', 'Status do envio': 'sorting', 'MOTORISTA': 'João Silva', 'Cod_Motorista': '123', 'DATA': '2025-03-10' },
-  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456', 'DATA': '2025-03-12' },
-  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789', 'DATA': '2025-03-08' },
+  { 'ID do envio': '47732842817', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '627.35', 'Status do envio': 'sorting', 'MOTORISTA': 'João Silva', 'Cod_Motorista': '123', 'DATA': '2025-03-10', 'LINK': 'https://example.com/pacote/47732842817' },
+  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456', 'DATA': '2025-03-12', 'LINK': '' },
+  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789', 'DATA': '2025-03-08', 'LINK': 'https://example.com/pacote/47673879300' },
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47732842817', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
@@ -1683,7 +1683,7 @@ async function garantirUsuarioNaPlanilha(email) {
 }
 
 // ================================================================
-//  CARREGAR PERMISSÕES (com múltiplas transportadoras)
+//  CARREGAR PERMISSÕES
 // ================================================================
 async function carregarPermissoesDaPlanilha() {
     if (!accessToken) return;
@@ -1752,7 +1752,7 @@ async function getUserInfo() {
 }
 
 // ================================================================
-//  CARREGAR DESCRIÇÕES E RESPOSTAS (criando abas se necessário)
+//  CARREGAR DESCRIÇÕES E RESPOSTAS
 // ================================================================
 async function carregarDescricoesERespostas() {
     if (!accessToken) return;
@@ -1932,7 +1932,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  GRÁFICOS (com suporte a múltiplas transportadoras e pizza por motorista)
+//  GRÁFICOS (com pizza por motorista)
 // ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
@@ -2140,7 +2140,7 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  RENDERIZAR LISTA DE IDs (com seletor de ordenação, paginação e botão de alternar status para admin)
+//  🔥 RENDERIZAR LISTA DE IDs (com coluna de link)
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2209,12 +2209,15 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
+        // 🔥 Extrai o link da coluna T (LINK, Link, link, URL)
+        const links = linhasOrdenadas.map(row => row['LINK'] || row['Link'] || row['link'] || row['URL'] || '');
 
         const objOrdenado = {
             nome: transpObj.nome,
             ids: ids,
             valores: valores,
             motoristas: motoristas,
+            links: links,
             quantidade: ids.length,
             valorTotal: valores.reduce((a, b) => a + b, 0),
             valorFormatado: 'R$ ' + valores.reduce((a, b) => a + b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
@@ -2227,6 +2230,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         const ids = objOrdenado.ids;
         const valores = objOrdenado.valores;
         const motoristas = objOrdenado.motoristas;
+        const links = objOrdenado.links || [];
         const descricoes = ids.map(id => descricaoMap[id] || '');
         const justificados = ids.map(id => respostasSet.has(id));
         const page = window._paginaIdsAtual || 1;
@@ -2237,6 +2241,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         const idsPagina = ids.slice(start, end);
         const valoresPagina = valores.slice(start, end);
         const motoristasPagina = motoristas.slice(start, end);
+        const linksPagina = links.slice(start, end);
         const descricoesPagina = descricoes.slice(start, end);
         const justificadosPagina = justificados.slice(start, end);
 
@@ -2269,7 +2274,8 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             <th>Descrição</th>
             <th>Valor (R$)</th>
             <th>Motorista</th>
-            <th>Status</th>`;
+            <th>Status</th>
+            <th style="width:50px;">Link</th>`;
         if (isAdmin) {
             headerCols += `<th style="width:80px;">Ação</th>`;
         }
@@ -2304,6 +2310,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const justificado = justificadosPagina[index];
             const statusClass = justificado ? 'justificado' : 'pendente';
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
+            const link = linksPagina[index] || '';
 
             let row = `<tr>
                 <td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}', '${motorista.replace(/'/g, "\\'")}')"></td>
@@ -2312,7 +2319,9 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <td>${descricao}</td>
                 <td>R$ ${valor.toFixed(2)}</td>
                 <td>${motorista}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${link ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:none; font-size:16px;" title="Abrir link do pacote">🔗</a>` : '—'}</td>`;
+
             if (isAdmin) {
                 const btnText = justificado ? 'Desmarcar' : 'Justificar';
                 const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle';
@@ -2859,7 +2868,7 @@ function atualizarSelecao() {
 }
 
 // ================================================================
-//  MODAL DE RESPOSTA (mantido)
+//  MODAL DE RESPOSTA
 // ================================================================
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
@@ -2990,7 +2999,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ================================================================
-//  INVENTÁRIO (funções completas, mantidas)
+//  INVENTÁRIO (funções completas)
 // ================================================================
 function processarDadosInventario(data) {
     const zonas = {};
@@ -3121,7 +3130,7 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  CRUZAMENTO (funções completas, mantidas)
+//  CRUZAMENTO (funções completas)
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
