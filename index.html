@@ -9,7 +9,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
-  /* ===== ESTILOS (mesmos de antes, mantidos) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1437,7 +1436,7 @@
       </div>
       <div id="containerTransportadoras"></div>
     </div>
-    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (Página1)</span><span id="footerTotalPacotes">0 registros</span></footer>
+    <footer><span>FONTE — ANÁLISES DE INVENTÁRIO PEDRO SMG10</span><span id="footerTotalPacotes">0 registros</span></footer>
   </div>
 
   <!-- TAB 2: INVENTÁRIO -->
@@ -1468,7 +1467,7 @@
     <footer><span>FONTE — PLANILHA GOOGLE SHEETS (INVENTÁRIO)</span><span id="footerTotalInventario">0 registros</span></footer>
   </div>
 
-  <!-- TAB 3: CRUZAMENTO -->
+  <!-- TAB 3: CRUZAMENTO (SEM FILTRO FIXO) -->
   <div class="tab-content" id="tabCruzamento">
     <div class="status-bar">
       <div class="info">
@@ -1484,21 +1483,6 @@
       <div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 em ambos</div></div>
       <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:32px;">0</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
       <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:32px;">0</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">0 transportadoras selecionadas</div></div>
-    </div>
-    <div style="margin-top:26px; background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:16px 20px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-dim);">🚚 Filtrar por Transportadora</span>
-          <span class="badge" id="filterTranspCount" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);background:var(--bg);padding:4px 12px;border:1px solid var(--line-soft);border-radius:3px;">0 selecionadas (0 🔗 + 0 📦)</span>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-secondary" id="selectAllTransp" style="padding:4px 14px; font-size:11px;">✅ Selecionar todas</button>
-          <button class="btn btn-secondary" id="clearAllTransp" style="padding:4px 14px; font-size:11px;">❌ Limpar todas</button>
-        </div>
-      </div>
-      <div id="transpFilterContainer" style="display:flex; flex-wrap:wrap; gap:8px; max-height:120px; overflow-y:auto; padding:4px 0;">
-        <span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 0;">Aguardando autenticação...</span>
-      </div>
     </div>
     <div style="margin-top:26px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
@@ -1596,9 +1580,9 @@ let respostasSet = new Set();
 //  DADOS DE EXEMPLO
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
-  { 'ID do envio': '47732842817', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '627.35', 'Status do envio': 'sorting', 'MOTORISTA': 'João Silva', 'Cod_Motorista': '123' },
-  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456' },
-  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789' },
+  { 'ID do envio': '47732842817', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '627.35', 'Status do envio': 'sorting', 'MOTORISTA': 'João Silva', 'Cod_Motorista': '123', 'DATA': '2025-03-10' },
+  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456', 'DATA': '2025-03-12' },
+  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789', 'DATA': '2025-03-08' },
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47732842817', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
@@ -1654,7 +1638,6 @@ async function criarAbaSeNaoExistir(nomeAba) {
                 body: JSON.stringify(batchUpdate)
             });
             console.log(`✅ Aba "${nomeAba}" criada.`);
-            // Aguarda um momento
             await new Promise(resolve => setTimeout(resolve, 300));
         }
     } catch (err) {
@@ -1773,7 +1756,6 @@ async function getUserInfo() {
 // ================================================================
 async function carregarDescricoesERespostas() {
     if (!accessToken) return;
-    // Criar abas se não existirem
     await criarAbaSeNaoExistir('Descrição');
     await criarAbaSeNaoExistir('RESPOSTAS');
 
@@ -1791,7 +1773,6 @@ async function carregarDescricoesERespostas() {
                 if (id) descricaoMap[id] = desc;
             }
         } else {
-            // se vazio, inicializa vazio
             descricaoMap = {};
         }
     } catch (error) {
@@ -1808,7 +1789,6 @@ async function carregarDescricoesERespostas() {
                 if (id) respostasSet.add(id);
             }
         } else {
-            // Se não houver dados, escreve cabeçalho opcional
             await escreverPlanilhaOAuth('RESPOSTAS', 'A1:A1', [['ID']]);
         }
     } catch (error) {
@@ -1829,30 +1809,24 @@ async function toggleStatus(id, transportadora, motorista) {
     try {
         const isJustificado = respostasSet.has(id);
         if (isJustificado) {
-            // Remover da aba RESPOSTAS: ler todas, remover a linha e reescrever
             const data = await lerPlanilhaOAuth('RESPOSTAS', 'A:A');
             let rows = data.slice(1).filter(row => row[0]?.trim() !== id);
-            // Se ficar vazio, manter cabeçalho
             const header = [['ID']];
             const newData = header.concat(rows.map(row => [row[0]]));
             await escreverPlanilhaOAuth('RESPOSTAS', 'A1:A' + newData.length, newData);
             respostasSet.delete(id);
             alert(`✅ Pacote ${id} marcado como PENDENTE.`);
         } else {
-            // Adicionar à aba RESPOSTAS
             const data = await lerPlanilhaOAuth('RESPOSTAS', 'A:A');
             const nextRow = data ? data.length + 1 : 2;
             await escreverPlanilhaOAuth('RESPOSTAS', `A${nextRow}:A${nextRow}`, [[id]]);
             respostasSet.add(id);
             alert(`✅ Pacote ${id} marcado como JUSTIFICADO.`);
         }
-        // Recarregar a lista e os dados
         await carregarDescricoesERespostas();
-        // Recarregar a visualização da transportadora (se estiver na visão)
         if (usuarioTransportadora && rawDataPacotes) {
             processarPacotesComFiltro();
         } else {
-            // se admin sem transportadora, recarregar normalmente
             carregarTodosOsDados();
         }
     } catch (error) {
@@ -1928,19 +1902,19 @@ function processarPacotesComFiltro() {
     if (!rawDataPacotes || rawDataPacotes.length === 0) return;
     let dadosFiltrados = rawDataPacotes;
     if (usuarioTransportadora) {
-        // Dividir nomes por ';'
         const transportadoras = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean);
         const upperTransps = transportadoras.map(t => t.toUpperCase());
         dadosFiltrados = rawDataPacotes.filter(row => {
             let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
             const normTransp = transp.trim().toUpperCase();
-            // Verificar se a transportadora do pacote está na lista do usuário
             return upperTransps.some(t => {
                 if (t === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
                 return normTransp === t;
             });
         });
     }
+    window._dadosFiltradosCompletos = dadosFiltrados;
+
     processedDataPacotes = processarDadosPacotes(dadosFiltrados);
     renderKPI_Pacotes(processedDataPacotes);
     renderGraficosPacotes(processedDataPacotes, dadosFiltrados);
@@ -1958,7 +1932,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  GRÁFICOS (com suporte a múltiplas transportadoras)
+//  GRÁFICOS (com suporte a múltiplas transportadoras e pizza por motorista)
 // ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
@@ -2110,7 +2084,6 @@ function renderSecaoTransportadoras(data) {
 
     if (usuarioTransportadora) {
         const transportadoras = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean);
-        // Encontrar objetos que correspondam a qualquer transportadora do usuário
         const transpObjs = data.transportadoras.filter(t => 
             transportadoras.some(transp => {
                 const tUpper = t.nome.toUpperCase();
@@ -2123,8 +2096,6 @@ function renderSecaoTransportadoras(data) {
             container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Dados das transportadoras não encontrados</div>`;
             return;
         }
-        // Para simplificar, vamos consolidar os IDs de todas essas transportadoras em uma única lista
-        // Isso requer juntar os arrays
         const idsConsolidados = [];
         const valoresConsolidados = [];
         const motoristasConsolidados = [];
@@ -2133,7 +2104,6 @@ function renderSecaoTransportadoras(data) {
             valoresConsolidados.push(...t.valores);
             motoristasConsolidados.push(...t.motoristas);
         });
-        // Reconstruir um objeto "transportadora virtual" com os dados consolidados
         const transpObjConsolidado = {
             nome: usuarioTransportadora.replace(/;/g, ', '),
             ids: idsConsolidados,
@@ -2145,7 +2115,23 @@ function renderSecaoTransportadoras(data) {
         };
         titulo.textContent = `📦 Pacotes - ${usuarioTransportadora.replace(/;/g, ', ')}`;
         legenda.textContent = `Total: ${transpObjConsolidado.ids.length} pacotes`;
-        renderListaIdsTransportadora(transpObjConsolidado);
+
+        let linhasFiltradas = [];
+        if (window._dadosFiltradosCompletos) {
+            const idsSet = new Set(transpObjConsolidado.ids);
+            linhasFiltradas = window._dadosFiltradosCompletos.filter(row => {
+                const id = String(row['ID do envio'] || '').trim();
+                return idsSet.has(id);
+            });
+        } else if (rawDataPacotes) {
+            const idsSet = new Set(transpObjConsolidado.ids);
+            linhasFiltradas = rawDataPacotes.filter(row => {
+                const id = String(row['ID do envio'] || '').trim();
+                return idsSet.has(id);
+            });
+        }
+
+        renderListaIdsTransportadora(transpObjConsolidado, linhasFiltradas);
     } else {
         titulo.textContent = '🚚 Transportadoras';
         legenda.textContent = 'Clique em uma transportadora para ver os IDs';
@@ -2154,42 +2140,119 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  RENDERIZAR LISTA DE IDs (com botão de alternar status para admin)
+//  RENDERIZAR LISTA DE IDs (com seletor de ordenação, paginação e botão de alternar status para admin)
 // ================================================================
-function renderListaIdsTransportadora(transpObj) {
+function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
-    const ids = transpObj.ids || [];
-    const valores = transpObj.valores || [];
-    const motoristas = transpObj.motoristas || [];
+    let linhas = linhasFiltradas || [];
 
-    if (ids.length === 0) {
+    if (linhas.length === 0 && transpObj.ids) {
+        linhas = transpObj.ids.map((id, i) => ({
+            'ID do envio': id,
+            'Valor declarado': String(transpObj.valores[i] || 0),
+            'MOTORISTA': transpObj.motoristas[i] || '',
+            'DATA': ''
+        }));
+    }
+
+    if (linhas.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhum pacote encontrado</div>`;
         return;
     }
 
-    window._listaIds = ids;
-    window._listaValores = valores;
-    window._listaMotoristas = motoristas;
-    window._listaDescricoes = ids.map(id => descricaoMap[id] || '');
-    window._listaJustificados = ids.map(id => respostasSet.has(id));
+    window._linhasAtuais = linhas;
+    window._ordenacaoAtual = 'valor_asc';
     window._paginaIdsAtual = 1;
 
-    function renderPaginaIds() {
-        const page = window._paginaIdsAtual;
-        const start = (page - 1) * ITEMS_PER_PAGE;
-        const end = Math.min(start + ITEMS_PER_PAGE, window._listaIds.length);
-        const idsPagina = window._listaIds.slice(start, end);
-        const valoresPagina = window._listaValores.slice(start, end);
-        const motoristasPagina = window._listaMotoristas.slice(start, end);
-        const descricoesPagina = window._listaDescricoes.slice(start, end);
-        const justificadosPagina = window._listaJustificados.slice(start, end);
+    function ordenarERenderizar(opcao) {
+        window._ordenacaoAtual = opcao;
+        let linhasOrdenadas = [...window._linhasAtuais];
+        const isAdmin = currentUserRole === 'admin';
 
-        let footerHtml = '';
-        if (end < window._listaIds.length) {
-            footerHtml = `<div style="text-align:center; padding:12px; border-top:1px solid var(--line-soft);">
-                <button class="btn-carregar-mais" onclick="carregarMaisIds()">📥 Carregar mais ${Math.min(ITEMS_PER_PAGE, window._listaIds.length - end)} IDs</button>
-            </div>`;
+        switch(opcao) {
+            case 'valor_asc':
+                linhasOrdenadas.sort((a, b) => {
+                    const va = parseFloat(String(a['Valor declarado'] || '0').replace(',', '.')) || 0;
+                    const vb = parseFloat(String(b['Valor declarado'] || '0').replace(',', '.')) || 0;
+                    return va - vb;
+                });
+                break;
+            case 'valor_desc':
+                linhasOrdenadas.sort((a, b) => {
+                    const va = parseFloat(String(a['Valor declarado'] || '0').replace(',', '.')) || 0;
+                    const vb = parseFloat(String(b['Valor declarado'] || '0').replace(',', '.')) || 0;
+                    return vb - va;
+                });
+                break;
+            case 'data_asc':
+                linhasOrdenadas.sort((a, b) => {
+                    const da = a['DATA'] || '';
+                    const db = b['DATA'] || '';
+                    return da.localeCompare(db);
+                });
+                break;
+            case 'data_desc':
+                linhasOrdenadas.sort((a, b) => {
+                    const da = a['DATA'] || '';
+                    const db = b['DATA'] || '';
+                    return db.localeCompare(da);
+                });
+                break;
+            default:
+                break;
         }
+
+        const ids = linhasOrdenadas.map(row => String(row['ID do envio'] || '').trim());
+        const valores = linhasOrdenadas.map(row => parseFloat(String(row['Valor declarado'] || '0').replace(',', '.')) || 0);
+        const motoristas = linhasOrdenadas.map(row => {
+            let m = String(row['MOTORISTA'] || row['motorista'] || '').trim();
+            if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
+            return m;
+        });
+
+        const objOrdenado = {
+            nome: transpObj.nome,
+            ids: ids,
+            valores: valores,
+            motoristas: motoristas,
+            quantidade: ids.length,
+            valorTotal: valores.reduce((a, b) => a + b, 0),
+            valorFormatado: 'R$ ' + valores.reduce((a, b) => a + b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+        };
+
+        renderizarListaPaginada(objOrdenado);
+    }
+
+    function renderizarListaPaginada(objOrdenado) {
+        const ids = objOrdenado.ids;
+        const valores = objOrdenado.valores;
+        const motoristas = objOrdenado.motoristas;
+        const descricoes = ids.map(id => descricaoMap[id] || '');
+        const justificados = ids.map(id => respostasSet.has(id));
+        const page = window._paginaIdsAtual || 1;
+        const totalPaginas = Math.ceil(ids.length / ITEMS_PER_PAGE);
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = Math.min(start + ITEMS_PER_PAGE, ids.length);
+
+        const idsPagina = ids.slice(start, end);
+        const valoresPagina = valores.slice(start, end);
+        const motoristasPagina = motoristas.slice(start, end);
+        const descricoesPagina = descricoes.slice(start, end);
+        const justificadosPagina = justificados.slice(start, end);
+
+        const navHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">
+                Mostrando ${start + 1} a ${end} de ${ids.length} IDs (Página ${page} de ${totalPaginas})
+            </span>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-secondary" style="padding:4px 14px; font-size:11px; background:var(--panel);" onclick="irParaPaginaIds(${page - 1})" ${page <= 1 ? 'disabled' : ''}>
+                    ◀ Anterior
+                </button>
+                <button class="btn-secondary" style="padding:4px 14px; font-size:11px; background:var(--panel);" onclick="irParaPaginaIds(${page + 1})" ${end >= ids.length ? 'disabled' : ''}>
+                    Próximo ▶
+                </button>
+            </div>
+        </div>`;
 
         const selecaoBar = `<div class="selecao-bar" id="selecaoBarIds">
             <div class="info">📌 <span id="selecionadosCountIds">0</span> pacotes selecionados</div>
@@ -2198,9 +2261,7 @@ function renderListaIdsTransportadora(transpObj) {
             <button class="btn-selecionar" onclick="limparSelecaoIds()">Limpar</button>
         </div>`;
 
-        // Verificar se é admin para mostrar coluna de ação
         const isAdmin = currentUserRole === 'admin';
-
         let headerCols = `
             <th style="width:30px;"></th>
             <th style="width:30px;">#</th>
@@ -2213,17 +2274,26 @@ function renderListaIdsTransportadora(transpObj) {
             headerCols += `<th style="width:80px;">Ação</th>`;
         }
 
-        let tableWithCheckboxes = `<div class="ids-tabela-wrap">
+        const ordenacaoHtml = `<div style="display:flex; align-items:center; gap:10px; padding:8px 14px; background:var(--bg); border-bottom:1px solid var(--line-soft); flex-wrap:wrap;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Ordenar por:</span>
+            <select id="ordenacaoSelect" style="background:var(--panel); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:11px; cursor:pointer; outline:none;">
+                <option value="valor_asc" ${window._ordenacaoAtual === 'valor_asc' ? 'selected' : ''}>Valor (menor → maior)</option>
+                <option value="valor_desc" ${window._ordenacaoAtual === 'valor_desc' ? 'selected' : ''}>Valor (maior → menor)</option>
+                <option value="data_asc" ${window._ordenacaoAtual === 'data_asc' ? 'selected' : ''}>Data (mais antigo)</option>
+                <option value="data_desc" ${window._ordenacaoAtual === 'data_desc' ? 'selected' : ''}>Data (mais recente)</option>
+            </select>
+        </div>`;
+
+        let tableHtml = `<div class="ids-tabela-wrap">
             <div class="header">
                 <h3>📋 Lista de Pacotes</h3>
                 <span class="badge">${ids.length} registros</span>
             </div>
+            ${ordenacaoHtml}
             ${selecaoBar}
             <div class="ids-tabela">
                 <table>
-                    <thead>
-                        <tr>${headerCols}</tr>
-                    </thead>
+                    <thead><tr>${headerCols}</tr></thead>
                     <tbody>`;
 
         idsPagina.forEach((id, index) => {
@@ -2246,20 +2316,31 @@ function renderListaIdsTransportadora(transpObj) {
             if (isAdmin) {
                 const btnText = justificado ? 'Desmarcar' : 'Justificar';
                 const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle';
-                row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}', '${transpObj.nome.replace(/'/g, "\\'")}', '${motorista.replace(/'/g, "\\'")}')">${btnText}</button></td>`;
+                row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}', '${objOrdenado.nome.replace(/'/g, "\\'")}', '${motorista.replace(/'/g, "\\'")}')">${btnText}</button></td>`;
             }
             row += `</tr>`;
-            tableWithCheckboxes += row;
+            tableHtml += row;
         });
 
-        tableWithCheckboxes += `</tbody></table>${footerHtml}</div></div>`;
-        container.innerHTML = tableWithCheckboxes;
+        tableHtml += `</tbody></table>${navHtml}</div></div>`;
+        container.innerHTML = tableHtml;
         atualizarSelecaoIds();
+
+        const select = document.getElementById('ordenacaoSelect');
+        if (select) {
+            select.addEventListener('change', function() {
+                const opcao = this.value;
+                window._paginaIdsAtual = 1;
+                ordenarERenderizar(opcao);
+            });
+        }
     }
 
-    window.carregarMaisIds = function() {
-        window._paginaIdsAtual++;
-        renderPaginaIds();
+    window.irParaPaginaIds = function(pagina) {
+        const totalPaginas = Math.ceil(window._linhasAtuais.length / ITEMS_PER_PAGE);
+        if (pagina < 1 || pagina > totalPaginas) return;
+        window._paginaIdsAtual = pagina;
+        ordenarERenderizar(window._ordenacaoAtual);
     };
 
     window.selecionarTodosIds = function() {
@@ -2309,7 +2390,7 @@ function renderListaIdsTransportadora(transpObj) {
         abrirModalResposta();
     };
 
-    renderPaginaIds();
+    ordenarERenderizar('valor_asc');
 }
 
 // ================================================================
