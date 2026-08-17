@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
-  /* ===== ESTILOS (mesmo código anterior, mantido) ===== */
+  /* ===== ESTILOS COMPLETOS (mantidos) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -30,9 +30,7 @@
     --purple:#9b59b6;
     --cruzamento:#e67e22;
   }
-
   *{box-sizing:border-box; margin:0; padding:0;}
-
   body{
     background:
       repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px),
@@ -42,9 +40,7 @@
     padding:0 0 80px 0;
     min-height:100vh;
   }
-
   .wrap{max-width:1280px; margin:0 auto; padding:0 28px;}
-
   .masthead{
     border-bottom:1px solid var(--line);
     padding:38px 0 26px 0;
@@ -86,7 +82,6 @@
     line-height:1.55;
   }
   .masthead p b{color:var(--text); font-weight:600;}
-
   .login-btn{
     position:fixed;
     top:20px;
@@ -108,7 +103,6 @@
   .login-btn:hover{opacity:.85;}
   .login-btn.logged{background:var(--success); cursor:default; opacity:1;}
   .login-btn.error{background:var(--danger); cursor:default; opacity:1;}
-
   .tabs{
     display:flex;
     gap:2px;
@@ -155,7 +149,6 @@
     0%{opacity:0; transform:translateY(8px);}
     100%{opacity:1; transform:translateY(0);}
   }
-
   .status-bar{
     background:var(--panel);
     border:1px solid var(--line);
@@ -190,7 +183,6 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
   }
-
   .btn{
     padding:8px 20px;
     font-family:'Oswald', sans-serif;
@@ -213,7 +205,6 @@
     border:1px solid var(--line-soft);
   }
   .btn-secondary:hover{border-color:var(--text); color:var(--text);}
-
   .kpi-strip{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -263,7 +254,6 @@
   .kpi .num.info{color:var(--info);}
   .kpi .num.purple{color:var(--purple);}
   .kpi .num.cruzamento{color:var(--cruzamento);}
-
   .charts-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -289,8 +279,6 @@
     height:220px;
     position:relative;
   }
-
-  /* 🔥 TRANSPORTADORAS GRID - COM BLOQUEIO PARA VIEWER */
   .transportadoras-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -329,7 +317,6 @@
   }
   .transportadora-card .detalhes .qtd{color:var(--naoplan); font-weight:600;}
   .transportadora-card .detalhes .valor{color:var(--plan); font-weight:600;}
-
   .zona-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -383,8 +370,6 @@
     color:var(--text-faint);
     margin-top:4px;
   }
-
-  /* ===== CRUZAMENTO ===== */
   .cruzamento-stats{
     display:grid;
     grid-template-columns:1fr 1fr 1fr 1fr;
@@ -421,7 +406,6 @@
   .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
   .cruzamento-stat .num.success{color:var(--success);}
   .cruzamento-stat .num.responsabilidade{color:var(--info);}
-
   .cruzamento-transp-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr 1fr;
@@ -457,7 +441,6 @@
   .cruzamento-transp-card .detalhes .pct{
     color:var(--text-faint);
   }
-
   .cruzamento-tabela-wrap{
     border:1px solid var(--line);
     background:var(--panel);
@@ -534,7 +517,6 @@
     background:var(--cruzamento);
     color:#fff;
   }
-
   .preview-box{
     border:1px solid var(--line-soft);
     background:var(--bg);
@@ -585,7 +567,6 @@
     color:var(--naoplan);
     font-weight:600;
   }
-
   .badge{
     font-family:'IBM Plex Mono', monospace;
     font-size:10px;
@@ -595,7 +576,6 @@
     border:1px solid var(--line-soft);
     border-radius:3px;
   }
-
   .filter-float-btn{
     position:fixed;
     bottom:30px;
@@ -628,7 +608,6 @@
     font-size:12px;
   }
   .filter-float-btn.hidden{display:none;}
-
   .filter-modal-overlay{
     display:none;
     position:fixed;
@@ -731,7 +710,6 @@
   .filter-modal-body .filter-actions .btn-sm:hover{opacity:.8;}
   .filter-modal-body .filter-actions .btn-sm.btn-select-all{background:var(--plan); color:#fff;}
   .filter-modal-body .filter-actions .btn-sm.btn-clear-all{background:var(--faltante); color:#fff;}
-
   .filter-modal-body .transp-filter-container{
     display:flex;
     flex-wrap:wrap;
@@ -781,7 +759,6 @@
     font-family:'IBM Plex Mono', monospace;
     margin-left:2px;
   }
-
   .filter-modal-footer{
     padding:14px 24px;
     border-top:1px solid var(--line);
@@ -807,8 +784,6 @@
     transition:opacity .2s;
   }
   .filter-modal-footer .btn-apply:hover{opacity:.8;}
-
-  /* ===== MODAL ===== */
   .modal-overlay{
     display:none;
     position:fixed;
@@ -862,7 +837,6 @@
     border-color:var(--faltante);
     color:var(--faltante);
   }
-
   .filter-container{
     display:flex;
     align-items:center;
@@ -908,7 +882,6 @@
     border:1px solid var(--line-soft);
     border-radius:2px;
   }
-
   .modal-body{
     padding:20px 24px;
     overflow-y:auto;
@@ -1004,7 +977,6 @@
     margin-bottom:8px;
     display:block;
   }
-
   .selecao-bar{
     display:flex;
     align-items:center;
@@ -1080,7 +1052,6 @@
     background:var(--panel);
     border-color:var(--text-dim);
   }
-
   .modal-footer{
     padding:14px 24px;
     border-top:1px solid var(--line);
@@ -1119,7 +1090,6 @@
     font-weight:600;
   }
   .modal-footer .btn-copy-all:hover{opacity:.8;}
-
   .resposta-modal .modal{max-width:600px;}
   .resposta-modal .modal-body .campo{
     margin-bottom:14px;
@@ -1193,7 +1163,6 @@
   .resposta-modal .modal-body .status-msg.success{color:var(--success);}
   .resposta-modal .modal-body .status-msg.error{color:var(--faltante);}
   .resposta-modal .modal-body .status-msg.loading{color:var(--warning);}
-
   .no-data{
     color:var(--text-faint);
     font-family:'IBM Plex Mono', monospace;
@@ -1220,7 +1189,6 @@
     0%{transform:rotate(0deg);}
     100%{transform:rotate(360deg);}
   }
-
   .debug-box{
     background:var(--panel);
     border:1px solid var(--line);
@@ -1239,7 +1207,6 @@
   }
   .debug-box .debug-item .key{color:var(--text); font-weight:600;}
   .debug-box .debug-item .value{color:var(--text-dim);}
-
   footer{
     margin-top:50px;
     padding-top:16px;
@@ -1253,7 +1220,6 @@
     color:var(--text-faint);
     letter-spacing:.04em;
   }
-
   .role-badge {
     margin-left: 10px;
     padding: 2px 12px;
@@ -1267,8 +1233,6 @@
   .role-badge.admin { background: var(--success); color: #fff; }
   .role-badge.editor { background: var(--warning); color: #14161a; }
   .role-badge.viewer { background: var(--text-faint); color: #fff; }
-  .role-badge.transportadora { background: var(--cruzamento); color: #fff; }
-
   .filter-info-transp {
     background: var(--panel-alt);
     border-left: 3px solid var(--cruzamento);
@@ -1281,7 +1245,6 @@
     margin-left: 8px;
   }
   .filter-info-transp strong { color: var(--text); }
-
   @media (max-width:860px){
     .kpi-strip{grid-template-columns:1fr 1fr;}
     .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
@@ -1340,16 +1303,13 @@
     <p>Dashboards integrados para análise de <b>pacotes pendentes por transportadora</b>, <b>status do inventário por zona</b> e <b>cruzamento</b> entre as duas bases.</p>
   </div>
 
-  <!-- ===== TABS ===== -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes</button>
     <button class="tab-btn" data-tab="tabInventario">📊 Inventário</button>
     <button class="tab-btn tab-cruzamento" data-tab="tabCruzamento">🔗 Cruzamento</button>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- TAB 1: PACOTES PENDENTES                                    -->
-  <!-- ========================================================== -->
+  <!-- TAB 1: PACOTES -->
   <div class="tab-content active" id="tabPacotes">
     <div class="status-bar">
       <div class="info">
@@ -1361,22 +1321,13 @@
       </div>
       <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
     </div>
-
-    <div class="preview-box" id="previewPacotes">
-      <div class="empty-message">
-        <div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div>
-      </div>
-    </div>
-
+    <div class="preview-box" id="previewPacotes"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
     <div class="debug-box" id="debugPacotes"><div style="color:var(--text-faint);">Aguardando autenticação...</div></div>
-
     <div class="kpi-strip" id="kpiStripPacotes"></div>
-
     <div class="charts-grid">
       <div class="chart-card"><h3>📊 Pacotes por Transportadora</h3><div class="chart-container"><canvas id="chartQuantidade"></canvas></div></div>
       <div class="chart-card"><h3>💰 Valor Total por Transportadora</h3><div class="chart-container"><canvas id="chartValor"></canvas></div></div>
     </div>
-
     <div style="margin-top:30px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
         <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;">🚚 Transportadoras</h2>
@@ -1384,13 +1335,10 @@
       </div>
       <div class="transportadoras-grid" id="transportadorasGrid"></div>
     </div>
-
     <footer><span>FONTE — PLANILHA GOOGLE SHEETS (Página1)</span><span id="footerTotalPacotes">0 registros</span></footer>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- TAB 2: INVENTÁRIO POR ZONA                                  -->
-  <!-- ========================================================== -->
+  <!-- TAB 2: INVENTÁRIO -->
   <div class="tab-content" id="tabInventario">
     <div class="status-bar">
       <div class="info">
@@ -1401,22 +1349,13 @@
       </div>
       <button class="btn btn-primary" id="refreshInventario">🔄 Atualizar</button>
     </div>
-
-    <div class="preview-box" id="previewInventario">
-      <div class="empty-message">
-        <div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div>
-      </div>
-    </div>
-
+    <div class="preview-box" id="previewInventario"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
     <div class="debug-box" id="debugInventario"><div style="color:var(--text-faint);">Aguardando autenticação...</div></div>
-
     <div class="kpi-strip kpi-5" id="kpiStripInventario"></div>
-
     <div class="charts-grid">
       <div class="chart-card"><h3>📊 Status por Zona</h3><div class="chart-container"><canvas id="chartZona"></canvas></div></div>
       <div class="chart-card"><h3>📊 Visão Geral do Inventário</h3><div class="chart-container"><canvas id="chartOverview"></canvas></div></div>
     </div>
-
     <div style="margin-top:30px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
         <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;">📍 Zonas</h2>
@@ -1424,13 +1363,10 @@
       </div>
       <div class="zona-grid" id="zonaGrid"></div>
     </div>
-
     <footer><span>FONTE — PLANILHA GOOGLE SHEETS (INVENTÁRIO)</span><span id="footerTotalInventario">0 registros</span></footer>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- TAB 3: CRUZAMENTO                                           -->
-  <!-- ========================================================== -->
+  <!-- TAB 3: CRUZAMENTO -->
   <div class="tab-content" id="tabCruzamento">
     <div class="status-bar">
       <div class="info">
@@ -1441,16 +1377,12 @@
       </div>
       <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
     </div>
-
-    <!-- Stats do Cruzamento -->
     <div class="cruzamento-stats" id="cruzamentoStats">
       <div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 faltantes no inventário</div></div>
       <div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 em ambos</div></div>
       <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:32px;">0</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
       <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:32px;">0</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">0 transportadoras selecionadas</div></div>
     </div>
-
-    <!-- Filtro por transportadora -->
     <div style="margin-top:26px; background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:16px 20px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -1466,8 +1398,6 @@
         <span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 0;">Aguardando autenticação...</span>
       </div>
     </div>
-
-    <!-- Cards por transportadora -->
     <div style="margin-top:26px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
         <h2 style="font-family:'Oswald',sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.03em;font-weight:500;color:var(--text-dim);">🚚 Total por Transportadora (Em Ambos)</h2>
@@ -1475,19 +1405,16 @@
       </div>
       <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid"><div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Aguardando autenticação...</div></div>
     </div>
-
-    <!-- Tabela de Cruzamento -->
     <div class="cruzamento-tabela-wrap">
       <div class="header"><h3>🔗 Detalhamento dos Pacotes em Ambos</h3><span class="badge" id="cruzamentoCount">0 registros</span></div>
       <div class="cruzamento-tabela">
         <table><thead><tr><th>ID do Envio</th><th>Transportadora</th><th>Status Inventário</th><th>Zona</th><th>Situação</th></tr></thead><tbody id="cruzamentoTbody"><tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Aguardando autenticação...</td></tr></tbody></table>
       </div>
     </div>
-
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
 
-  <!-- ===== MODAL DE DETALHES (PACOTES) ===== -->
+  <!-- MODAL DE DETALHES -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header"><h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button></div>
@@ -1506,7 +1433,7 @@
     </div>
   </div>
 
-  <!-- ===== MODAL DE RESPOSTA ===== -->
+  <!-- MODAL DE RESPOSTA -->
   <div class="modal-overlay resposta-modal" id="respostaModalOverlay">
     <div class="modal">
       <div class="modal-header"><h2>📝 Responder Pacotes</h2><button class="close-btn" id="respostaModalClose">✕</button></div>
@@ -1524,7 +1451,7 @@
     </div>
   </div>
 
-  <!-- ===== FILTRO FLUTUANTE ===== -->
+  <!-- FILTRO FLUTUANTE -->
   <button class="filter-float-btn hidden" id="filterFloatBtn">🔍 Filtros <span class="badge-count" id="filterFloatBadge">0</span></button>
   <div class="filter-modal-overlay" id="filterModalOverlay">
     <div class="filter-modal">
@@ -1539,7 +1466,6 @@
       <div class="filter-modal-footer"><button class="btn-apply" id="filterApplyBtn">✅ Aplicar Filtros</button></div>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -1549,20 +1475,19 @@
 const CLIENT_ID = '579820771518-347rvhvd3cic1h8nn1lb49rb9gejb20h.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets profile email';
 const SPREADSHEET_ID = '1yNmMLDWijfqPh2u-90_BGr-kJk3kEdC8dF47DCowqvs';
-
 let tokenClient = null;
 let accessToken = null;
 let isAuthenticated = false;
 
 // ================================================================
-//  VARIÁVEIS DE PERFIL E PERMISSÕES
+//  PERFIL E PERMISSÕES
 // ================================================================
 let currentUserEmail = '';
 let currentUserRole = 'viewer';
 let usuarioTransportadora = null;
 
 // ================================================================
-//  DADOS DE EXEMPLO (FALLBACK)
+//  DADOS DE EXEMPLO
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
   { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA | NEXBRNMG9402', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '' },
@@ -1573,7 +1498,6 @@ const DADOS_EXEMPLO_PACOTES = [
   { 'ID do envio': '47722655388', 'TRANSPORTADORA': 'ENVIOS EXTRA | NEXBRNMG631', 'Valor declarado': '155.92', 'Status do envio': 'sorting', 'MOTORISTA': '' },
   { 'ID do envio': '47652568365', 'TRANSPORTADORA': 'ENVIOS EXTRA | NEXBRNMG8', 'Valor declarado': '85.49', 'Status do envio': 'sorting', 'MOTORISTA': '' },
 ];
-
 const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47751167939', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
   { 'SHIPMENT': '47682868648', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
@@ -1594,32 +1518,22 @@ let processedDataPacotes = null;
 let rawDataInventario = null;
 let processedDataInventario = null;
 let dadosCruzamento = null;
-
-let chartQuantidade = null;
-let chartValor = null;
-let chartZona = null;
-let chartOverview = null;
-
+let chartQuantidade = null, chartValor = null, chartZona = null, chartOverview = null;
 let modalTransportadora = null;
 let idsSelecionados = new Set();
 let motoristasSelecionados = {};
 let modalCurrentPage = 1;
 const ITEMS_PER_PAGE = 50;
-let modalTotalIds = [];
-let modalTotalValores = [];
-let modalTotalMotoristas = [];
-
+let modalTotalIds = [], modalTotalValores = [], modalTotalMotoristas = [];
 let filtroTransportadoras = new Set();
 let filtroTransportadorasResp = new Set();
 
 // ================================================================
-//  🔥 FUNÇÃO MELHORADA: GARANTIR QUE O USUÁRIO ESTEJA NA PLANILHA
-//  (CRIA A ABA SE NÃO EXISTIR, ESCREVE CABEÇALHO E INSERE O USUÁRIO)
+//  FUNÇÃO: GARANTIR USUÁRIO NA PLANILHA (CRIA ABA SE NECESSÁRIO)
 // ================================================================
 async function garantirUsuarioNaPlanilha(email) {
     if (!email) return;
     try {
-        // 1. Verificar se a aba USUARIOS existe
         let abaExiste = false;
         try {
             const spreadsheet = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}`, {
@@ -1628,53 +1542,29 @@ async function garantirUsuarioNaPlanilha(email) {
             const data = await spreadsheet.json();
             const sheets = data.sheets || [];
             abaExiste = sheets.some(s => s.properties.title === 'USUARIOS');
-            console.log(`📋 Aba USUARIOS existe? ${abaExiste}`);
-        } catch (err) {
-            console.warn('Erro ao verificar abas:', err);
-        }
+        } catch (err) { console.warn('Erro ao verificar abas:', err); }
 
-        // 2. Se não existir, criar a aba
         if (!abaExiste) {
             try {
-                const batchUpdate = {
-                    requests: [{
-                        addSheet: {
-                            properties: { title: 'USUARIOS' }
-                        }
-                    }]
-                };
+                const batchUpdate = { requests: [{ addSheet: { properties: { title: 'USUARIOS' } } }] };
                 await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify(batchUpdate)
                 });
-                console.log('✅ Aba USUARIOS criada com sucesso.');
-                // Escreve o cabeçalho
                 await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
-                console.log('✅ Cabeçalho da aba USUARIOS criado.');
-                // Aguarda um momento para a planilha processar
                 await new Promise(resolve => setTimeout(resolve, 500));
-            } catch (err) {
-                console.error('❌ Erro ao criar aba USUARIOS:', err);
-                // Se não conseguir criar, talvez a planilha seja somente leitura? Vamos seguir.
-            }
+            } catch (err) { console.error('Erro ao criar aba USUARIOS:', err); }
         }
 
-        // 3. Ler os dados atuais
         let data;
         try {
             data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         } catch (err) {
-            console.warn('Erro ao ler USUARIOS, tentando criar cabeçalho...', err);
-            // Se não conseguir ler, tentamos escrever cabeçalho
             await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
             data = [['EMAIL', 'ROLE', 'TRANSPORTADORA']];
         }
 
-        // 4. Verificar se o email já existe (case-insensitive)
         let encontrado = false;
         if (data && data.length > 0) {
             for (let i = 1; i < data.length; i++) {
@@ -1685,30 +1575,26 @@ async function garantirUsuarioNaPlanilha(email) {
                 }
             }
         }
-
-        // 5. Se não existir, inserir novo usuário como viewer
         if (!encontrado) {
             const nextRow = data ? data.length + 1 : 2;
             await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
-            console.log(`✅ Usuário ${email} adicionado como viewer na linha ${nextRow}.`);
+            console.log(`✅ Usuário ${email} adicionado como viewer.`);
         } else {
             console.log(`ℹ️ Usuário ${email} já cadastrado.`);
         }
     } catch (error) {
-        console.error('❌ Erro ao garantir usuário na planilha:', error);
-        // Não interrompe o fluxo principal
+        console.error('Erro ao garantir usuário na planilha:', error);
     }
 }
 
 // ================================================================
-//  FUNÇÃO PARA CARREGAR PERMISSÕES DA PLANILHA
+//  CARREGAR PERMISSÕES
 // ================================================================
 async function carregarPermissoesDaPlanilha() {
     if (!accessToken) return;
     try {
         const data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         if (!data || data.length < 2) {
-            console.warn('Planilha USUARIOS vazia ou não encontrada. Usando permissão padrão (viewer).');
             currentUserRole = 'viewer';
             usuarioTransportadora = null;
             aplicarRestricoesPorPerfil();
@@ -1719,7 +1605,6 @@ async function carregarPermissoesDaPlanilha() {
         const roleCol = headers.indexOf('ROLE');
         const transpCol = headers.indexOf('TRANSPORTADORA');
         if (emailCol === -1 || roleCol === -1) {
-            console.warn('Colunas EMAIL ou ROLE não encontradas na planilha USUARIOS. Usando padrão.');
             currentUserRole = 'viewer';
             usuarioTransportadora = null;
             aplicarRestricoesPorPerfil();
@@ -1730,48 +1615,18 @@ async function carregarPermissoesDaPlanilha() {
             const row = data[i];
             const email = row[emailCol]?.trim() || '';
             if (email === currentUserEmail) {
-                const role = row[roleCol]?.trim().toLowerCase() || 'viewer';
-                currentUserRole = role;
-                if (transpCol !== -1) {
-                    const transp = row[transpCol]?.trim() || '';
-                    usuarioTransportadora = transp || null;
-                } else {
-                    usuarioTransportadora = null;
-                }
+                currentUserRole = row[roleCol]?.trim().toLowerCase() || 'viewer';
+                usuarioTransportadora = (transpCol !== -1) ? (row[transpCol]?.trim() || null) : null;
                 encontrou = true;
                 break;
             }
         }
         if (!encontrou) {
-            // Se não encontrou, significa que o usuário acabou de ser cadastrado? 
-            // Vamos recarregar a planilha para garantir.
-            console.log('ℹ️ Usuário não encontrado após cadastro, tentando recarregar...');
-            const data2 = await lerPlanilhaOAuth('USUARIOS', 'A:C');
-            for (let i = 1; i < data2.length; i++) {
-                const row = data2[i];
-                const email = row[emailCol]?.trim() || '';
-                if (email === currentUserEmail) {
-                    const role = row[roleCol]?.trim().toLowerCase() || 'viewer';
-                    currentUserRole = role;
-                    if (transpCol !== -1) {
-                        const transp = row[transpCol]?.trim() || '';
-                        usuarioTransportadora = transp || null;
-                    } else {
-                        usuarioTransportadora = null;
-                    }
-                    encontrou = true;
-                    break;
-                }
-            }
-            if (!encontrou) {
-                currentUserRole = 'viewer';
-                usuarioTransportadora = null;
-            }
+            currentUserRole = 'viewer';
+            usuarioTransportadora = null;
         }
-        console.log(`📋 Permissões carregadas: role=${currentUserRole}, transportadora=${usuarioTransportadora || 'TODAS'}`);
         aplicarRestricoesPorPerfil();
     } catch (error) {
-        console.error('Erro ao carregar permissões da planilha:', error);
         currentUserRole = 'viewer';
         usuarioTransportadora = null;
         aplicarRestricoesPorPerfil();
@@ -1779,7 +1634,7 @@ async function carregarPermissoesDaPlanilha() {
 }
 
 // ================================================================
-//  FUNÇÃO PARA BUSCAR INFORMAÇÕES DO USUÁRIO
+//  BUSCAR USUÁRIO (USERINFO)
 // ================================================================
 async function getUserInfo() {
     if (!accessToken) return null;
@@ -1790,26 +1645,18 @@ async function getUserInfo() {
         const data = await response.json();
         if (data.email) {
             currentUserEmail = data.email;
-            console.log('👤 Usuário logado:', currentUserEmail);
-            // 🔥 Primeiro, garante que o usuário está na planilha
             await garantirUsuarioNaPlanilha(currentUserEmail);
-            // 🔥 Depois, carrega as permissões
             await carregarPermissoesDaPlanilha();
             return data;
         }
-    } catch (error) {
-        console.error('Erro ao buscar usuário:', error);
-    }
+    } catch (error) { console.error('Erro ao buscar usuário:', error); }
     return null;
 }
 
 // ================================================================
-//  APLICAR RESTRIÇÕES NA INTERFACE
+//  APLICAR RESTRIÇÕES
 // ================================================================
 function aplicarRestricoesPorPerfil() {
-    console.log(`🔒 Aplicando restrições: role=${currentUserRole}, transp=${usuarioTransportadora || 'TODAS'}`);
-
-    // 1. Esconder aba Cruzamento para não-admins
     const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
     if (currentUserRole === 'admin') {
         if (tabCruzamento) tabCruzamento.style.display = 'block';
@@ -1821,7 +1668,6 @@ function aplicarRestricoesPorPerfil() {
         }
     }
 
-    // 2. Bloquear "Responder" para viewers
     const originalAbrirResposta = window.abrirModalResposta || function() {};
     window.abrirModalResposta = function() {
         if (currentUserRole === 'viewer') {
@@ -1831,22 +1677,13 @@ function aplicarRestricoesPorPerfil() {
         originalAbrirResposta();
     };
 
-    // 3. Atualizar badges
     const containers = [
         document.getElementById('roleBadgeContainer'),
         document.getElementById('roleBadgeContainerInventario'),
         document.getElementById('roleBadgeContainerCruzamento')
     ];
-    const roleNames = {
-        'admin': '👑 Admin',
-        'editor': '📦 Operador',
-        'viewer': '👁️ Viewer'
-    };
-    const roleClasses = {
-        'admin': 'admin',
-        'editor': 'editor',
-        'viewer': 'viewer'
-    };
+    const roleNames = { 'admin': '👑 Admin', 'editor': '📦 Operador', 'viewer': '👁️ Viewer' };
+    const roleClasses = { 'admin': 'admin', 'editor': 'editor', 'viewer': 'viewer' };
     containers.forEach(container => {
         if (!container) return;
         container.innerHTML = '';
@@ -1857,7 +1694,6 @@ function aplicarRestricoesPorPerfil() {
         container.appendChild(badge);
     });
 
-    // 4. Mostrar filtro de transportadora (se tiver uma específica)
     const filterInfo = document.getElementById('filterInfoTransp');
     if (usuarioTransportadora) {
         filterInfo.style.display = 'inline-block';
@@ -1866,14 +1702,11 @@ function aplicarRestricoesPorPerfil() {
         filterInfo.style.display = 'none';
     }
 
-    // 5. Recarregar dados para aplicar filtro (se já autenticado)
-    if (isAuthenticated && rawDataPacotes) {
-        processarPacotesComFiltro();
-    }
+    if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
 }
 
 // ================================================================
-//  FUNÇÃO PARA PROCESSAR PACOTES COM FILTRO DE TRANSPORTADORA
+//  PROCESSAR PACOTES COM FILTRO
 // ================================================================
 function processarPacotesComFiltro() {
     if (!rawDataPacotes || rawDataPacotes.length === 0) return;
@@ -1883,9 +1716,7 @@ function processarPacotesComFiltro() {
             let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
             const normTransp = transp.trim().toUpperCase();
             const normUser = usuarioTransportadora.trim().toUpperCase();
-            if (normUser === 'ENVIOS EXTRA') {
-                return normTransp.includes('ENVIOS EXTRA');
-            }
+            if (normUser === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA');
             return normTransp === normUser;
         });
     }
@@ -1894,20 +1725,11 @@ function processarPacotesComFiltro() {
     renderGraficos_Pacotes(processedDataPacotes);
     renderTransportadoras(processedDataPacotes);
     renderPreview_Pacotes(dadosFiltrados);
-
-    const total = dadosFiltrados.length;
-    document.getElementById('statusTextPacotes').textContent = `✅ ${total} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
+    document.getElementById('statusTextPacotes').textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
     document.getElementById('statusTextPacotes').style.color = 'var(--success)';
     document.getElementById('statusDotPacotes').className = 'dot-status online';
-    document.getElementById('recordCountPacotes').textContent = `📦 ${total} registros`;
-    document.getElementById('footerTotalPacotes').textContent = `${total} registros`;
-
-    if (usuarioTransportadora) {
-        const filterInfo = document.getElementById('filterInfoTransp');
-        filterInfo.style.display = 'inline-block';
-        filterInfo.innerHTML = `🚚 <strong>${usuarioTransportadora}</strong> (filtro automático)`;
-    }
-
+    document.getElementById('recordCountPacotes').textContent = `📦 ${dadosFiltrados.length} registros`;
+    document.getElementById('footerTotalPacotes').textContent = `${dadosFiltrados.length} registros`;
     if (rawDataInventario) {
         dadosCruzamento = realizarCruzamento(dadosFiltrados, rawDataInventario);
         renderCruzamento(dadosCruzamento);
@@ -1915,65 +1737,20 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  VERIFICAÇÃO DE ORIGEM
+//  UTILIDADES
 // ================================================================
 function isFileProtocol() { return window.location.protocol === 'file:'; }
+function initTabs() { /* já definido antes */ }
 
 // ================================================================
-//  INICIALIZAÇÃO DAS TABS
-// ================================================================
-function initTabs() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    if (!tabBtns.length || !tabContents.length) return;
-    
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            const targetId = this.dataset.tab;
-            const targetContent = document.getElementById(targetId);
-            if (targetContent) targetContent.classList.add('active');
-            
-            const filterBtn = document.getElementById('filterFloatBtn');
-            if (filterBtn) {
-                if (targetId === 'tabCruzamento') {
-                    filterBtn.classList.remove('hidden');
-                } else {
-                    filterBtn.classList.add('hidden');
-                }
-            }
-            
-            setTimeout(() => {
-                try {
-                    if (chartQuantidade && typeof chartQuantidade.resize === 'function') chartQuantidade.resize();
-                    if (chartValor && typeof chartValor.resize === 'function') chartValor.resize();
-                    if (chartZona && typeof chartZona.resize === 'function') chartZona.resize();
-                    if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize();
-                } catch(e) {}
-            }, 100);
-        });
-    });
-}
-
-// ================================================================
-//  LOGOUT E LIMPEZA
+//  LOGIN / LOGOUT
 // ================================================================
 function logout() {
     sessionStorage.removeItem('accessToken');
-    accessToken = null;
-    isAuthenticated = false;
-    currentUserEmail = '';
-    currentUserRole = 'viewer';
-    usuarioTransportadora = null;
+    accessToken = null; isAuthenticated = false;
+    currentUserEmail = ''; currentUserRole = 'viewer'; usuarioTransportadora = null;
     const btn = document.getElementById('loginBtn');
-    if (btn) {
-        btn.textContent = '🔑 Login com Google';
-        btn.classList.remove('logged');
-        btn.classList.remove('error');
-        btn.disabled = false;
-    }
+    if (btn) { btn.textContent = '🔑 Login com Google'; btn.classList.remove('logged', 'error'); btn.disabled = false; }
     document.getElementById('statusTextPacotes').textContent = '🔑 Desconectado. Clique em "Login com Google" para reconectar.';
     document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
     document.getElementById('statusDotPacotes').className = 'dot-status loading';
@@ -1983,25 +1760,18 @@ function logout() {
     document.getElementById('filterInfoTransp').style.display = 'none';
 }
 
-// ================================================================
-//  AUTENTICAÇÃO OAuth COM PERSISTÊNCIA
-// ================================================================
 function initOAuth() {
     const savedToken = sessionStorage.getItem('accessToken');
     if (savedToken) {
-        accessToken = savedToken;
-        isAuthenticated = true;
+        accessToken = savedToken; isAuthenticated = true;
         document.getElementById('statusTextPacotes').textContent = '✅ Autenticado! Carregando dados...';
         document.getElementById('statusTextPacotes').style.color = 'var(--success)';
         document.getElementById('statusDotPacotes').className = 'dot-status online';
         const btn = document.getElementById('loginBtn');
         if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
-        getUserInfo().then(() => {
-            carregarTodosOsDados();
-        });
+        getUserInfo().then(() => { carregarTodosOsDados(); });
         return;
     }
-    
     if (isFileProtocol()) {
         document.getElementById('statusTextPacotes').textContent = '⚠️ Abra este arquivo com um servidor local (ex: Live Server) para usar OAuth.';
         document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
@@ -2010,21 +1780,14 @@ function initOAuth() {
         carregarDadosExemplo();
         return;
     }
-    
     if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
         document.getElementById('statusTextPacotes').textContent = '⏳ Carregando biblioteca de autenticação...';
         setTimeout(() => {
-            if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-                initOAuth();
-            } else {
-                document.getElementById('statusTextPacotes').textContent = '❌ Falha ao carregar autenticação. Carregando dados de exemplo.';
-                document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
-                carregarDadosExemplo();
-            }
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) initOAuth();
+            else { document.getElementById('statusTextPacotes').textContent = '❌ Falha ao carregar autenticação. Carregando dados de exemplo.'; document.getElementById('statusTextPacotes').style.color = 'var(--danger)'; carregarDadosExemplo(); }
         }, 1000);
         return;
     }
-    
     try {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
@@ -2046,9 +1809,7 @@ function initOAuth() {
                 document.getElementById('statusDotPacotes').className = 'dot-status online';
                 const btn = document.getElementById('loginBtn');
                 if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
-                getUserInfo().then(() => {
-                    carregarTodosOsDados();
-                });
+                getUserInfo().then(() => { carregarTodosOsDados(); });
             }
         });
     } catch (error) {
@@ -2057,26 +1818,17 @@ function initOAuth() {
         carregarDadosExemplo();
     }
 }
-
 function autenticar() {
     if (isFileProtocol()) {
         alert('⚠️ Você está abrindo o arquivo localmente (file://).\n\nPara usar o login com Google, por favor:\n1. Instale a extensão "Live Server" no VS Code\n2. Clique com o botão direito no arquivo e selecione "Open with Live Server"\n\nOu faça o upload para o GitHub Pages e acesse via HTTPS.');
         return;
     }
-    if (!tokenClient) {
-        initOAuth();
-        setTimeout(() => {
-            if (tokenClient) { tokenClient.requestAccessToken(); }
-            else { alert('Não foi possível iniciar a autenticação. Recarregue a página.'); }
-        }, 500);
-        return;
-    }
-    try { tokenClient.requestAccessToken(); }
-    catch (error) { alert('Erro ao iniciar autenticação. Recarregue a página.'); }
+    if (!tokenClient) { initOAuth(); setTimeout(() => { if (tokenClient) tokenClient.requestAccessToken(); else alert('Não foi possível iniciar a autenticação. Recarregue a página.'); }, 500); return; }
+    try { tokenClient.requestAccessToken(); } catch (error) { alert('Erro ao iniciar autenticação. Recarregue a página.'); }
 }
 
 // ================================================================
-//  CARREGAR DADOS DE EXEMPLO (FALLBACK)
+//  CARREGAR DADOS DE EXEMPLO
 // ================================================================
 function carregarDadosExemplo() {
     rawDataPacotes = DADOS_EXEMPLO_PACOTES;
@@ -2109,7 +1861,7 @@ function carregarDadosExemplo() {
 }
 
 // ================================================================
-//  LEITURA DA PLANILHA COM OAUTH
+//  LEITURA E ESCRITA NA PLANILHA
 // ================================================================
 async function lerPlanilhaOAuth(aba, range) {
     if (!accessToken) throw new Error('Usuário não autenticado');
@@ -2117,31 +1869,24 @@ async function lerPlanilhaOAuth(aba, range) {
     const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
     if (!response.ok) {
         const error = await response.json();
-        if (response.status === 401) {
-            console.warn('Token inválido. Fazendo logout...');
-            logout();
-            throw new Error('Sessão expirada. Faça login novamente.');
-        }
+        if (response.status === 401) { logout(); throw new Error('Sessão expirada. Faça login novamente.'); }
         throw new Error(error.error?.message || `Erro ${response.status}`);
     }
     const data = await response.json();
     return data.values;
 }
-
 async function lerPlanilhaGooglePacotes() {
     const data = await lerPlanilhaOAuth('Página1', 'A1:Z');
     const headers = data[0];
     const rows = data.slice(1);
     return rows.map(row => { const obj = {}; headers.forEach((h, i) => { obj[h] = row[i] || ''; }); return obj; });
 }
-
 async function lerPlanilhaGoogleInventario() {
     const data = await lerPlanilhaOAuth('INVENTÁRIO', 'A1:K');
     const headers = data[0];
     const rows = data.slice(1);
     return rows.map(row => { const obj = {}; headers.forEach((h, i) => { obj[h] = row[i] || ''; }); return obj; });
 }
-
 async function escreverPlanilhaOAuth(aba, range, values) {
     if (!accessToken) throw new Error('Usuário não autenticado');
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(aba)}!${range}?valueInputOption=USER_ENTERED`;
@@ -2152,17 +1897,14 @@ async function escreverPlanilhaOAuth(aba, range, values) {
     });
     if (!response.ok) {
         const error = await response.json();
-        if (response.status === 401) {
-            logout();
-            throw new Error('Sessão expirada. Faça login novamente.');
-        }
+        if (response.status === 401) { logout(); throw new Error('Sessão expirada. Faça login novamente.'); }
         throw new Error(error.error?.message || `Erro ${response.status}`);
     }
     return await response.json();
 }
 
 // ================================================================
-//  PACOTES (funções adaptadas)
+//  PROCESSAR DADOS DE PACOTES
 // ================================================================
 function processarDadosPacotes(data) {
     const transportadoras = {}, subTransportadoras = {};
@@ -2215,12 +1957,8 @@ function renderKPI_Pacotes(data) {
     strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">${data.totalGeral}</div><div class="pct">${data.idsEncontrados} IDs encontrados</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">${data.transportadoras.length}</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num" style="font-size:28px;">${data.valorTotalGeral}</div></div>`;
     document.getElementById('footerTotalPacotes').textContent = `${data.totalGeral} registros`;
 }
-
 function renderGraficos_Pacotes(data) {
-    try {
-        if (chartQuantidade && typeof chartQuantidade.destroy === 'function') { chartQuantidade.destroy(); chartQuantidade = null; }
-        if (chartValor && typeof chartValor.destroy === 'function') { chartValor.destroy(); chartValor = null; }
-    } catch(e) {}
+    try { if (chartQuantidade && typeof chartQuantidade.destroy === 'function') { chartQuantidade.destroy(); chartQuantidade = null; } if (chartValor && typeof chartValor.destroy === 'function') { chartValor.destroy(); chartValor = null; } } catch(e) {}
     if (!data || data.transportadoras.length === 0) return;
     const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
     const quantidades = data.transportadoras.map(t => t.quantidade);
@@ -2245,28 +1983,26 @@ function renderGraficos_Pacotes(data) {
     } catch(e) {}
 }
 
-// 🔥 RENDER TRANSPORTADORAS COM BLOQUEIO PARA VIEWER
+// 🔥 RENDER TRANSPORTADORAS (COM BLOQUEIO PARA VIEWER)
 function renderTransportadoras(data) {
     const grid = document.getElementById('transportadorasGrid');
     if (!data || data.transportadoras.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`; return; }
-    
     const isViewer = currentUserRole === 'viewer';
-    
     grid.innerHTML = data.transportadoras.map(t => {
         const cardClass = isViewer ? 'transportadora-card blocked' : 'transportadora-card';
-        const clickHandler = isViewer ? '' : `onclick="abrirModalPacotes('${t.nome.replace(/'/g, "\\'")}')"`;
         const bloqueioMsg = isViewer ? '<span style="font-size:10px;color:var(--text-faint);display:block;margin-top:4px;">🔒 Acesso restrito</span>' : '';
-        return `<div class="${cardClass}" ${clickHandler}>
+        const nomeEscapado = t.nome.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        const onclickAttr = isViewer ? '' : `onclick="abrirModalPacotes('${nomeEscapado}')"`;
+        return `<div class="${cardClass}" ${onclickAttr} data-transportadora="${nomeEscapado}">
             <div class="nome">${t.nome}</div>
             <div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div>
             ${bloqueioMsg}
         </div>`;
     }).join('');
-    
-    // Se for viewer, adiciona evento de alerta ao clicar
     if (isViewer) {
         grid.querySelectorAll('.transportadora-card.blocked').forEach(card => {
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function(e) {
+                e.stopPropagation();
                 alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
             });
         });
@@ -2323,10 +2059,9 @@ async function carregarDadosPacotes() {
 }
 
 // ================================================================
-//  MODAL DE PACOTES (com verificação de permissão)
+//  MODAL DE PACOTES (COM ONCLICK NOS BOTÕES)
 // ================================================================
 function abrirModalPacotes(nome) {
-    // 🔥 Se for viewer, bloqueia
     if (currentUserRole === 'viewer') {
         alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
         return;
@@ -2365,6 +2100,7 @@ function abrirModalPacotes(nome) {
     document.getElementById('modalOverlay').classList.add('active');
 }
 
+// 🔥 FUNÇÃO RENDERIZAR PÁGINA MODAL (COM ONCLICK DIRETO)
 function renderizarPaginaModal(t, page) {
     const start = (page - 1) * ITEMS_PER_PAGE;
     const end = Math.min(start + ITEMS_PER_PAGE, modalTotalIds.length);
@@ -2376,35 +2112,52 @@ function renderizarPaginaModal(t, page) {
     const totalPaginas = Math.ceil(modalTotalIds.length / ITEMS_PER_PAGE);
     const hasMore = end < modalTotalIds.length;
     document.getElementById('modalIdsCount').textContent = `📋 Mostrando ${start + 1} a ${end} de ${modalTotalIds.length} IDs (Página ${page} de ${totalPaginas})`;
-    let html = `<div class="selecao-bar" id="selecaoBar"><div class="info">📌 <span id="selecionadosCount">0</span> pacotes selecionados</div><button class="btn-resposta" id="btnAbrirResposta" disabled>📝 Responder</button><button class="btn-selecionar" id="btnSelecionarTodos">Selecionar todos</button><button class="btn-selecionar" id="btnLimparSelecao">Limpar</button></div>`;
+    let html = `<div class="selecao-bar" id="selecaoBar">
+        <div class="info">📌 <span id="selecionadosCount">0</span> pacotes selecionados</div>
+        <button class="btn-resposta" id="btnAbrirResposta" disabled onclick="abrirModalResposta()">📝 Responder</button>
+        <button class="btn-selecionar" onclick="selecionarTodosPagina()">Selecionar todos</button>
+        <button class="btn-selecionar" onclick="limparSelecaoPagina()">Limpar</button>
+    </div>`;
     html += idsComDetalhes.map((item, index) => {
         const globalIndex = start + index;
-        return `<div class="id-item"><span class="id-checkbox"><input type="checkbox" class="id-checkbox-input" data-id="${item.id}" data-motorista="${item.motorista}" data-valor="${item.valor}" onchange="toggleSelecao('${item.id}', '${item.motorista.replace(/'/g, "\\'")}')"></span><span class="id-index">#${globalIndex + 1}</span><span class="id-num">${item.id}</span><span class="id-valor">R$ ${item.valor.toFixed(2)}</span><span class="id-motorista">${item.motorista !== 'N/A' ? item.motorista : ''}</span></div>`;
+        return `<div class="id-item">
+            <span class="id-checkbox"><input type="checkbox" class="id-checkbox-input" data-id="${item.id}" data-motorista="${item.motorista}" data-valor="${item.valor}" onchange="toggleSelecao('${item.id}', '${item.motorista.replace(/'/g, "\\'")}')"></span>
+            <span class="id-index">#${globalIndex + 1}</span>
+            <span class="id-num">${item.id}</span>
+            <span class="id-valor">R$ ${item.valor.toFixed(2)}</span>
+            <span class="id-motorista">${item.motorista !== 'N/A' ? item.motorista : ''}</span>
+        </div>`;
     }).join('');
     if (hasMore) {
-        html += `<div style="text-align:center; padding:12px; border-top:1px solid var(--line-soft);"><button class="btn-carregar-mais" id="btnCarregarMais">📥 Carregar mais ${Math.min(ITEMS_PER_PAGE, modalTotalIds.length - end)} IDs</button></div>`;
+        html += `<div style="text-align:center; padding:12px; border-top:1px solid var(--line-soft);">
+            <button class="btn-carregar-mais" onclick="carregarMaisPagina()">📥 Carregar mais ${Math.min(ITEMS_PER_PAGE, modalTotalIds.length - end)} IDs</button>
+        </div>`;
     }
     document.getElementById('modalIds').innerHTML = html;
-    document.getElementById('btnSelecionarTodos').addEventListener('click', function() {
-        document.querySelectorAll('.id-checkbox-input').forEach(cb => { cb.checked = true; const id = cb.dataset.id; const motorista = cb.dataset.motorista; idsSelecionados.add(id); motoristasSelecionados[id] = motorista; });
-        atualizarSelecao();
-    });
-    document.getElementById('btnLimparSelecao').addEventListener('click', function() {
-        document.querySelectorAll('.id-checkbox-input').forEach(cb => { cb.checked = false; });
-        idsSelecionados.clear();
-        motoristasSelecionados = {};
-        atualizarSelecao();
-    });
-    document.getElementById('btnAbrirResposta').addEventListener('click', function() { 
-        window.abrirModalResposta(); 
-    });
-    const btnCarregarMais = document.getElementById('btnCarregarMais');
-    if (btnCarregarMais) {
-        btnCarregarMais.addEventListener('click', function() { modalCurrentPage++; renderizarPaginaModal(t, modalCurrentPage); });
-    }
     atualizarSelecao();
 }
 
+// 🔥 FUNÇÕES AUXILIARES DOS BOTÕES DO MODAL (globais)
+function selecionarTodosPagina() {
+    document.querySelectorAll('.id-checkbox-input').forEach(cb => {
+        cb.checked = true;
+        const id = cb.dataset.id;
+        const motorista = cb.dataset.motorista;
+        idsSelecionados.add(id);
+        motoristasSelecionados[id] = motorista;
+    });
+    atualizarSelecao();
+}
+function limparSelecaoPagina() {
+    document.querySelectorAll('.id-checkbox-input').forEach(cb => { cb.checked = false; });
+    idsSelecionados.clear();
+    motoristasSelecionados = {};
+    atualizarSelecao();
+}
+function carregarMaisPagina() {
+    modalCurrentPage++;
+    renderizarPaginaModal(modalTransportadora, modalCurrentPage);
+}
 function atualizarModalFiltrado() {
     const t = modalTransportadora;
     if (!t) return;
@@ -2422,13 +2175,11 @@ function atualizarModalFiltrado() {
     modalCurrentPage = 1;
     renderizarPaginaModal(t, 1);
 }
-
 function toggleSelecao(id, motorista) {
     if (idsSelecionados.has(id)) { idsSelecionados.delete(id); delete motoristasSelecionados[id]; }
     else { idsSelecionados.add(id); motoristasSelecionados[id] = motorista; }
     atualizarSelecao();
 }
-
 function atualizarSelecao() {
     const count = idsSelecionados.size;
     const countEl = document.getElementById('selecionadosCount');
@@ -2438,7 +2189,7 @@ function atualizarSelecao() {
 }
 
 // ================================================================
-//  RESPOSTAS (com verificação de permissão)
+//  MODAL DE RESPOSTA (com verificação de permissão)
 // ================================================================
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
@@ -2455,7 +2206,6 @@ const originalAbrirResposta = function() {
     document.getElementById('respostaStatus').className = 'status-msg';
     document.getElementById('respostaModalOverlay').classList.add('active');
 };
-
 window.abrirModalResposta = function() {
     if (currentUserRole === 'viewer') {
         alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
@@ -2463,6 +2213,111 @@ window.abrirModalResposta = function() {
     }
     originalAbrirResposta();
 };
+document.getElementById('respostaEnviar').addEventListener('click', async function() {
+    const nome = document.getElementById('respostaNome').value.trim();
+    const justificativa = document.getElementById('respostaJustificativa').value.trim();
+    const motorista = document.getElementById('respostaMotorista').value.trim();
+    const statusEl = document.getElementById('respostaStatus');
+    if (!nome) { statusEl.textContent = '⚠️ Por favor, preencha seu nome.'; statusEl.className = 'status-msg error'; return; }
+    if (!justificativa) { statusEl.textContent = '⚠️ Por favor, preencha a justificativa.'; statusEl.className = 'status-msg error'; return; }
+    const ids = Array.from(idsSelecionados);
+    const transportadora = modalTransportadora ? modalTransportadora.nome : '';
+    const dataAtual = new Date().toLocaleString('pt-BR');
+    const dadosResposta = ids.map(id => ({ ID: id, Transportadora: transportadora, Motorista: motorista || motoristasSelecionados[id] || 'N/A', Nome_Responsavel: nome, Justificativa: justificativa, Data_Hora: dataAtual }));
+    statusEl.textContent = '⏳ Enviando dados para a planilha...';
+    statusEl.className = 'status-msg loading';
+    this.disabled = true;
+    try {
+        const rows = dadosResposta.map(d => [d.ID, d.Transportadora, d.Motorista, d.Nome_Responsavel, d.Justificativa, d.Data_Hora]);
+        const readUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/RESPOSTAS!A:A`;
+        const readResponse = await fetch(readUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+        const readData = await readResponse.json();
+        let nextRow = 2;
+        if (readData.values && readData.values.length > 0) nextRow = readData.values.length + 1;
+        await escreverPlanilhaOAuth('RESPOSTAS', `A${nextRow}:F${nextRow + rows.length - 1}`, rows);
+        statusEl.textContent = '✅ Respostas enviadas com sucesso!';
+        statusEl.className = 'status-msg success';
+        setTimeout(() => {
+            document.getElementById('respostaModalOverlay').classList.remove('active');
+            document.getElementById('modalOverlay').classList.remove('active');
+            idsSelecionados.clear();
+            motoristasSelecionados = {};
+            this.disabled = false;
+        }, 1500);
+    } catch (error) {
+        statusEl.textContent = `❌ Erro: ${error.message}`;
+        statusEl.className = 'status-msg error';
+        this.disabled = false;
+        console.error('Erro ao enviar respostas:', error);
+    }
+});
+document.getElementById('respostaCancelar').addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
+document.getElementById('respostaModalClose').addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
+document.getElementById('respostaModalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+
+// ================================================================
+//  CÓPIA (modal)
+// ================================================================
+document.getElementById('modalCopy').addEventListener('click', function() {
+    const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
+    if (!ids || ids.length === 0) return;
+    const text = ids.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy copied';
+        setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000);
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy copied';
+        setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000);
+    });
+});
+document.getElementById('modalCopyAll').addEventListener('click', function() {
+    const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
+    const valores = window._valoresFiltrados || (modalTransportadora ? modalTransportadora.valores : []);
+    const motoristas = window._motoristasFiltrados || (modalTransportadora ? modalTransportadora.motoristas : []);
+    if (!ids || ids.length === 0) return;
+    const text = ids.map((id, index) => {
+        const valor = valores[index] || 0;
+        const motorista = motoristas[index] || 'N/A';
+        const motoristaStr = motorista !== 'N/A' ? ` - ${motorista}` : '';
+        return `${String(index + 1).padStart(3, '0')} - ${id} - R$ ${valor.toFixed(2)}${motoristaStr}`;
+    }).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy-all copied';
+        setTimeout(() => { this.textContent = '📋 Copiar todos (com IDs)'; this.className = 'btn-copy-all'; }, 2000);
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.textContent = '✅ Copiado!';
+        this.className = 'btn-copy-all copied';
+        setTimeout(() => { this.textContent = '📋 Copiar todos (com IDs)'; this.className = 'btn-copy-all'; }, 2000);
+    });
+});
+
+// ================================================================
+//  FECHAR MODAIS (ESC / CLIQUE)
+// ================================================================
+document.getElementById('modalClose').addEventListener('click', function() { document.getElementById('modalOverlay').classList.remove('active'); });
+document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.getElementById('respostaModalOverlay').classList.remove('active');
+        document.getElementById('filterModalOverlay').classList.remove('active');
+    }
+});
 
 // ================================================================
 //  INVENTÁRIO
@@ -2470,37 +2325,21 @@ window.abrirModalResposta = function() {
 function processarDadosInventario(data) {
     const zonas = {};
     let totalInventariado = 0, totalFaltante = 0, totalIntruso = 0, totalNaoClassificado = 0;
-    
     data.forEach(row => {
         const statusRaw = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim();
         const zona = String(row['SHP_ZONE_NAME'] || row['shp_zone_name'] || '').trim() || 'Não especificado';
         const status = statusRaw.replace(/\s+/g, ' ').trim().toUpperCase();
-        
         const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
         const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
         const isIntruso = status === 'INTRUSO';
-        
-        if (!zonas[zona]) {
-            zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, total: 0 };
-        }
-        
-        if (isInventariado) {
-            zonas[zona].inventariado++;
-            totalInventariado++;
-        } else if (isFaltante) {
-            zonas[zona].faltante++;
-            totalFaltante++;
-        } else if (isIntruso) {
-            zonas[zona].intruso++;
-            totalIntruso++;
-        } else {
-            totalNaoClassificado++;
-        }
+        if (!zonas[zona]) zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, total: 0 };
+        if (isInventariado) { zonas[zona].inventariado++; totalInventariado++; }
+        else if (isFaltante) { zonas[zona].faltante++; totalFaltante++; }
+        else if (isIntruso) { zonas[zona].intruso++; totalIntruso++; }
+        else { totalNaoClassificado++; }
         zonas[zona].total++;
     });
-    
     const totalGeral = totalInventariado + totalFaltante;
-    
     const zonaList = Object.values(zonas).map(z => ({
         ...z,
         taxaInventariado: z.total > 0 ? (z.inventariado / z.total * 100) : 0,
@@ -2508,21 +2347,10 @@ function processarDadosInventario(data) {
         taxaIntruso: z.total > 0 ? (z.intruso / z.total * 100) : 0,
         taxaAcuracia: (z.inventariado + z.faltante) > 0 ? (z.inventariado / (z.inventariado + z.faltante) * 100) : 0
     })).sort((a, b) => b.total - a.total);
-    
     const totalParaAcuracia = totalInventariado + totalFaltante;
     const taxaAcuraciaGeral = totalParaAcuracia > 0 ? (totalInventariado / totalParaAcuracia * 100) : 0;
-    
-    return { 
-        totalGeral, 
-        totalInventariado, 
-        totalFaltante, 
-        totalIntruso, 
-        totalNaoClassificado,
-        taxaAcuraciaGeral, 
-        zonas: zonaList 
-    };
+    return { totalGeral, totalInventariado, totalFaltante, totalIntruso, totalNaoClassificado, taxaAcuraciaGeral, zonas: zonaList };
 }
-
 function renderKPI_Inventario(data) {
     const grid = document.getElementById('kpiStripInventario');
     if (!data) {
@@ -2533,7 +2361,6 @@ function renderKPI_Inventario(data) {
         <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num warning">0%</div></div>`;
         return;
     }
-    
     const totalBase = data.totalGeral;
     grid.innerHTML = `
         <div class="kpi"><div class="tag">📦 Total de Itens</div><div class="num">${totalBase}</div><div class="sub">${data.zonas.length} zonas</div></div>
@@ -2544,12 +2371,8 @@ function renderKPI_Inventario(data) {
     `;
     document.getElementById('footerTotalInventario').textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
-
 function renderGraficos_Inventario(data) {
-    try {
-        if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; }
-        if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; }
-    } catch(e) {}
+    try { if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; } if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; } } catch(e) {}
     if (!data || data.zonas.length === 0) return;
     const labels = data.zonas.slice(0, 15).map(z => z.nome.length > 20 ? z.nome.substring(0, 18) + '...' : z.nome);
     const inventariado = data.zonas.slice(0, 15).map(z => z.inventariado);
@@ -2578,7 +2401,6 @@ function renderGraficos_Inventario(data) {
         }
     } catch(e) {}
 }
-
 function renderZonas(data) {
     const grid = document.getElementById('zonaGrid');
     if (!data || data.zonas.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma zona encontrada</div>`; return; }
@@ -2587,7 +2409,6 @@ function renderZonas(data) {
         return `<div class="zona-card"><div class="nome">${z.nome}</div><div class="detalhes"><span class="total">📦 ${z.total}</span><span class="inventariado">✅ ${z.inventariado}</span><span class="faltante">❌ ${z.faltante}</span><span class="intruso">🟣 ${z.intruso}</span></div><div class="barra"><div class="fill-success" style="width:${pctInv}%;"></div><div class="fill-danger" style="width:${pctFalt}%;"></div><div class="fill-intruso" style="width:${pctInt}%;"></div></div><div class="status-labels"><span>✅ ${pctInv.toFixed(1)}%</span><span>❌ ${pctFalt.toFixed(1)}%</span><span>🟣 ${pctInt.toFixed(1)}%</span><span style="color:${pctAcuracia >= 95 ? 'var(--success)' : pctAcuracia >= 80 ? 'var(--warning)' : 'var(--danger)'};">🎯 ${pctAcuracia.toFixed(1)}%</span></div></div>`;
     }).join('');
 }
-
 function renderPreview_Inventario(data) {
     const preview = document.getElementById('previewInventario');
     if (!data || data.length === 0) { preview.innerHTML = `<div class="empty-message"><div style="font-size:24px; margin-bottom:6px;">📋</div>Nenhum dado carregado</div>`; return; }
@@ -2606,7 +2427,6 @@ function renderPreview_Inventario(data) {
     html += `</tbody></table></div>`;
     preview.innerHTML = html;
 }
-
 async function carregarDadosInventario() {
     const statusDot = document.getElementById('statusDotInventario');
     const statusText = document.getElementById('statusTextInventario');
@@ -2648,7 +2468,7 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  CRUZAMENTO
+//  CRUZAMENTO (COM FILTRO CORRIGIDO)
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
@@ -2681,15 +2501,28 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
     return { dados: resultado, totalComTransportadora, totalFaltantes, emAmbos, responsabilidadeId, transportadoraList };
 }
 
+// 🔥 RENDER FILTRO DE TRANSPORTADORAS (COM ONCLICK)
 function renderFiltroTransportadoras(data) {
     const container = document.getElementById('transpFilterContainer');
-    if (!data || data.transportadoraList.length === 0) { container.innerHTML = `<span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 0;">Nenhuma transportadora encontrada</span>`; return; }
+    if (!data || data.transportadoraList.length === 0) {
+        container.innerHTML = `<span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 0;">Nenhuma transportadora encontrada</span>`;
+        return;
+    }
     if (filtroTransportadoras.size === 0) data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome));
     if (filtroTransportadorasResp.size === 0) data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome));
     container.innerHTML = data.transportadoraList.map(t => {
         const checkedAmbos = filtroTransportadoras.has(t.nome) ? 'checked' : '';
         const checkedResp = filtroTransportadorasResp.has(t.nome) ? 'checked' : '';
-        return `<div class="transp-filter-item"><span class="transp-nome">${t.nome}</span><label class="transp-check-label"><input type="checkbox" class="cb-ambos" ${checkedAmbos} onchange="toggleTransportadora('${t.nome.replace(/'/g, "\\'")}', 'ambos')"> 🔗</label><label class="transp-check-label"><input type="checkbox" class="cb-responsabilidade" ${checkedResp} onchange="toggleTransportadora('${t.nome.replace(/'/g, "\\'")}', 'responsabilidade')"> 📦</label><span class="transp-count">(${t.quantidade})</span></div>`;
+        return `<div class="transp-filter-item">
+            <span class="transp-nome">${t.nome}</span>
+            <label class="transp-check-label">
+                <input type="checkbox" class="cb-ambos" ${checkedAmbos} onclick="toggleTransportadora('${t.nome.replace(/'/g, "\\'")}', 'ambos')"> 🔗
+            </label>
+            <label class="transp-check-label">
+                <input type="checkbox" class="cb-responsabilidade" ${checkedResp} onclick="toggleTransportadora('${t.nome.replace(/'/g, "\\'")}', 'responsabilidade')"> 📦
+            </label>
+            <span class="transp-count">(${t.quantidade})</span>
+        </div>`;
     }).join('');
     document.getElementById('filterCountAmbos').textContent = filtroTransportadoras.size;
     document.getElementById('filterCountResp').textContent = filtroTransportadorasResp.size;
@@ -2698,6 +2531,7 @@ function renderFiltroTransportadoras(data) {
     document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
 }
 
+// 🔥 TOGGLE TRANSPORTADORA (GLOBAL)
 function toggleTransportadora(nome, tipo) {
     if (tipo === 'ambos') {
         if (filtroTransportadoras.has(nome)) filtroTransportadoras.delete(nome);
@@ -2719,6 +2553,40 @@ function toggleTransportadora(nome, tipo) {
         if (cbAmbos) cbAmbos.checked = filtroTransportadoras.has(nome);
         if (cbResp) cbResp.checked = filtroTransportadorasResp.has(nome);
     });
+    if (dadosCruzamento) renderCruzamento(dadosCruzamento);
+}
+
+// 🔥 FUNÇÕES GLOBAIS PARA OS BOTÕES "SELECIONAR TODAS" E "LIMPAR TODAS"
+function selecionarTodasTransportadoras() {
+    const container = document.getElementById('transpFilterContainer');
+    container.querySelectorAll('.transp-filter-item').forEach(item => {
+        const nome = item.querySelector('.transp-nome').textContent.trim();
+        const cbAmbos = item.querySelector('.cb-ambos');
+        const cbResp = item.querySelector('.cb-responsabilidade');
+        if (cbAmbos) { cbAmbos.checked = true; filtroTransportadoras.add(nome); filtroTransportadorasResp.delete(nome); }
+        if (cbResp) cbResp.checked = false;
+    });
+    document.getElementById('filterCountAmbos').textContent = filtroTransportadoras.size;
+    document.getElementById('filterCountResp').textContent = filtroTransportadorasResp.size;
+    const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
+    document.getElementById('filterFloatBadge').textContent = totalSelecionadas;
+    document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
+    if (dadosCruzamento) renderCruzamento(dadosCruzamento);
+}
+function limparTodasTransportadoras() {
+    const container = document.getElementById('transpFilterContainer');
+    container.querySelectorAll('.transp-filter-item').forEach(item => {
+        const cbAmbos = item.querySelector('.cb-ambos');
+        const cbResp = item.querySelector('.cb-responsabilidade');
+        if (cbAmbos) cbAmbos.checked = false;
+        if (cbResp) cbResp.checked = false;
+    });
+    filtroTransportadoras.clear();
+    filtroTransportadorasResp.clear();
+    document.getElementById('filterCountAmbos').textContent = '0';
+    document.getElementById('filterCountResp').textContent = '0';
+    document.getElementById('filterFloatBadge').textContent = '0';
+    document.getElementById('filterTranspCount').textContent = '0 selecionadas (0 🔗 + 0 📦)';
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
 
@@ -2777,7 +2645,6 @@ function renderCruzamento(data) {
         tbody.innerHTML = dadosParaTabela.map(row => `<tr><td style="font-weight:500;">${row.id}</td><td>${row.transportadora}</td><td style="color:var(--danger);">${row.status}</td><td>${row.zona}</td><td><span class="status-badge">🔗 Em ambos</span></td></tr>`).join('');
     }
 }
-
 async function carregarCruzamento() {
     const statusDot = document.getElementById('statusDotCruzamento');
     const statusText = document.getElementById('statusTextCruzamento');
@@ -2837,47 +2704,18 @@ async function carregarTodosOsDados() {
 }
 
 // ================================================================
-//  FILTRO FLUTUANTE
+//  FILTRO FLUTUANTE (EVENTOS)
 // ================================================================
 document.getElementById('filterFloatBtn').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.add('active'); });
 document.getElementById('filterModalClose').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.remove('active'); });
 document.getElementById('filterModalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 document.getElementById('filterApplyBtn').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.remove('active'); if (dadosCruzamento) renderCruzamento(dadosCruzamento); });
-
-document.getElementById('filterSelectAll').addEventListener('click', function() {
-    document.querySelectorAll('#transpFilterContainer .transp-filter-item').forEach(item => {
-        const nome = item.querySelector('.transp-nome').textContent.trim();
-        const cbAmbos = item.querySelector('.cb-ambos');
-        const cbResp = item.querySelector('.cb-responsabilidade');
-        if (cbAmbos) { cbAmbos.checked = true; filtroTransportadoras.add(nome); }
-        if (cbResp) { cbResp.checked = false; filtroTransportadorasResp.delete(nome); }
-    });
-    document.getElementById('filterCountAmbos').textContent = filtroTransportadoras.size;
-    document.getElementById('filterCountResp').textContent = filtroTransportadorasResp.size;
-    const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-    document.getElementById('filterFloatBadge').textContent = totalSelecionadas;
-    document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
-    if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-});
-
-document.getElementById('filterClearAll').addEventListener('click', function() {
-    document.querySelectorAll('#transpFilterContainer .transp-filter-item').forEach(item => {
-        const cbAmbos = item.querySelector('.cb-ambos');
-        const cbResp = item.querySelector('.cb-responsabilidade');
-        if (cbAmbos) cbAmbos.checked = false;
-        if (cbResp) cbResp.checked = false;
-    });
-    filtroTransportadoras.clear();
-    filtroTransportadorasResp.clear();
-    document.getElementById('filterCountAmbos').textContent = '0';
-    document.getElementById('filterCountResp').textContent = '0';
-    document.getElementById('filterFloatBadge').textContent = '0';
-    document.getElementById('filterTranspCount').textContent = '0 selecionadas (0 🔗 + 0 📦)';
-    if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-});
+// 🔥 Botões da modal de filtro usando as funções globais
+document.getElementById('filterSelectAll').onclick = selecionarTodasTransportadoras;
+document.getElementById('filterClearAll').onclick = limparTodasTransportadoras;
 
 // ================================================================
-//  EVENTOS E INICIALIZAÇÃO
+//  EVENTOS DE REFRESH
 // ================================================================
 document.getElementById('refreshPacotes').addEventListener('click', function() {
     if (isAuthenticated) carregarDadosPacotes();
@@ -2892,6 +2730,9 @@ document.getElementById('refreshCruzamento').addEventListener('click', function(
     else alert('Faça login primeiro.');
 });
 
+// ================================================================
+//  INICIALIZAÇÃO
+// ================================================================
 document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.createElement('button');
     loginBtn.id = 'loginBtn';
@@ -2899,19 +2740,43 @@ document.addEventListener('DOMContentLoaded', function() {
     loginBtn.className = 'login-btn';
     loginBtn.onclick = autenticar;
     document.body.appendChild(loginBtn);
-    
-    initTabs();
-    
+
+    // Inicializa tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.dataset.tab).classList.add('active');
+            const filterBtn = document.getElementById('filterFloatBtn');
+            if (filterBtn) {
+                if (this.dataset.tab === 'tabCruzamento') filterBtn.classList.remove('hidden');
+                else filterBtn.classList.add('hidden');
+            }
+            setTimeout(() => {
+                try {
+                    if (chartQuantidade && typeof chartQuantidade.resize === 'function') chartQuantidade.resize();
+                    if (chartValor && typeof chartValor.resize === 'function') chartValor.resize();
+                    if (chartZona && typeof chartZona.resize === 'function') chartZona.resize();
+                    if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize();
+                } catch(e) {}
+            }, 100);
+        });
+    });
+
     renderKPI_Pacotes(null);
     renderGraficos_Pacotes(null);
     renderTransportadoras(null);
     renderKPI_Inventario(null);
     renderGraficos_Inventario(null);
     renderZonas(null);
-    
+
     initOAuth();
 });
 
+// ================================================================
+//  RECARGA AUTOMÁTICA A CADA 5 MINUTOS
+// ================================================================
 setInterval(() => {
     if (isAuthenticated) {
         carregarDadosInventario();
