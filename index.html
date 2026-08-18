@@ -3312,34 +3312,293 @@ function renderKPI_Inventario(data) {
     const footerTotal = document.getElementById('footerTotalInventario');
     if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
-function renderGraficos_Inventario(data) {
-    try { if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; } if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; } } catch(e) {}
-    const ctxZona = document.getElementById('chartZona');
-    const ctxOverview = document.getElementById('chartOverview');
-    if (!ctxZona || !ctxOverview) return;
-    if (!data || data.zonas.length === 0) return;
-    const labels = data.zonas.slice(0, 15).map(z => z.nome.length > 20 ? z.nome.substring(0, 18) + '...' : z.nome);
-    const inventariado = data.zonas.slice(0, 15).map(z => z.inventariado);
-    const faltante = data.zonas.slice(0, 15).map(z => z.faltante);
-    const intruso = data.zonas.slice(0, 15).map(z => z.intruso);
+function renderGraficosPacotes(data, dadosFiltrados) {
     try {
-        chartZona = new Chart(ctxZona, {
-            type: 'bar',
-            data: { labels, datasets: [
-                { label: 'Inventariados', data: inventariado, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 2 },
-                { label: 'Faltantes', data: faltante, backgroundColor: '#e8593f', borderColor: '#e8593f', borderWidth: 1, borderRadius: 2 },
-                { label: 'Intrusos', data: intruso, backgroundColor: '#9b59b6', borderColor: '#9b59b6', borderWidth: 1, borderRadius: 2 }
-            ] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8b8f99', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { stacked: true, ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
-        });
-        chartOverview = new Chart(ctxOverview, {
-            type: 'doughnut',
-            data: { labels: ['Inventariados', 'Faltantes', 'Intrusos'], datasets: [{ data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], backgroundColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderWidth: 2, hoverOffset: 8 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 11 }, padding: 16 } } }, cutout: '60%' }
-        });
+        if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; }
+        if (chartValor) { chartValor.destroy(); chartValor = null; }
     } catch(e) {}
+
+    const chartQuant = document.getElementById('chartQuantidade');
+    const chartVal = document.getElementById('chartValor');
+    
+    if (!chartQuant || !chartVal) return;
+
+    if (!data || data.transportadoras.length === 0) {
+        const h3s = document.querySelectorAll('.chart-card h3');
+        if (h3s.length >= 2) {
+            h3s[0].textContent = '📊 Pacotes por Transportadora';
+            h3s[1].textContent = '💰 Valor Total por Transportadora';
+        }
+        return;
+    }
+
+    const isTranspView = !!usuarioTransportadora;
+
+    // Função auxiliar para criar gráfico de Pareto
+    function criarGraficoPareto(ctx, labels, valores, titulo, corBarra, formatadorTooltip) {
+        // Ordena do maior para o menor
+        const combinados = labels.map((label, i) => ({ label, value: valores[i] }));
+        combinados.sort((a, b) => b.value - a.value);
+        
+        const sortedLabels = combinados.map(item => item.label.length > 20 ? item.label.substring(0, 18) + '...' : item.label);
+        const sortedValues = combinados.map(item => item.value);
+        const total = sortedValues.reduce((a, b) => a + b, 0);
+        
+        // Calcula a porcentagem acumulada
+        let acumulado = 0;
+        const porcentagens = sortedValues.map(val => {
+            acumulado += val;
+            return parseFloat((acumulado / total * 100).toFixed(1));
+        });
+
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sortedLabels,
+                datasets: [
+                    {
+                        label: 'Valores',
+                        data: sortedValues,
+                        backgroundColor: corBarra,
+                        borderColor: corBarra,
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        order: 1,
+                        yAxisID: 'y',
+                        hoverBackgroundColor: corBarra.replace(')', ',0.8)') // Efeito hover
+                    },
+                    {
+                        label: 'Porcentagem Acumulada (%)',
+                        data: porcentagens,
+                        type: 'line',
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#e74c3c',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.3,
+                        order: 0,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#8b8f99',
+                            font: { size: 11, weight: '500', family: 'Inter' },
+                            boxWidth: 14,
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(20,22,26,0.92)',
+                        titleColor: '#edeae2',
+                        bodyColor: '#edeae2',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                if (context.datasetIndex === 0) {
+                                    return ` ${context.dataset.label}: ${formatadorTooltip ? formatadorTooltip(context.raw) : context.raw}`;
+                                } else {
+                                    return ` ${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        ticks: { 
+                            color: '#8b8f99', 
+                            font: { size: 10 },
+                            stepSize: 1
+                        },
+                        grid: { color: '#2b2f37' }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        max: 100,
+                        ticks: { 
+                            color: '#8b8f99', 
+                            font: { size: 10 },
+                            callback: function(value) { return value + '%'; } 
+                        },
+                        grid: { drawOnChartArea: false }
+                    },
+                    x: {
+                        ticks: { 
+                            color: '#8b8f99', 
+                            font: { size: 9 } 
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    if (isTranspView && dadosFiltrados && dadosFiltrados.length > 0) {
+        // 1. Processar dados por motorista
+        const motoristaMap = {};
+        dadosFiltrados.forEach(row => {
+            let motorista = row['MOTORISTA'] || '';
+            motorista = motorista.trim();
+            if (!motorista) {
+                motorista = row['Cod_Motorista'] || 'Sem motorista';
+            }
+            if (!motorista) motorista = 'Sem motorista';
+            const valorStr = String(row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '0').replace(',', '.').replace(/[^0-9.]/g, '');
+            const valor = parseFloat(valorStr) || 0;
+            if (!motoristaMap[motorista]) {
+                motoristaMap[motorista] = { count: 0, total: 0 };
+            }
+            motoristaMap[motorista].count++;
+            motoristaMap[motorista].total += valor;
+        });
+
+        const labels = Object.keys(motoristaMap);
+        const counts = labels.map(m => motoristaMap[m].count);
+        const totals = labels.map(m => motoristaMap[m].total);
+
+        // 2. Gráfico de Pareto - Quantidade
+        chartQuantidade = criarGraficoPareto(
+            chartQuant,
+            labels,
+            counts,
+            '📊 Pareto - Pacotes por Motorista',
+            '#3498db',
+            (value) => `${value} pacotes`
+        );
+
+        // 3. Gráfico de Pareto - Valor Total
+        chartValor = criarGraficoPareto(
+            chartVal,
+            labels,
+            totals,
+            '💰 Pareto - Valor Total por Motorista',
+            '#2ecc71',
+            (value) => `R$ ${value.toFixed(2)}`
+        );
+
+        // 4. Atualiza os títulos dos cards
+        const h3s = document.querySelectorAll('.chart-card h3');
+        if (h3s.length >= 2) {
+            h3s[0].textContent = '📊 Pareto - Pacotes por Motorista';
+            h3s[1].textContent = '💰 Pareto - Valor Total por Motorista';
+        }
+
+    } else {
+        // VISÃO ADMIN: Mantém os gráficos de barras originais
+        const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
+        const quantidades = data.transportadoras.map(t => t.quantidade);
+        const valores = data.transportadoras.map(t => t.valorTotal);
+
+        chartQuantidade = new Chart(chartQuant, {
+            type: 'bar',
+            data: { 
+                labels, 
+                datasets: [{ 
+                    label: 'Pacotes', 
+                    data: quantidades, 
+                    backgroundColor: '#e0aa3d', 
+                    borderColor: '#e0aa3d', 
+                    borderWidth: 1, 
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#f1c40f'
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false } 
+                }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#8b8f99', font: { size: 10 } }, 
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { 
+                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
+                        grid: { display: false } 
+                    } 
+                } 
+            }
+        });
+
+        chartValor = new Chart(chartVal, {
+            type: 'bar',
+            data: { 
+                labels, 
+                datasets: [{ 
+                    label: 'Valor Total (R$)', 
+                    data: valores, 
+                    backgroundColor: '#4fae7c', 
+                    borderColor: '#4fae7c', 
+                    borderWidth: 1, 
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#2ecc71'
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false }, 
+                    tooltip: { 
+                        callbacks: { 
+                            label: function(context) { 
+                                return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+                            } 
+                        } 
+                    } 
+                }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { 
+                            color: '#8b8f99', 
+                            font: { size: 10 }, 
+                            callback: function(value) { 
+                                return 'R$ ' + value.toLocaleString('pt-BR'); 
+                            } 
+                        }, 
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { 
+                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
+                        grid: { display: false } 
+                    } 
+                } 
+            }
+        });
+
+        const h3s = document.querySelectorAll('.chart-card h3');
+        if (h3s.length >= 2) {
+            h3s[0].textContent = '📊 Pacotes por Transportadora';
+            h3s[1].textContent = '💰 Valor Total por Transportadora';
+        }
+    }
 }
-function renderZonas(data) {
+  function renderZonas(data) {
     const grid = document.getElementById('zonaGrid');
     if (!grid) return;
     if (!data || data.zonas.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma zona encontrada</div>`; return; }
