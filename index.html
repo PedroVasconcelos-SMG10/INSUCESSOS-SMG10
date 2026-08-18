@@ -1971,7 +1971,7 @@ function renderGraficosPacotes(data, dadosFiltrados) {
 
     const isTranspView = !!usuarioTransportadora;
 
-    // Paleta de cores moderna e vibrante com gradientes
+    // Paleta de cores moderna e vibrante
     const colorPalette = [
         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
         '#DDA0DD', '#FF8A5C', '#A29BFE', '#FD79A8', '#00CEC9',
@@ -2297,7 +2297,7 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  RENDERIZAR LISTA DE IDs (com link no ID e ordenação)
+//  🔥 RENDERIZAR LISTA DE IDs (com link no ID - CORRIGIDO)
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2368,7 +2368,18 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
-        const links = linhasOrdenadas.map(row => row['LINK'] || row['Link'] || row['link'] || row['URL'] || '');
+        // 🔥 Busca dinâmica por coluna de link (case insensitive)
+        let linkField = null;
+        if (linhasOrdenadas.length > 0) {
+            const sampleRow = linhasOrdenadas[0];
+            for (let key of Object.keys(sampleRow)) {
+                if (key.toLowerCase().includes('link') || key.toLowerCase().includes('url')) {
+                    linkField = key;
+                    break;
+                }
+            }
+        }
+        const links = linhasOrdenadas.map(row => linkField ? (row[linkField] || '') : '');
 
         const objOrdenado = {
             nome: transpObj.nome,
@@ -2469,6 +2480,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
             const link = linksPagina[index] || '';
 
+            // 🔥 ID clicável com link se existir
             let idHtml = link 
                 ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
                 : `<strong>${id}</strong>`;
@@ -2851,7 +2863,7 @@ async function escreverPlanilhaOAuth(aba, range, values) {
 }
 
 // ================================================================
-//  PROCESSAR DADOS DE PACOTES (com fallback Cod_Motorista)
+//  PROCESSAR DADOS DE PACOTES
 // ================================================================
 function processarDadosPacotes(data) {
     const transportadoras = {}, subTransportadoras = {};
@@ -2944,7 +2956,7 @@ async function carregarDadosPacotes() {
 }
 
 // ================================================================
-//  MODAL DE PACOTES (mantido)
+//  MODAL DE PACOTES
 // ================================================================
 function abrirModalPacotes(nome) {
     if (currentUserRole === 'viewer') {
@@ -3079,7 +3091,7 @@ function atualizarSelecao() {
 }
 
 // ================================================================
-//  MODAL DE RESPOSTA (mantido)
+//  MODAL DE RESPOSTA
 // ================================================================
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
@@ -3228,7 +3240,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ================================================================
-//  INVENTÁRIO (funções completas)
+//  INVENTÁRIO
 // ================================================================
 function processarDadosInventario(data) {
     const zonas = {};
@@ -3362,7 +3374,7 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  CRUZAMENTO (funções completas com verificação de elementos)
+//  CRUZAMENTO
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
