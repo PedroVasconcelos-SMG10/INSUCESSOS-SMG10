@@ -2769,22 +2769,77 @@ function renderPreviewPacotes(data) {
 function renderPreviewInventario(data) {
     const preview = document.getElementById('previewInventario');
     if (!preview) return;
-    if (!data || data.length === 0) {
+    
+    // Se não houver dados processados, mostra mensagem padrão
+    if (!data || !data.zonas || data.zonas.length === 0) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
     }
-    const total = data.length;
-    preview.innerHTML = `
-        <div style="text-align:center; padding:20px 0;">
-            <div style="font-size:24px; margin-bottom:8px;">✅</div>
-            <div style="font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--success);">
-                ${total} registros carregados com sucesso
+
+    const total = data.totalGeral;
+    const acuracia = data.taxaAcuraciaGeral || 0;
+    const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const hoje = new Date();
+    const diaSemana = hoje.getDay(); // 0=Domingo, 6=Sábado
+    
+    // Determinar o domingo mais recente (início da semana)
+    const domingo = new Date(hoje);
+    domingo.setDate(hoje.getDate() - diaSemana);
+    domingo.setHours(0, 0, 0, 0);
+    
+    // Gerar os dias da semana atual
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(domingo);
+        d.setDate(domingo.getDate() + i);
+        const diaStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        dias.push({
+            nome: diasSemana[i],
+            data: diaStr,
+            acuracia: acuracia,
+        });
+    }
+
+    // Função para obter classe de cor baseada na acurácia
+    function getColorClass(valor) {
+        if (valor >= 95) return 'success';
+        if (valor >= 80) return 'warning';
+        return 'danger';
+    }
+
+    // Construir os blocos
+    let html = `<div style="display:flex; flex-direction:column; gap:8px; width:100%; padding:8px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
+            <span style="font-family:'Oswald',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:.03em; color:var(--text);">📊 Acurácia Semanal</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">${total} registros carregados</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">`;
+
+    dias.forEach((dia, index) => {
+        const colorClass = getColorClass(dia.acuracia);
+        const isHoje = index === diaSemana;
+        const hojeClass = isHoje ? 'border:2px solid var(--cruzamento);' : '';
+        html += `
+            <div style="background:var(--panel-alt); border-radius:6px; padding:10px 6px; text-align:center; ${hojeClass}">
+                <div style="font-family:'Inter',sans-serif; font-size:12px; color:var(--text-dim); font-weight:500;">${dia.nome}</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:4px;">${dia.data}</div>
+                <div style="font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; color:var(--${colorClass});">${dia.acuracia.toFixed(1)}%</div>
             </div>
-            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
-                Dados disponíveis para análise nos gráficos e zonas
-            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    // Bloco de resumo semanal
+    const colorClass = getColorClass(acuracia);
+    html += `
+        <div style="background:var(--panel-alt); border-radius:6px; padding:12px 16px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--${colorClass});">
+            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">📌 Acurácia Semanal</span>
+            <span style="font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--${colorClass});">${acuracia.toFixed(1)}%</span>
         </div>
     `;
+
+    preview.innerHTML = html;
 }
 
 function isFileProtocol() { return window.location.protocol === 'file:'; }
