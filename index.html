@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
+  /* ===== ESTILOS ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1577,13 +1578,13 @@ let descricaoMap = {};
 let respostasSet = new Set();
 
 // ================================================================
-//  DADOS DE EXEMPLO
+//  DADOS DE EXEMPLO (com link na coluna 'LINK')
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
-  { 'ID do envio': '47756968938', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '9.57', 'Status do envio': 'sorting', 'MOTORISTA': 'REMOVIDO DE ROTA', 'Cod_Motorista': '123', 'DATA': '2025-03-10', 'LINK': 'https://example.com/pacote/47756968938' },
+  { 'ID do envio': '47756968938', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '9.57', 'Status do envio': 'sorting', 'MOTORISTA': 'REMOVIDO DE ROTA', 'Cod_Motorista': '123', 'DATA': '2025-03-10', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47756968938' },
   { 'ID do envio': '47746968996', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.80', 'Status do envio': 'sorting', 'MOTORISTA': 'PÓS SORTING', 'Cod_Motorista': '456', 'DATA': '2025-03-12', 'LINK': '' },
-  { 'ID do envio': '47771689687', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.98', 'Status do envio': 'sorting', 'MOTORISTA': 'BUFFER PENDENTE', 'Cod_Motorista': '789', 'DATA': '2025-03-08', 'LINK': 'https://example.com/pacote/47771689687' },
-  { 'ID do envio': '47732827943', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '24.90', 'Status do envio': 'sorting', 'MOTORISTA': 'ADUANA', 'Cod_Motorista': '101', 'DATA': '2025-03-11', 'LINK': 'https://example.com/pacote/47732827943' },
+  { 'ID do envio': '47771689687', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.98', 'Status do envio': 'sorting', 'MOTORISTA': 'BUFFER PENDENTE', 'Cod_Motorista': '789', 'DATA': '2025-03-08', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47771689687' },
+  { 'ID do envio': '47732827943', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '24.90', 'Status do envio': 'sorting', 'MOTORISTA': 'ADUANA', 'Cod_Motorista': '101', 'DATA': '2025-03-11', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47732827943' },
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47756968938', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
@@ -1617,7 +1618,7 @@ let filtroTransportadoras = new Set();
 let filtroTransportadorasResp = new Set();
 
 // ================================================================
-//  FUNÇÕES AUXILIARES PARA PLANILHA
+//  FUNÇÕES AUXILIARES
 // ================================================================
 async function criarAbaSeNaoExistir(nomeAba) {
     try {
@@ -1649,9 +1650,6 @@ async function criarAbaSeNaoExistir(nomeAba) {
     }
 }
 
-// ================================================================
-//  FUNÇÃO: GARANTIR USUÁRIO NA PLANILHA
-// ================================================================
 async function garantirUsuarioNaPlanilha(email) {
     if (!email) return;
     try {
@@ -1686,9 +1684,6 @@ async function garantirUsuarioNaPlanilha(email) {
     }
 }
 
-// ================================================================
-//  CARREGAR PERMISSÕES
-// ================================================================
 async function carregarPermissoesDaPlanilha() {
     if (!accessToken) return;
     try {
@@ -1734,9 +1729,6 @@ async function carregarPermissoesDaPlanilha() {
     }
 }
 
-// ================================================================
-//  BUSCAR USUÁRIO (USERINFO)
-// ================================================================
 async function getUserInfo() {
     if (!accessToken) return null;
     try {
@@ -1755,9 +1747,6 @@ async function getUserInfo() {
     return null;
 }
 
-// ================================================================
-//  CARREGAR DESCRIÇÕES E RESPOSTAS
-// ================================================================
 async function carregarDescricoesERespostas() {
     if (!accessToken) return;
     await criarAbaSeNaoExistir('Descrição');
@@ -1801,9 +1790,6 @@ async function carregarDescricoesERespostas() {
     }
 }
 
-// ================================================================
-//  FUNÇÃO PARA ALTERNAR STATUS (apenas ADMIN)
-// ================================================================
 async function toggleStatus(id, transportadora, motorista) {
     if (currentUserRole !== 'admin') {
         alert('⛔ Apenas administradores podem alternar o status.');
@@ -1839,9 +1825,6 @@ async function toggleStatus(id, transportadora, motorista) {
     }
 }
 
-// ================================================================
-//  APLICAR RESTRIÇÕES
-// ================================================================
 function aplicarRestricoesPorPerfil() {
     const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
     if (currentUserRole === 'admin') {
@@ -1902,9 +1885,6 @@ function aplicarRestricoesPorPerfil() {
     if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
 }
 
-// ================================================================
-//  PROCESSAR PACOTES COM FILTRO (múltiplas transportadoras)
-// ================================================================
 function processarPacotesComFiltro() {
     if (!rawDataPacotes || rawDataPacotes.length === 0) return;
     let dadosFiltrados = rawDataPacotes;
@@ -1946,9 +1926,6 @@ function processarPacotesComFiltro() {
     }
 }
 
-// ================================================================
-//  GRÁFICOS DE PIZZA MAIS ATRATIVOS
-// ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
         if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; }
@@ -1971,7 +1948,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
 
     const isTranspView = !!usuarioTransportadora;
 
-    // Paleta de cores moderna e vibrante
     const colorPalette = [
         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
         '#DDA0DD', '#FF8A5C', '#A29BFE', '#FD79A8', '#00CEC9',
@@ -2003,7 +1979,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         const totals = labels.map(m => motoristaMap[m].total);
         const cores = colorPalette.slice(0, labels.length);
 
-        // Gráfico de quantidade
         chartQuantidade = new Chart(chartQuant, {
             type: 'pie',
             data: {
@@ -2063,7 +2038,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             }
         });
 
-        // Gráfico de valores
         chartValor = new Chart(chartVal, {
             type: 'pie',
             data: {
@@ -2130,7 +2104,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         }
 
     } else {
-        // Gráficos de barras para admin
         const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
         const quantidades = data.transportadoras.map(t => t.quantidade);
         const valores = data.transportadoras.map(t => t.valorTotal);
@@ -2224,9 +2197,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
     }
 }
 
-// ================================================================
-//  RENDERIZAR SEÇÃO DE TRANSPORTADORAS (ou lista de IDs)
-// ================================================================
 function renderSecaoTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     const titulo = document.getElementById('tituloSecaoTransportadoras');
@@ -2297,7 +2267,7 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  🔥 RENDERIZAR LISTA DE IDs (com link no ID - CORRIGIDO)
+//  🔥 FUNÇÃO CORRIGIDA: RENDERIZA LISTA DE IDs COM LINK NO ID
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2574,9 +2544,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     ordenarERenderizar('valor_asc');
 }
 
-// ================================================================
-//  RENDER TRANSPORTADORAS (cards)
-// ================================================================
 function renderTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     if (!container) return;
@@ -2607,9 +2574,6 @@ function renderTransportadoras(data) {
     }
 }
 
-// ================================================================
-//  PREVIEWS
-// ================================================================
 function renderPreviewPacotes(data) {
     const preview = document.getElementById('previewPacotes');
     if (!preview) return;
@@ -2651,14 +2615,8 @@ function renderPreviewInventario(data) {
     `;
 }
 
-// ================================================================
-//  UTILIDADES
-// ================================================================
 function isFileProtocol() { return window.location.protocol === 'file:'; }
 
-// ================================================================
-//  LOGIN / LOGOUT
-// ================================================================
 function logout() {
     sessionStorage.removeItem('accessToken');
     accessToken = null; isAuthenticated = false;
@@ -2681,9 +2639,6 @@ function logout() {
     document.querySelectorAll('.debug-box').forEach(el => { if(el) el.style.display = 'block'; });
 }
 
-// ================================================================
-//  INICIALIZAÇÃO OAuth
-// ================================================================
 function initOAuth() {
     const savedToken = sessionStorage.getItem('accessToken');
     if (savedToken) {
@@ -2776,9 +2731,6 @@ function autenticar() {
     try { tokenClient.requestAccessToken(); } catch (error) { alert('Erro ao iniciar autenticação. Recarregue a página.'); }
 }
 
-// ================================================================
-//  CARREGAR DADOS DE EXEMPLO (FALLBACK)
-// ================================================================
 function carregarDadosExemplo() {
     rawDataPacotes = DADOS_EXEMPLO_PACOTES;
     rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
@@ -2862,9 +2814,6 @@ async function escreverPlanilhaOAuth(aba, range, values) {
     return await response.json();
 }
 
-// ================================================================
-//  PROCESSAR DADOS DE PACOTES
-// ================================================================
 function processarDadosPacotes(data) {
     const transportadoras = {}, subTransportadoras = {};
     let totalGeral = 0, valorTotalGeral = 0, idsEncontrados = 0, idsNaoEncontrados = 0;
@@ -2922,9 +2871,6 @@ function renderKPI_Pacotes(data) {
     if (footerTotal) footerTotal.textContent = `${data.totalGeral} registros`;
 }
 
-// ================================================================
-//  CARREGAR DADOS DE PACOTES
-// ================================================================
 async function carregarDadosPacotes() {
     const statusDot = document.getElementById('statusDotPacotes');
     const statusText = document.getElementById('statusTextPacotes');
@@ -2955,9 +2901,6 @@ async function carregarDadosPacotes() {
     }
 }
 
-// ================================================================
-//  MODAL DE PACOTES
-// ================================================================
 function abrirModalPacotes(nome) {
     if (currentUserRole === 'viewer') {
         alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
@@ -3090,9 +3033,6 @@ function atualizarSelecao() {
     if (btn) { btn.disabled = count === 0; btn.textContent = count > 0 ? `📝 Responder (${count})` : '📝 Responder'; }
 }
 
-// ================================================================
-//  MODAL DE RESPOSTA
-// ================================================================
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
     const ids = Array.from(idsSelecionados);
@@ -3170,9 +3110,6 @@ document.getElementById('respostaModalClose')?.addEventListener('click', functio
 });
 document.getElementById('respostaModalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 
-// ================================================================
-//  CÓPIA (modal)
-// ================================================================
 document.getElementById('modalCopy')?.addEventListener('click', function() {
     const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
     if (!ids || ids.length === 0) return;
@@ -3221,9 +3158,6 @@ document.getElementById('modalCopyAll')?.addEventListener('click', function() {
     });
 });
 
-// ================================================================
-//  FECHAR MODAIS
-// ================================================================
 document.getElementById('modalClose')?.addEventListener('click', function() { 
     const overlay = document.getElementById('modalOverlay');
     if (overlay) overlay.classList.remove('active');
@@ -3239,9 +3173,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// ================================================================
-//  INVENTÁRIO
-// ================================================================
 function processarDadosInventario(data) {
     const zonas = {};
     let totalInventariado = 0, totalFaltante = 0, totalIntruso = 0, totalNaoClassificado = 0;
@@ -3373,9 +3304,6 @@ async function carregarDadosInventario() {
     }
 }
 
-// ================================================================
-//  CRUZAMENTO
-// ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
     const faltantesInfo = {};
@@ -3619,9 +3547,6 @@ async function carregarCruzamento() {
     }
 }
 
-// ================================================================
-//  CARREGAR TODOS OS DADOS
-// ================================================================
 async function carregarTodosOsDados() {
     try {
         await carregarDadosPacotes();
@@ -3633,9 +3558,6 @@ async function carregarTodosOsDados() {
     }
 }
 
-// ================================================================
-//  FILTRO FLUTUANTE (EVENTOS)
-// ================================================================
 document.getElementById('filterFloatBtn')?.addEventListener('click', function() { 
     const overlay = document.getElementById('filterModalOverlay');
     if (overlay) overlay.classList.add('active');
@@ -3653,9 +3575,6 @@ document.getElementById('filterApplyBtn')?.addEventListener('click', function() 
 document.getElementById('filterSelectAll').onclick = selecionarTodasTransportadoras;
 document.getElementById('filterClearAll').onclick = limparTodasTransportadoras;
 
-// ================================================================
-//  EVENTOS DE REFRESH
-// ================================================================
 document.getElementById('refreshPacotes')?.addEventListener('click', function() {
     if (isAuthenticated) carregarDadosPacotes();
     else alert('Faça login primeiro.');
@@ -3669,9 +3588,6 @@ document.getElementById('refreshCruzamento')?.addEventListener('click', function
     else alert('Faça login primeiro.');
 });
 
-// ================================================================
-//  INICIALIZAÇÃO
-// ================================================================
 document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.createElement('button');
     loginBtn.id = 'loginBtn';
@@ -3716,9 +3632,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initOAuth();
 });
 
-// ================================================================
-//  RECARGA AUTOMÁTICA A CADA 5 MINUTOS
-// ================================================================
 setInterval(() => {
     if (isAuthenticated) {
         carregarDadosInventario();
