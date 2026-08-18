@@ -1578,26 +1578,25 @@ let descricaoMap = {};
 let respostasSet = new Set();
 
 // ================================================================
-//  DADOS DE EXEMPLO (com link na coluna 'LINK')
+//  DADOS DE EXEMPLO
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
-  { 'ID do envio': '47756968938', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '9.57', 'Status do envio': 'sorting', 'MOTORISTA': 'REMOVIDO DE ROTA', 'Cod_Motorista': '123', 'DATA': '2025-03-10', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47756968938' },
-  { 'ID do envio': '47746968996', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.80', 'Status do envio': 'sorting', 'MOTORISTA': 'PÓS SORTING', 'Cod_Motorista': '456', 'DATA': '2025-03-12', 'LINK': '' },
-  { 'ID do envio': '47771689687', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.98', 'Status do envio': 'sorting', 'MOTORISTA': 'BUFFER PENDENTE', 'Cod_Motorista': '789', 'DATA': '2025-03-08', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47771689687' },
-  { 'ID do envio': '47732827943', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '24.90', 'Status do envio': 'sorting', 'MOTORISTA': 'ADUANA', 'Cod_Motorista': '101', 'DATA': '2025-03-11', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47732827943' },
+  { 'ID do envio': '47766750140', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '28.00', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '4084721', 'DATA': '2025-03-10', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47766750140' },
+  { 'ID do envio': '47755039490', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '45.97', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '4084721', 'DATA': '2025-03-12', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47755039490' },
+  { 'ID do envio': '47753274288', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '57.32', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '3726882', 'DATA': '2025-03-08', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47753274288' },
+  { 'ID do envio': '47740732761', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '58.10', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '3035111', 'DATA': '2025-03-11', 'LINK': 'https://envios.adminml.com/logistics/package-management/package/47740732761' },
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
-  { 'SHIPMENT': '47756968938', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
-  { 'SHIPMENT': '47746968996', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
-  { 'SHIPMENT': '47771689687', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
+  { 'SHIPMENT': '47766750140', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
+  { 'SHIPMENT': '47755039490', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
 ];
 const DADOS_EXEMPLO_DESCRICAO = {
-  '47756968938': '',
-  '47746968996': '10 Presilhas Tic Tac Estrelas Dourada E Prata Prendedor Y2k Prateado',
-  '47771689687': '',
-  '47732827943': 'Relógio Infantil Digital Vingadores Luz Som Vermelho Homem Aranha',
+  '47766750140': 'Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia, Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia',
+  '47755039490': 'Kit Sandália Infantil Papete + Bolsa Trançada Margarida Baby Rosa Bebê 29/30 Trançado',
+  '47753274288': 'Mecanismo Reparo Saída Caixa Acoplada Universal Duplo',
+  '47740732761': 'Espelho Redondo 60cm Diam Multiuso Fita Dupla Face Lapidado Espelho Prata',
 };
-const DADOS_EXEMPLO_RESPOSTAS = ['47746968996'];
+const DADOS_EXEMPLO_RESPOSTAS = ['47755039490'];
 
 // ================================================================
 //  VARIÁVEIS GLOBAIS
@@ -2197,6 +2196,9 @@ function renderGraficosPacotes(data, dadosFiltrados) {
     }
 }
 
+// ================================================================
+//  RENDERIZAR SEÇÃO DE TRANSPORTADORAS (ou lista de IDs)
+// ================================================================
 function renderSecaoTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     const titulo = document.getElementById('tituloSecaoTransportadoras');
@@ -2338,15 +2340,22 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
-        // 🔥 Busca dinâmica por coluna de link (case insensitive)
+
+        // 🔥 BUSCA FORÇADA PELA COLUNA LINK
         let linkField = null;
+        const colunasPossiveis = ['LINK', 'Link', 'link', 'URL', 'Url', 'url'];
         if (linhasOrdenadas.length > 0) {
             const sampleRow = linhasOrdenadas[0];
-            for (let key of Object.keys(sampleRow)) {
-                if (key.toLowerCase().includes('link') || key.toLowerCase().includes('url')) {
-                    linkField = key;
+            console.log('🔍 Colunas disponíveis:', Object.keys(sampleRow));
+            for (let col of colunasPossiveis) {
+                if (sampleRow.hasOwnProperty(col)) {
+                    linkField = col;
+                    console.log('✅ Coluna de link encontrada:', linkField);
                     break;
                 }
+            }
+            if (!linkField) {
+                console.warn('⚠️ Nenhuma coluna de link encontrada. Verifique o cabeçalho da coluna T.');
             }
         }
         const links = linhasOrdenadas.map(row => linkField ? (row[linkField] || '') : '');
@@ -2450,7 +2459,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
             const link = linksPagina[index] || '';
 
-            // 🔥 ID clicável com link se existir
+            // 🔥 ID CLICÁVEL SE HOUVER LINK
             let idHtml = link 
                 ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
                 : `<strong>${id}</strong>`;
@@ -2544,6 +2553,9 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     ordenarERenderizar('valor_asc');
 }
 
+// ================================================================
+//  RENDER TRANSPORTADORAS (cards)
+// ================================================================
 function renderTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     if (!container) return;
@@ -2771,9 +2783,6 @@ function carregarDadosExemplo() {
     aplicarRestricoesPorPerfil();
 }
 
-// ================================================================
-//  LEITURA E ESCRITA NA PLANILHA
-// ================================================================
 async function lerPlanilhaOAuth(aba, range) {
     if (!accessToken) throw new Error('Usuário não autenticado');
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(aba)}!${range}`;
