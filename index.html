@@ -3099,7 +3099,7 @@ function carregarDadosExemplo() {
     renderKPI_Inventario(processedDataInventario);
     renderGraficos_Inventario(processedDataInventario);
     renderZonas(processedDataInventario);
-    renderPreviewInventario(processedDataInventario);
+    renderPreviewInventario(processedDataInventario, rawDataInventario); // 🔥 CORRIGIDO
     dadosCruzamento = realizarCruzamento(dadosPacotes, rawDataInventario);
     renderCruzamento(dadosCruzamento);
     const st = document.getElementById('statusTextPacotes');
@@ -3639,7 +3639,7 @@ async function carregarDadosInventario() {
         if (statusDot) statusDot.className = 'dot-status online';
         if (statusText) { statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`; statusText.style.color = 'var(--success)'; }
         if (recordCount) recordCount.textContent = `📦 ${data.length} registros`;
-        renderPreviewInventario(processedDataInventario);
+        renderPreviewInventario(processedDataInventario, rawDataInventario); // 🔥 CORRIGIDO
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
@@ -3654,7 +3654,7 @@ async function carregarDadosInventario() {
         if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
         processedDataInventario = processarDadosInventario(rawDataInventario);
-        renderPreviewInventario(processedDataInventario);
+        renderPreviewInventario(processedDataInventario, rawDataInventario); // 🔥 CORRIGIDO
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
@@ -4013,7 +4013,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderKPI_Inventario(null);
     renderGraficos_Inventario(null);
     renderZonas(null);
-    renderPreviewInventario(null);
+    renderPreviewInventario(null, null); // 🔥 CORRIGIDO
 
     initOAuth();
 });
