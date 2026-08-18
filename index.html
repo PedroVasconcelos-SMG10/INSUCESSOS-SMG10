@@ -8,10 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
-<!-- 🔥 SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  /* ===== ESTILOS (mesmos de antes) ===== */
+  /* ===== ESTILOS COMPLETOS ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1651,6 +1650,7 @@ async function criarAbaSeNaoExistir(nomeAba) {
     }
 }
 
+// 🔥 FUNÇÃO CORRIGIDA: GARANTIR USUÁRIO NA PLANILHA
 async function garantirUsuarioNaPlanilha(email) {
     if (!email) {
         console.warn('Email vazio, ignorando.');
@@ -1670,7 +1670,7 @@ async function garantirUsuarioNaPlanilha(email) {
             data = [['EMAIL', 'ROLE', 'TRANSPORTADORA']];
         }
 
-        // 2. Verificar se o email já existe (case-insensitive, sem espaços extras)
+        // 2. Verificar se o email já existe (case-insensitive)
         let encontrado = false;
         if (data && data.length > 0) {
             for (let i = 1; i < data.length; i++) {
@@ -1698,7 +1698,6 @@ async function garantirUsuarioNaPlanilha(email) {
 async function carregarPermissoesDaPlanilha() {
     if (!accessToken) return;
     try {
-        await criarAbaSeNaoExistir('USUARIOS');
         const data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         if (!data || data.length < 2) {
             currentUserRole = 'viewer';
@@ -1793,7 +1792,8 @@ async function carregarDescricoesERespostas() {
                 if (id) respostasSet.add(id);
             }
         } else {
-            await escreverPlanilhaOAuth('RESPOSTAS', 'A1:A1', [['ID']]);
+            // Se a aba existir mas estiver vazia, apenas inicializa vazio
+            respostasSet = new Set();
         }
     } catch (error) {
         console.warn('Erro ao carregar respostas:', error);
@@ -1802,7 +1802,7 @@ async function carregarDescricoesERespostas() {
 }
 
 // ================================================================
-//  🔥 ALTERAR STATUS - COM SWEETALERT
+//  ALTERAR STATUS - COM SWEETALERT
 // ================================================================
 async function toggleStatus(id, transportadora, motorista) {
     if (currentUserRole !== 'admin') {
@@ -3646,9 +3646,6 @@ async function carregarTodosOsDados() {
     }
 }
 
-// ================================================================
-//  EVENTOS COM SWEETALERT NOS REFRESH
-// ================================================================
 document.getElementById('filterFloatBtn')?.addEventListener('click', function() { 
     const overlay = document.getElementById('filterModalOverlay');
     if (overlay) overlay.classList.add('active');
