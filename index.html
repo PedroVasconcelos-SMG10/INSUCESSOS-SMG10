@@ -1467,7 +1467,7 @@
     <footer><span>FONTE — PLANILHA GOOGLE SHEETS (INVENTÁRIO)</span><span id="footerTotalInventario">0 registros</span></footer>
   </div>
 
-  <!-- TAB 3: CRUZAMENTO (SEM FILTRO FIXO) -->
+  <!-- TAB 3: CRUZAMENTO -->
   <div class="tab-content" id="tabCruzamento">
     <div class="status-bar">
       <div class="info">
@@ -1568,7 +1568,7 @@ let isAuthenticated = false;
 // ================================================================
 let currentUserEmail = '';
 let currentUserRole = 'viewer';
-let usuarioTransportadora = null; // string com múltiplos nomes separados por ';'
+let usuarioTransportadora = null;
 
 // ================================================================
 //  DADOS DAS ABAS ADICIONAIS
@@ -1580,19 +1580,23 @@ let respostasSet = new Set();
 //  DADOS DE EXEMPLO
 // ================================================================
 const DADOS_EXEMPLO_PACOTES = [
-  { 'ID do envio': '47732842817', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '627.35', 'Status do envio': 'sorting', 'MOTORISTA': 'João Silva', 'Cod_Motorista': '123', 'DATA': '2025-03-10' },
-  { 'ID do envio': '47790714531', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '363.00', 'Status do envio': 'sorting', 'MOTORISTA': 'Maria Souza', 'Cod_Motorista': '456', 'DATA': '2025-03-12' },
-  { 'ID do envio': '47673879300', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '157.9', 'Status do envio': 'sorting', 'MOTORISTA': '', 'Cod_Motorista': '789', 'DATA': '2025-03-08' },
+  { 'ID do envio': '47756968938', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '9.57', 'Status do envio': 'sorting', 'MOTORISTA': 'REMOVIDO DE ROTA', 'Cod_Motorista': '123', 'DATA': '2025-03-10', 'LINK': 'https://example.com/pacote/47756968938' },
+  { 'ID do envio': '47746968996', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.80', 'Status do envio': 'sorting', 'MOTORISTA': 'PÓS SORTING', 'Cod_Motorista': '456', 'DATA': '2025-03-12', 'LINK': '' },
+  { 'ID do envio': '47771689687', 'TRANSPORTADORA': 'HAWK TRANSPORTES', 'Valor declarado': '19.98', 'Status do envio': 'sorting', 'MOTORISTA': 'BUFFER PENDENTE', 'Cod_Motorista': '789', 'DATA': '2025-03-08', 'LINK': 'https://example.com/pacote/47771689687' },
+  { 'ID do envio': '47732827943', 'TRANSPORTADORA': 'ENVIOS EXTRA', 'Valor declarado': '24.90', 'Status do envio': 'sorting', 'MOTORISTA': 'ADUANA', 'Cod_Motorista': '101', 'DATA': '2025-03-11', 'LINK': 'https://example.com/pacote/47732827943' },
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
-  { 'SHIPMENT': '47732842817', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
-  { 'SHIPMENT': '47790714531', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
+  { 'SHIPMENT': '47756968938', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
+  { 'SHIPMENT': '47746968996', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
+  { 'SHIPMENT': '47771689687', 'CLASIFICACION': 'FALTANTE EN INVENTARIO', 'SHP_ZONE_NAME': 'problem_solving' },
 ];
 const DADOS_EXEMPLO_DESCRICAO = {
-  '47732842817': 'Modulo Taramps Hd 3800 2 Ohms Amplificador 3800w Hd3800 Branco',
-  '47790714531': 'Bancada Balcão/ilha Cozinha 1 Porta E Adega Menu',
+  '47756968938': '',
+  '47746968996': '10 Presilhas Tic Tac Estrelas Dourada E Prata Prendedor Y2k Prateado, 10 Presilhas Tic Tac Estrelas Dourada E Prata Prendedor 2k Prateado',
+  '47771689687': '',
+  '47732827943': 'Relógio Infantil Digital Vingadores Luz Som Vermelho Homem Aranha',
 };
-const DADOS_EXEMPLO_RESPOSTAS = ['47732842817'];
+const DADOS_EXEMPLO_RESPOSTAS = ['47746968996'];
 
 // ================================================================
 //  VARIÁVEIS GLOBAIS
@@ -1683,7 +1687,7 @@ async function garantirUsuarioNaPlanilha(email) {
 }
 
 // ================================================================
-//  CARREGAR PERMISSÕES (com múltiplas transportadoras)
+//  CARREGAR PERMISSÕES
 // ================================================================
 async function carregarPermissoesDaPlanilha() {
     if (!accessToken) return;
@@ -1752,7 +1756,7 @@ async function getUserInfo() {
 }
 
 // ================================================================
-//  CARREGAR DESCRIÇÕES E RESPOSTAS (criando abas se necessário)
+//  CARREGAR DESCRIÇÕES E RESPOSTAS
 // ================================================================
 async function carregarDescricoesERespostas() {
     if (!accessToken) return;
@@ -1932,7 +1936,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  GRÁFICOS (com suporte a múltiplas transportadoras e pizza por motorista)
+//  🔥 GRÁFICOS DE PIZZA MAIS BONITOS
 // ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
@@ -1947,6 +1951,14 @@ function renderGraficosPacotes(data, dadosFiltrados) {
     }
 
     const isTranspView = !!usuarioTransportadora;
+
+    // Paleta de cores moderna e vibrante
+    const colorPalette = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#FF8A5C', '#A29BFE', '#FD79A8', '#00CEC9',
+        '#6C5CE7', '#FDCB6E', '#E17055', '#00B894', '#0984E3',
+        '#E84393', '#F39C12', '#2ECC71', '#3498DB', '#9B59B6'
+    ];
 
     if (isTranspView && dadosFiltrados && dadosFiltrados.length > 0) {
         const motoristaMap = {};
@@ -1969,7 +1981,7 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         const labels = Object.keys(motoristaMap);
         const counts = labels.map(m => motoristaMap[m].count);
         const totals = labels.map(m => motoristaMap[m].total);
-        const cores = ['#4fae7c', '#e0aa3d', '#3d8fe0', '#e8593f', '#9b59b6', '#e67e22', '#1abc9c', '#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#95a5a6', '#d35400', '#2c3e50'];
+        const cores = colorPalette.slice(0, labels.length);
 
         const ctx1 = document.getElementById('chartQuantidade');
         if (ctx1) {
@@ -1979,27 +1991,50 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     labels: labels,
                     datasets: [{
                         data: counts,
-                        backgroundColor: cores.slice(0, labels.length),
-                        borderColor: '#14161a',
-                        borderWidth: 2
+                        backgroundColor: cores,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 15
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '10%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 10 } } },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#8b8f99',
+                                font: { size: 11, weight: '500' },
+                                boxWidth: 12,
+                                padding: 14,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
                         tooltip: {
+                            backgroundColor: 'rgba(20,22,26,0.9)',
+                            titleColor: '#edeae2',
+                            bodyColor: '#edeae2',
+                            borderColor: '#2b2f37',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
                             callbacks: {
                                 label: function(context) {
                                     let label = context.label || '';
                                     let value = context.parsed || 0;
                                     let total = context.dataset.data.reduce((a,b) => a+b, 0);
                                     let pct = total ? ((value/total)*100).toFixed(1) : 0;
-                                    return label + ': ' + value + ' pacotes (' + pct + '%)';
+                                    return ` ${label}: ${value} pacotes (${pct}%)`;
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 800
                     }
                 }
             });
@@ -2013,27 +2048,50 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     labels: labels,
                     datasets: [{
                         data: totals,
-                        backgroundColor: cores.slice(0, labels.length),
-                        borderColor: '#14161a',
-                        borderWidth: 2
+                        backgroundColor: cores,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 15
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '10%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 10 } } },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#8b8f99',
+                                font: { size: 11, weight: '500' },
+                                boxWidth: 12,
+                                padding: 14,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
                         tooltip: {
+                            backgroundColor: 'rgba(20,22,26,0.9)',
+                            titleColor: '#edeae2',
+                            bodyColor: '#edeae2',
+                            borderColor: '#2b2f37',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
                             callbacks: {
                                 label: function(context) {
                                     let label = context.label || '';
                                     let value = context.parsed || 0;
                                     let total = context.dataset.data.reduce((a,b) => a+b, 0);
                                     let pct = total ? ((value/total)*100).toFixed(1) : 0;
-                                    return label + ': R$ ' + value.toFixed(2) + ' (' + pct + '%)';
+                                    return ` ${label}: R$ ${value.toFixed(2)} (${pct}%)`;
                                 }
                             }
                         }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 800
                     }
                 }
             });
@@ -2140,7 +2198,7 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  RENDERIZAR LISTA DE IDs (com seletor de ordenação, paginação e botão de alternar status para admin)
+//  RENDERIZAR LISTA DE IDs (com link no ID e ordenação)
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2209,12 +2267,14 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
+        const links = linhasOrdenadas.map(row => row['LINK'] || row['Link'] || row['link'] || row['URL'] || '');
 
         const objOrdenado = {
             nome: transpObj.nome,
             ids: ids,
             valores: valores,
             motoristas: motoristas,
+            links: links,
             quantidade: ids.length,
             valorTotal: valores.reduce((a, b) => a + b, 0),
             valorFormatado: 'R$ ' + valores.reduce((a, b) => a + b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
@@ -2227,6 +2287,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         const ids = objOrdenado.ids;
         const valores = objOrdenado.valores;
         const motoristas = objOrdenado.motoristas;
+        const links = objOrdenado.links || [];
         const descricoes = ids.map(id => descricaoMap[id] || '');
         const justificados = ids.map(id => respostasSet.has(id));
         const page = window._paginaIdsAtual || 1;
@@ -2237,6 +2298,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         const idsPagina = ids.slice(start, end);
         const valoresPagina = valores.slice(start, end);
         const motoristasPagina = motoristas.slice(start, end);
+        const linksPagina = links.slice(start, end);
         const descricoesPagina = descricoes.slice(start, end);
         const justificadosPagina = justificados.slice(start, end);
 
@@ -2304,15 +2366,22 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const justificado = justificadosPagina[index];
             const statusClass = justificado ? 'justificado' : 'pendente';
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
+            const link = linksPagina[index] || '';
+
+            // ID com link se houver
+            let idHtml = link 
+                ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
+                : `<strong>${id}</strong>`;
 
             let row = `<tr>
                 <td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}', '${motorista.replace(/'/g, "\\'")}')"></td>
                 <td>${globalIndex}</td>
-                <td><strong>${id}</strong></td>
+                <td>${idHtml}</td>
                 <td>${descricao}</td>
                 <td>R$ ${valor.toFixed(2)}</td>
                 <td>${motorista}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
+
             if (isAdmin) {
                 const btnText = justificado ? 'Desmarcar' : 'Justificar';
                 const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle';
@@ -2990,7 +3059,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ================================================================
-//  INVENTÁRIO (funções completas, mantidas)
+//  INVENTÁRIO (funções completas)
 // ================================================================
 function processarDadosInventario(data) {
     const zonas = {};
@@ -3121,7 +3190,7 @@ async function carregarDadosInventario() {
 }
 
 // ================================================================
-//  CRUZAMENTO (funções completas, mantidas)
+//  CRUZAMENTO (funções completas)
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
