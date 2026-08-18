@@ -1618,6 +1618,42 @@ let filtroTransportadoras = new Set();
 let filtroTransportadorasResp = new Set();
 
 // ================================================================
+//  FUNÇÃO AUXILIAR DE PARSE DE DATA (GLOBAL)
+// ================================================================
+function parseDataBR(texto) {
+    if (!texto) return null;
+    texto = texto.trim();
+    const meses = {
+        'jan': 0, 'jan.': 0, 'janeiro': 0,
+        'fev': 1, 'fev.': 1, 'fevereiro': 1,
+        'mar': 2, 'mar.': 2, 'março': 2,
+        'abr': 3, 'abr.': 3, 'abril': 3,
+        'mai': 4, 'mai.': 4, 'maio': 4,
+        'jun': 5, 'jun.': 5, 'junho': 5,
+        'jul': 6, 'jul.': 6, 'julho': 6,
+        'ago': 7, 'ago.': 7, 'agosto': 7,
+        'set': 8, 'set.': 8, 'setembro': 8,
+        'out': 9, 'out.': 9, 'outubro': 9,
+        'nov': 10, 'nov.': 10, 'novembro': 10,
+        'dez': 11, 'dez.': 11, 'dezembro': 11
+    };
+    const regex = /^(\d{1,2})\s+de\s+([a-zA-Z.]+)\s+de\s+(\d{4})$/;
+    const match = texto.match(regex);
+    if (match) {
+        const dia = parseInt(match[1], 10);
+        const mesTexto = match[2].toLowerCase();
+        const ano = parseInt(match[3], 10);
+        const mes = meses[mesTexto];
+        if (mes !== undefined && !isNaN(dia) && !isNaN(ano)) {
+            return new Date(ano, mes, dia);
+        }
+    }
+    const fallback = new Date(texto);
+    if (!isNaN(fallback.getTime())) return fallback;
+    return null;
+}
+
+// ================================================================
 //  FUNÇÕES AUXILIARES
 // ================================================================
 async function criarAbaSeNaoExistir(nomeAba) {
@@ -1650,7 +1686,6 @@ async function criarAbaSeNaoExistir(nomeAba) {
     }
 }
 
-// 🔥 FUNÇÃO CORRIGIDA: GARANTIR USUÁRIO NA PLANILHA
 async function garantirUsuarioNaPlanilha(email) {
     if (!email) {
         console.warn('Email vazio, ignorando.');
@@ -1658,19 +1693,14 @@ async function garantirUsuarioNaPlanilha(email) {
     }
     try {
         console.log(`🔍 Verificando usuário "${email}" na aba USUARIOS...`);
-
-        // 1. Ler a aba USUARIOS
         let data;
         try {
             data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         } catch (err) {
             console.warn('Erro ao ler USUARIOS, tentando criar cabeçalho...', err);
-            // Se falhar, tenta criar o cabeçalho forçadamente
             await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
             data = [['EMAIL', 'ROLE', 'TRANSPORTADORA']];
         }
-
-        // 2. Verificar se o email já existe (case-insensitive)
         let encontrado = false;
         if (data && data.length > 0) {
             for (let i = 1; i < data.length; i++) {
@@ -1682,8 +1712,6 @@ async function garantirUsuarioNaPlanilha(email) {
                 }
             }
         }
-
-        // 3. Se não existir, adiciona na próxima linha disponível
         if (!encontrado) {
             const nextRow = data ? data.length + 1 : 2;
             await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email.trim(), 'viewer', '']]);
@@ -1691,7 +1719,6 @@ async function garantirUsuarioNaPlanilha(email) {
         }
     } catch (error) {
         console.error('❌ Erro ao garantir usuário na planilha:', error);
-        // Não interrompe o fluxo principal
     }
 }
 
@@ -1761,7 +1788,6 @@ async function carregarDescricoesERespostas() {
     if (!accessToken) return;
     await criarAbaSeNaoExistir('Descrição');
     await criarAbaSeNaoExistir('RESPOSTAS');
-
     try {
         const data = await lerPlanilhaOAuth('Descrição', 'A:C');
         if (data && data.length > 1) {
@@ -1782,7 +1808,6 @@ async function carregarDescricoesERespostas() {
         console.warn('Erro ao carregar descrições:', error);
         descricaoMap = {};
     }
-
     try {
         const data = await lerPlanilhaOAuth('RESPOSTAS', 'A:A');
         respostasSet = new Set();
@@ -1800,9 +1825,6 @@ async function carregarDescricoesERespostas() {
     }
 }
 
-// ================================================================
-//  ALTERAR STATUS - COM SWEETALERT
-// ================================================================
 async function toggleStatus(id, transportadora, motorista) {
     if (currentUserRole !== 'admin') {
         await Swal.fire({
@@ -1874,7 +1896,6 @@ function aplicarRestricoesPorPerfil() {
             if (tabPacotes) tabPacotes.click();
         }
     }
-
     const originalAbrirResposta = window.abrirModalResposta || function() {};
     window.abrirModalResposta = function() {
         if (currentUserRole === 'viewer') {
@@ -1889,7 +1910,6 @@ function aplicarRestricoesPorPerfil() {
         }
         originalAbrirResposta();
     };
-
     const containers = [
         document.getElementById('roleBadgeContainer'),
         document.getElementById('roleBadgeContainerInventario'),
@@ -1906,7 +1926,6 @@ function aplicarRestricoesPorPerfil() {
         badge.title = currentUserEmail;
         container.appendChild(badge);
     });
-
     const filterInfo = document.getElementById('filterInfoTransp');
     if (filterInfo) {
         if (usuarioTransportadora) {
@@ -1917,14 +1936,12 @@ function aplicarRestricoesPorPerfil() {
             filterInfo.style.display = 'none';
         }
     }
-
     const debugBoxes = document.querySelectorAll('.debug-box');
     if (usuarioTransportadora) {
         debugBoxes.forEach(el => { if (el) el.style.display = 'none'; });
     } else {
         debugBoxes.forEach(el => { if (el) el.style.display = 'block'; });
     }
-
     if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
 }
 
@@ -1944,13 +1961,11 @@ function processarPacotesComFiltro() {
         });
     }
     window._dadosFiltradosCompletos = dadosFiltrados;
-
     processedDataPacotes = processarDadosPacotes(dadosFiltrados);
     renderKPI_Pacotes(processedDataPacotes);
     renderGraficosPacotes(processedDataPacotes, dadosFiltrados);
     renderSecaoTransportadoras(processedDataPacotes);
     renderPreviewPacotes(dadosFiltrados);
-    
     const statusText = document.getElementById('statusTextPacotes');
     if (statusText) {
         statusText.textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
@@ -1962,27 +1977,20 @@ function processarPacotesComFiltro() {
     if (recordCount) recordCount.textContent = `📦 ${dadosFiltrados.length} registros`;
     const footerTotal = document.getElementById('footerTotalPacotes');
     if (footerTotal) footerTotal.textContent = `${dadosFiltrados.length} registros`;
-    
     if (rawDataInventario) {
         dadosCruzamento = realizarCruzamento(dadosFiltrados, rawDataInventario);
         renderCruzamento(dadosCruzamento);
     }
 }
 
-// ================================================================
-//  GRÁFICO DE PARETO (substitui pizza)
-// ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
         if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; }
         if (chartValor) { chartValor.destroy(); chartValor = null; }
     } catch(e) {}
-
     const chartQuant = document.getElementById('chartQuantidade');
     const chartVal = document.getElementById('chartValor');
-    
     if (!chartQuant || !chartVal) return;
-
     if (!data || data.transportadoras.length === 0) {
         const h3s = document.querySelectorAll('.chart-card h3');
         if (h3s.length >= 2) {
@@ -1991,26 +1999,18 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         }
         return;
     }
-
     const isTranspView = !!usuarioTransportadora;
-
-    // Função auxiliar para criar gráfico de Pareto
     function criarGraficoPareto(ctx, labels, valores, titulo, corBarra, formatadorTooltip) {
-        // Ordena do maior para o menor
         const combinados = labels.map((label, i) => ({ label, value: valores[i] }));
         combinados.sort((a, b) => b.value - a.value);
-        
         const sortedLabels = combinados.map(item => item.label.length > 20 ? item.label.substring(0, 18) + '...' : item.label);
         const sortedValues = combinados.map(item => item.value);
         const total = sortedValues.reduce((a, b) => a + b, 0);
-        
-        // Calcula a porcentagem acumulada
         let acumulado = 0;
         const porcentagens = sortedValues.map(val => {
             acumulado += val;
             return parseFloat((acumulado / total * 100).toFixed(1));
         });
-
         return new Chart(ctx, {
             type: 'bar',
             data: {
@@ -2084,38 +2084,25 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     y: {
                         beginAtZero: true,
                         position: 'left',
-                        ticks: { 
-                            color: '#8b8f99', 
-                            font: { size: 10 },
-                            stepSize: 1
-                        },
+                        ticks: { color: '#8b8f99', font: { size: 10 }, stepSize: 1 },
                         grid: { color: '#2b2f37' }
                     },
                     y1: {
                         beginAtZero: true,
                         position: 'right',
                         max: 100,
-                        ticks: { 
-                            color: '#8b8f99', 
-                            font: { size: 10 },
-                            callback: function(value) { return value + '%'; } 
-                        },
+                        ticks: { color: '#8b8f99', font: { size: 10 }, callback: function(value) { return value + '%'; } },
                         grid: { drawOnChartArea: false }
                     },
                     x: {
-                        ticks: { 
-                            color: '#8b8f99', 
-                            font: { size: 9 } 
-                        },
+                        ticks: { color: '#8b8f99', font: { size: 9 } },
                         grid: { display: false }
                     }
                 }
             }
         });
     }
-
     if (isTranspView && dadosFiltrados && dadosFiltrados.length > 0) {
-        // 1. Processar dados por motorista
         const motoristaMap = {};
         dadosFiltrados.forEach(row => {
             let motorista = row['MOTORISTA'] || '';
@@ -2132,12 +2119,9 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             motoristaMap[motorista].count++;
             motoristaMap[motorista].total += valor;
         });
-
         const labels = Object.keys(motoristaMap);
         const counts = labels.map(m => motoristaMap[m].count);
         const totals = labels.map(m => motoristaMap[m].total);
-
-        // 2. Gráfico de Pareto - Quantidade
         chartQuantidade = criarGraficoPareto(
             chartQuant,
             labels,
@@ -2146,8 +2130,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             '#3498db',
             (value) => `${value} pacotes`
         );
-
-        // 3. Gráfico de Pareto - Valor Total
         chartValor = criarGraficoPareto(
             chartVal,
             labels,
@@ -2156,101 +2138,25 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             '#2ecc71',
             (value) => `R$ ${value.toFixed(2)}`
         );
-
-        // 4. Atualiza os títulos dos cards
         const h3s = document.querySelectorAll('.chart-card h3');
         if (h3s.length >= 2) {
             h3s[0].textContent = '📊 Pareto - Pacotes por Motorista';
             h3s[1].textContent = '💰 Pareto - Valor Total por Motorista';
         }
-
     } else {
-        // VISÃO ADMIN: Mantém os gráficos de barras originais
         const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
         const quantidades = data.transportadoras.map(t => t.quantidade);
         const valores = data.transportadoras.map(t => t.valorTotal);
-
         chartQuantidade = new Chart(chartQuant, {
             type: 'bar',
-            data: { 
-                labels, 
-                datasets: [{ 
-                    label: 'Pacotes', 
-                    data: quantidades, 
-                    backgroundColor: '#e0aa3d', 
-                    borderColor: '#e0aa3d', 
-                    borderWidth: 1, 
-                    borderRadius: 4,
-                    hoverBackgroundColor: '#f1c40f'
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false } 
-                }, 
-                scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { color: '#8b8f99', font: { size: 10 } }, 
-                        grid: { color: '#2b2f37' } 
-                    }, 
-                    x: { 
-                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
-                        grid: { display: false } 
-                    } 
-                } 
-            }
+            data: { labels, datasets: [{ label: 'Pacotes', data: quantidades, backgroundColor: '#e0aa3d', borderColor: '#e0aa3d', borderWidth: 1, borderRadius: 4, hoverBackgroundColor: '#f1c40f' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
         });
-
         chartValor = new Chart(chartVal, {
             type: 'bar',
-            data: { 
-                labels, 
-                datasets: [{ 
-                    label: 'Valor Total (R$)', 
-                    data: valores, 
-                    backgroundColor: '#4fae7c', 
-                    borderColor: '#4fae7c', 
-                    borderWidth: 1, 
-                    borderRadius: 4,
-                    hoverBackgroundColor: '#2ecc71'
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { 
-                        callbacks: { 
-                            label: function(context) { 
-                                return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
-                            } 
-                        } 
-                    } 
-                }, 
-                scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { 
-                            color: '#8b8f99', 
-                            font: { size: 10 }, 
-                            callback: function(value) { 
-                                return 'R$ ' + value.toLocaleString('pt-BR'); 
-                            } 
-                        }, 
-                        grid: { color: '#2b2f37' } 
-                    }, 
-                    x: { 
-                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
-                        grid: { display: false } 
-                    } 
-                } 
-            }
+            data: { labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 4, hoverBackgroundColor: '#2ecc71' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 }, callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
         });
-
         const h3s = document.querySelectorAll('.chart-card h3');
         if (h3s.length >= 2) {
             h3s[0].textContent = '📊 Pacotes por Transportadora';
@@ -2259,90 +2165,33 @@ function renderGraficosPacotes(data, dadosFiltrados) {
     }
 }
 
-// ================================================================
-//  GRÁFICOS DO INVENTÁRIO (restaurados)
-// ================================================================
 function renderGraficos_Inventario(data) {
     try { 
         if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; } 
         if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; } 
     } catch(e) {}
-    
     const ctxZona = document.getElementById('chartZona');
     const ctxOverview = document.getElementById('chartOverview');
     if (!ctxZona || !ctxOverview) return;
     if (!data || data.zonas.length === 0) return;
-    
     const labels = data.zonas.slice(0, 15).map(z => z.nome.length > 20 ? z.nome.substring(0, 18) + '...' : z.nome);
     const inventariado = data.zonas.slice(0, 15).map(z => z.inventariado);
     const faltante = data.zonas.slice(0, 15).map(z => z.faltante);
     const intruso = data.zonas.slice(0, 15).map(z => z.intruso);
-    
     try {
         chartZona = new Chart(ctxZona, {
             type: 'bar',
-            data: { 
-                labels, 
-                datasets: [
-                    { label: 'Inventariados', data: inventariado, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 2 },
-                    { label: 'Faltantes', data: faltante, backgroundColor: '#e8593f', borderColor: '#e8593f', borderWidth: 1, borderRadius: 2 },
-                    { label: 'Intrusos', data: intruso, backgroundColor: '#9b59b6', borderColor: '#9b59b6', borderWidth: 1, borderRadius: 2 }
-                ] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { 
-                        labels: { 
-                            color: '#8b8f99', 
-                            font: { size: 10 } 
-                        } 
-                    } 
-                }, 
-                scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        stacked: true, 
-                        ticks: { color: '#8b8f99', font: { size: 10 } }, 
-                        grid: { color: '#2b2f37' } 
-                    }, 
-                    x: { 
-                        stacked: true, 
-                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
-                        grid: { display: false } 
-                    } 
-                } 
-            }
+            data: { labels, datasets: [
+                { label: 'Inventariados', data: inventariado, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 2 },
+                { label: 'Faltantes', data: faltante, backgroundColor: '#e8593f', borderColor: '#e8593f', borderWidth: 1, borderRadius: 2 },
+                { label: 'Intrusos', data: intruso, backgroundColor: '#9b59b6', borderColor: '#9b59b6', borderWidth: 1, borderRadius: 2 }
+            ] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8b8f99', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { stacked: true, ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
         });
-        
         chartOverview = new Chart(ctxOverview, {
             type: 'doughnut',
-            data: { 
-                labels: ['Inventariados', 'Faltantes', 'Intrusos'], 
-                datasets: [{ 
-                    data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], 
-                    backgroundColor: ['#4fae7c', '#e8593f', '#9b59b6'], 
-                    borderColor: ['#4fae7c', '#e8593f', '#9b59b6'], 
-                    borderWidth: 2, 
-                    hoverOffset: 8 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { 
-                        position: 'bottom', 
-                        labels: { 
-                            color: '#8b8f99', 
-                            font: { size: 11 }, 
-                            padding: 16 
-                        } 
-                    } 
-                }, 
-                cutout: '60%' 
-            }
+            data: { labels: ['Inventariados', 'Faltantes', 'Intrusos'], datasets: [{ data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], backgroundColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderWidth: 2, hoverOffset: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 11 }, padding: 16 } } }, cutout: '60%' }
         });
     } catch(e) {
         console.warn('Erro ao renderizar gráficos de inventário:', e);
@@ -2353,14 +2202,11 @@ function renderSecaoTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     const titulo = document.getElementById('tituloSecaoTransportadoras');
     const legenda = document.getElementById('legendaSecaoTransportadoras');
-
     if (!container) return;
-
     if (!data || data.transportadoras.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
         return;
     }
-
     if (usuarioTransportadora) {
         const transportadoras = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean);
         const transpObjs = data.transportadoras.filter(t => 
@@ -2394,7 +2240,6 @@ function renderSecaoTransportadoras(data) {
         };
         if (titulo) titulo.textContent = `📦 Pacotes - ${usuarioTransportadora.replace(/;/g, ', ')}`;
         if (legenda) legenda.textContent = `Total: ${transpObjConsolidado.ids.length} pacotes`;
-
         let linhasFiltradas = [];
         if (window._dadosFiltradosCompletos) {
             const idsSet = new Set(transpObjConsolidado.ids);
@@ -2409,7 +2254,6 @@ function renderSecaoTransportadoras(data) {
                 return idsSet.has(id);
             });
         }
-
         renderListaIdsTransportadora(transpObjConsolidado, linhasFiltradas);
     } else {
         if (titulo) titulo.textContent = '🚚 Transportadoras';
@@ -2418,15 +2262,10 @@ function renderSecaoTransportadoras(data) {
     }
 }
 
-// ================================================================
-//  RENDERIZAR LISTA DE IDs COM LINK
-// ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
     if (!container) return;
-    
     let linhas = linhasFiltradas || [];
-
     if (linhas.length === 0 && transpObj.ids) {
         linhas = transpObj.ids.map((id, i) => ({
             'ID do envio': id,
@@ -2435,21 +2274,17 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             'DATA': ''
         }));
     }
-
     if (linhas.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhum pacote encontrado</div>`;
         return;
     }
-
     window._linhasAtuais = linhas;
     window._ordenacaoAtual = 'valor_asc';
     window._paginaIdsAtual = 1;
-
     function ordenarERenderizar(opcao) {
         window._ordenacaoAtual = opcao;
         let linhasOrdenadas = [...window._linhasAtuais];
         const isAdmin = currentUserRole === 'admin';
-
         switch(opcao) {
             case 'valor_asc':
                 linhasOrdenadas.sort((a, b) => {
@@ -2479,10 +2314,8 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                     return db.localeCompare(da);
                 });
                 break;
-            default:
-                break;
+            default: break;
         }
-
         const ids = linhasOrdenadas.map(row => String(row['ID do envio'] || '').trim());
         const valores = linhasOrdenadas.map(row => parseFloat(String(row['Valor declarado'] || '0').replace(',', '.')) || 0);
         const motoristas = linhasOrdenadas.map(row => {
@@ -2490,25 +2323,18 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
-
         let linkField = null;
         const colunasPossiveis = ['LINK', 'Link', 'link', 'URL', 'Url', 'url'];
         if (linhasOrdenadas.length > 0) {
             const sampleRow = linhasOrdenadas[0];
-            console.log('🔍 Colunas disponíveis:', Object.keys(sampleRow));
             for (let col of colunasPossiveis) {
                 if (sampleRow.hasOwnProperty(col)) {
                     linkField = col;
-                    console.log('✅ Coluna de link encontrada:', linkField);
                     break;
                 }
             }
-            if (!linkField) {
-                console.warn('⚠️ Nenhuma coluna de link encontrada.');
-            }
         }
         const links = linhasOrdenadas.map(row => linkField ? (row[linkField] || '') : '');
-
         const objOrdenado = {
             nome: transpObj.nome,
             ids: ids,
@@ -2519,10 +2345,8 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             valorTotal: valores.reduce((a, b) => a + b, 0),
             valorFormatado: 'R$ ' + valores.reduce((a, b) => a + b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
         };
-
         renderizarListaPaginada(objOrdenado);
     }
-
     function renderizarListaPaginada(objOrdenado) {
         const ids = objOrdenado.ids;
         const valores = objOrdenado.valores;
@@ -2534,14 +2358,12 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         const totalPaginas = Math.ceil(ids.length / ITEMS_PER_PAGE);
         const start = (page - 1) * ITEMS_PER_PAGE;
         const end = Math.min(start + ITEMS_PER_PAGE, ids.length);
-
         const idsPagina = ids.slice(start, end);
         const valoresPagina = valores.slice(start, end);
         const motoristasPagina = motoristas.slice(start, end);
         const linksPagina = links.slice(start, end);
         const descricoesPagina = descricoes.slice(start, end);
         const justificadosPagina = justificados.slice(start, end);
-
         const navHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
             <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">
                 Mostrando ${start + 1} a ${end} de ${ids.length} IDs (Página ${page} de ${totalPaginas})
@@ -2555,14 +2377,12 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 </button>
             </div>
         </div>`;
-
         const selecaoBar = `<div class="selecao-bar" id="selecaoBarIds">
             <div class="info">📌 <span id="selecionadosCountIds">0</span> pacotes selecionados</div>
             <button class="btn-resposta" id="btnAbrirRespostaIds" disabled onclick="abrirRespostaIds()">📝 Responder</button>
             <button class="btn-selecionar" onclick="selecionarTodosIds()">Selecionar todos</button>
             <button class="btn-selecionar" onclick="limparSelecaoIds()">Limpar</button>
         </div>`;
-
         const isAdmin = currentUserRole === 'admin';
         let headerCols = `
             <th style="width:30px;"></th>
@@ -2575,7 +2395,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         if (isAdmin) {
             headerCols += `<th style="width:80px;">Ação</th>`;
         }
-
         const ordenacaoHtml = `<div style="display:flex; align-items:center; gap:10px; padding:8px 14px; background:var(--bg); border-bottom:1px solid var(--line-soft); flex-wrap:wrap;">
             <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Ordenar por:</span>
             <select id="ordenacaoSelect" style="background:var(--panel); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:11px; cursor:pointer; outline:none;">
@@ -2585,7 +2404,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <option value="data_desc" ${window._ordenacaoAtual === 'data_desc' ? 'selected' : ''}>Data (mais recente)</option>
             </select>
         </div>`;
-
         let tableHtml = `<div class="ids-tabela-wrap">
             <div class="header">
                 <h3>📋 Lista de Pacotes</h3>
@@ -2597,7 +2415,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <table>
                     <thead><tr>${headerCols}</tr></thead>
                     <tbody>`;
-
         idsPagina.forEach((id, index) => {
             const globalIndex = start + index + 1;
             const valor = valoresPagina[index] || 0;
@@ -2607,11 +2424,9 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const statusClass = justificado ? 'justificado' : 'pendente';
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
             const link = linksPagina[index] || '';
-
             let idHtml = link 
                 ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
                 : `<strong>${id}</strong>`;
-
             let row = `<tr>
                 <td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}', '${motorista.replace(/'/g, "\\'")}')"></td>
                 <td>${globalIndex}</td>
@@ -2620,7 +2435,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <td>R$ ${valor.toFixed(2)}</td>
                 <td>${motorista}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
-
             if (isAdmin) {
                 const btnText = justificado ? 'Desmarcar' : 'Justificar';
                 const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle';
@@ -2629,11 +2443,9 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             row += `</tr>`;
             tableHtml += row;
         });
-
         tableHtml += `</tbody></table>${navHtml}</div></div>`;
         container.innerHTML = tableHtml;
         atualizarSelecaoIds();
-
         const select = document.getElementById('ordenacaoSelect');
         if (select) {
             select.addEventListener('change', function() {
@@ -2643,14 +2455,12 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             });
         }
     }
-
     window.irParaPaginaIds = function(pagina) {
         const totalPaginas = Math.ceil(window._linhasAtuais.length / ITEMS_PER_PAGE);
         if (pagina < 1 || pagina > totalPaginas) return;
         window._paginaIdsAtual = pagina;
         ordenarERenderizar(window._ordenacaoAtual);
     };
-
     window.selecionarTodosIds = function() {
         document.querySelectorAll('.id-checkbox-ids').forEach(cb => {
             cb.checked = true;
@@ -2703,17 +2513,12 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         modalTransportadora = transpObj;
         abrirModalResposta();
     };
-
     ordenarERenderizar('valor_asc');
 }
 
-// ================================================================
-//  RENDER TRANSPORTADORAS
-// ================================================================
 function renderTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     if (!container) return;
-    
     if (!data || data.transportadoras.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
         return;
@@ -2785,10 +2590,9 @@ async function listarAbas() {
 }
 
 // ================================================================
-//  CARREGAR BACKUPS DA SEMANA ATUAL (DOMINGO A SÁBADO)
+//  CARREGAR BACKUPS DA SEMANA ATUAL (USANDO A DATA DA COLUNA B)
 // ================================================================
 async function carregarBackupsSemanais() {
-    // 1. Obter todas as abas da planilha
     let abas = [];
     try {
         abas = await listarAbas();
@@ -2796,87 +2600,105 @@ async function carregarBackupsSemanais() {
         console.warn('Erro ao listar abas para backups:', error);
         return null;
     }
-    const abaSet = new Set(abas);
 
-    // 2. Determinar a semana atual (DOMINGO a SÁBADO)
+    // Filtrar apenas abas de backup
+    const backupSheets = abas.filter(name => name.startsWith('BACKUP_'));
+
+    // Determinar a semana atual (DOMINGO a SÁBADO)
     const hoje = new Date();
-    const diaSemana = hoje.getDay(); // 0 = domingo
     const domingo = new Date(hoje);
-    domingo.setDate(hoje.getDate() - diaSemana);
+    domingo.setDate(hoje.getDate() - hoje.getDay());
     domingo.setHours(0, 0, 0, 0);
 
-    // 3. Função para formatar data como YYYY-MM-DD (mesmo formato do Apps Script)
-    function formatarDataParaBackup(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
+    const sabado = new Date(domingo);
+    sabado.setDate(domingo.getDate() + 6);
+    sabado.setHours(23, 59, 59, 999);
 
-    // 4. Para cada dia da semana, tentar ler o backup
+    // Inicializar array com 7 dias (DOM a SAB)
     const resultados = [];
     for (let i = 0; i < 7; i++) {
-        const d = new Date(domingo);
-        d.setDate(domingo.getDate() + i);
-        const dataStr = formatarDataParaBackup(d);
-        const nomeAba = `BACKUP_${dataStr}`;
-
-        let stats = {
-            date: dataStr,
+        resultados.push({
+            date: null,
             inventariado: 0,
             faltante: 0,
             intruso: 0,
             total: 0,
-            existe: false
-        };
+            existe: false,
+            acuracia: 0
+        });
+    }
 
-        if (abaSet.has(nomeAba)) {
-            try {
-                // Ler a aba de backup
-                const values = await lerPlanilhaOAuth(nomeAba, 'A1:K');
-                if (values && values.length > 1) {
-                    const headers = values[0];
-                    const statusCol = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
-                    if (statusCol !== -1) {
-                        for (let r = 1; r < values.length; r++) {
-                            const row = values[r];
-                            const status = String(row[statusCol] || '').trim().toUpperCase();
-                            const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-                            const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-                            const isIntruso = status === 'INTRUSO';
-                            if (isInventariado) stats.inventariado++;
-                            else if (isFaltante) stats.faltante++;
-                            else if (isIntruso) stats.intruso++;
-                        }
-                        stats.total = stats.inventariado + stats.faltante + stats.intruso;
-                        stats.existe = true;
-                    } else {
-                        console.warn(`⚠️ Coluna CLASIFICACION não encontrada em ${nomeAba}`);
-                    }
+    // Processar cada backup
+    for (const nomeAba of backupSheets) {
+        try {
+            const values = await lerPlanilhaOAuth(nomeAba, 'A1:K');
+            if (!values || values.length < 2) continue;
+
+            const headers = values[0];
+            // Procurar coluna de DATA (coluna B)
+            let dataColIdx = headers.indexOf('DATA');
+            if (dataColIdx === -1) dataColIdx = headers.indexOf('data');
+            if (dataColIdx === -1) dataColIdx = headers.indexOf('Data');
+            if (dataColIdx === -1) dataColIdx = 1; // fallback para coluna B (índice 1)
+
+            // Extrair data do primeiro registro (coluna B)
+            const dataStr = values[1][dataColIdx]?.trim() || '';
+            if (!dataStr) continue;
+
+            const dateObj = parseDataBR(dataStr);
+            if (!dateObj) continue;
+
+            // Verificar se a data está dentro da semana atual
+            if (dateObj < domingo || dateObj > sabado) continue;
+
+            // Índice do dia da semana (0=DOM, 1=SEG, ... 6=SAB)
+            const index = dateObj.getDay();
+
+            // Processar contagens
+            let stats = {
+                date: dateObj,
+                inventariado: 0,
+                faltante: 0,
+                intruso: 0,
+                total: 0,
+                existe: true,
+                acuracia: 0
+            };
+
+            const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
+            if (statusColIdx !== -1) {
+                for (let r = 1; r < values.length; r++) {
+                    const row = values[r];
+                    const status = String(row[statusColIdx] || '').trim().toUpperCase();
+                    const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
+                    const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+                    const isIntruso = status === 'INTRUSO';
+                    if (isInventariado) stats.inventariado++;
+                    else if (isFaltante) stats.faltante++;
+                    else if (isIntruso) stats.intruso++;
                 }
-            } catch (error) {
-                console.warn(`⚠️ Erro ao ler backup ${nomeAba}:`, error);
-                stats.existe = false;
+                stats.total = stats.inventariado + stats.faltante + stats.intruso;
+                const base = stats.inventariado + stats.faltante;
+                stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
+                resultados[index] = stats;
+            } else {
+                resultados[index].existe = false;
             }
+        } catch (error) {
+            console.warn(`⚠️ Erro ao ler backup ${nomeAba}:`, error);
         }
-
-        // Calcular acurácia do dia
-        const base = stats.inventariado + stats.faltante;
-        stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
-        resultados.push(stats);
     }
 
     return resultados;
 }
 
 // ================================================================
-//  RENDER PREVIEW INVENTÁRIO COM BACKUPS
+//  RENDER PREVIEW INVENTÁRIO (COM BACKUPS)
 // ================================================================
 function renderPreviewInventario(processedData, weeklyStats) {
     const preview = document.getElementById('previewInventario');
     if (!preview) return;
 
-    // Se não houver dados processados, mostra mensagem padrão
     if (!processedData || !processedData.zonas || processedData.zonas.length === 0) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
@@ -2884,27 +2706,21 @@ function renderPreviewInventario(processedData, weeklyStats) {
 
     const total = processedData.totalGeral;
 
-    // Se não houver stats semanais, mostra fallback
     if (!weeklyStats || !Array.isArray(weeklyStats) || weeklyStats.length === 0) {
         renderFallback(preview, total, processedData.taxaAcuraciaGeral || 0);
         return;
     }
 
-    // ================================================================
-    //  USAR DADOS DOS BACKUPS PARA OS 7 DIAS
-    // ================================================================
     const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
     const hoje = new Date();
-    const diaSemana = hoje.getDay(); // 0 = domingo
+    const diaSemana = hoje.getDay();
 
-    // Função de cor
     function getColorClass(valor) {
         if (valor >= 95) return 'success';
         if (valor >= 80) return 'warning';
         return 'danger';
     }
 
-    // Calcular média semanal (apenas dias com dados)
     const diasComDados = weeklyStats.filter(d => d.existe && (d.inventariado + d.faltante) > 0);
     const acuraciaMedia = diasComDados.length > 0
         ? diasComDados.reduce((acc, d) => acc + d.acuracia, 0) / diasComDados.length
@@ -2923,7 +2739,8 @@ function renderPreviewInventario(processedData, weeklyStats) {
         const hojeClass = isHoje ? 'border:2px solid var(--cruzamento);' : '';
         const hasData = dia.existe && (dia.inventariado + dia.faltante) > 0;
         const displayAcuracia = hasData ? dia.acuracia.toFixed(1) : '—';
-        const dataFormatada = dia.date.split('-').reverse().join('/'); // YYYY-MM-DD -> DD/MM
+        // Data formatada a partir do objeto Date (coluna B)
+        const dataFormatada = dia.date ? dia.date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '--/--';
 
         html += `
             <div style="background:var(--panel-alt); border-radius:6px; padding:10px 6px; text-align:center; ${hojeClass} ${!hasData ? 'opacity:0.5;' : ''}">
@@ -2938,7 +2755,6 @@ function renderPreviewInventario(processedData, weeklyStats) {
 
     html += `</div>`;
 
-    // Bloco de resumo semanal (média dos dias com dados)
     const colorClass = getColorClass(acuraciaMedia);
     html += `
         <div style="background:var(--panel-alt); border-radius:6px; padding:12px 16px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--${colorClass});">
@@ -2950,7 +2766,6 @@ function renderPreviewInventario(processedData, weeklyStats) {
     preview.innerHTML = html;
 }
 
-// Função fallback (se não houver backups)
 function renderFallback(preview, total, acuracia) {
     const colorClass = acuracia >= 95 ? 'success' : acuracia >= 80 ? 'warning' : 'danger';
     preview.innerHTML = `
@@ -3076,6 +2891,7 @@ function initOAuth() {
         carregarDadosExemplo();
     }
 }
+
 function autenticar() {
     if (isFileProtocol()) {
         Swal.fire({
@@ -3143,18 +2959,21 @@ async function lerPlanilhaOAuth(aba, range) {
     const data = await response.json();
     return data.values;
 }
+
 async function lerPlanilhaGooglePacotes() {
     const data = await lerPlanilhaOAuth('Página1', 'A1:Z');
     const headers = data[0];
     const rows = data.slice(1);
     return rows.map(row => { const obj = {}; headers.forEach((h, i) => { obj[h] = row[i] || ''; }); return obj; });
 }
+
 async function lerPlanilhaGoogleInventario() {
     const data = await lerPlanilhaOAuth('INVENTÁRIO', 'A1:K');
     const headers = data[0];
     const rows = data.slice(1);
     return rows.map(row => { const obj = {}; headers.forEach((h, i) => { obj[h] = row[i] || ''; }); return obj; });
 }
+
 async function escreverPlanilhaOAuth(aba, range, values) {
     if (!accessToken) throw new Error('Usuário não autenticado');
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(aba)}!${range}?valueInputOption=USER_ENTERED`;
@@ -3306,6 +3125,7 @@ function abrirModalPacotes(nome) {
     const overlay = document.getElementById('modalOverlay');
     if (overlay) overlay.classList.add('active');
 }
+
 function renderizarPaginaModal(t, page) {
     const start = (page - 1) * ITEMS_PER_PAGE;
     const end = Math.min(start + ITEMS_PER_PAGE, modalTotalIds.length);
@@ -3346,6 +3166,7 @@ function renderizarPaginaModal(t, page) {
     if (idsList) idsList.innerHTML = html;
     atualizarSelecao();
 }
+
 function selecionarTodosPagina() {
     document.querySelectorAll('.id-checkbox-input').forEach(cb => {
         cb.checked = true;
@@ -3356,16 +3177,19 @@ function selecionarTodosPagina() {
     });
     atualizarSelecao();
 }
+
 function limparSelecaoPagina() {
     document.querySelectorAll('.id-checkbox-input').forEach(cb => { cb.checked = false; });
     idsSelecionados.clear();
     motoristasSelecionados = {};
     atualizarSelecao();
 }
+
 function carregarMaisPagina() {
     modalCurrentPage++;
     renderizarPaginaModal(modalTransportadora, modalCurrentPage);
 }
+
 function atualizarModalFiltrado() {
     const t = modalTransportadora;
     if (!t) return;
@@ -3383,11 +3207,13 @@ function atualizarModalFiltrado() {
     modalCurrentPage = 1;
     renderizarPaginaModal(t, 1);
 }
+
 function toggleSelecao(id, motorista) {
     if (idsSelecionados.has(id)) { idsSelecionados.delete(id); delete motoristasSelecionados[id]; }
     else { idsSelecionados.add(id); motoristasSelecionados[id] = motorista; }
     atualizarSelecao();
 }
+
 function atualizarSelecao() {
     const count = idsSelecionados.size;
     const countEl = document.getElementById('selecionadosCount');
@@ -3428,6 +3254,7 @@ const originalAbrirResposta = function() {
     const overlay = document.getElementById('respostaModalOverlay');
     if (overlay) overlay.classList.add('active');
 };
+
 window.abrirModalResposta = function() {
     if (currentUserRole === 'viewer') {
         Swal.fire({
@@ -3441,6 +3268,7 @@ window.abrirModalResposta = function() {
     }
     originalAbrirResposta();
 };
+
 document.getElementById('respostaEnviar').addEventListener('click', async function() {
     const nome = document.getElementById('respostaNome')?.value?.trim() || '';
     const justificativa = document.getElementById('respostaJustificativa')?.value?.trim() || '';
@@ -3478,14 +3306,17 @@ document.getElementById('respostaEnviar').addEventListener('click', async functi
         console.error('Erro ao enviar respostas:', error);
     }
 });
+
 document.getElementById('respostaCancelar')?.addEventListener('click', function() { 
     const overlay = document.getElementById('respostaModalOverlay');
     if (overlay) overlay.classList.remove('active');
 });
+
 document.getElementById('respostaModalClose')?.addEventListener('click', function() { 
     const overlay = document.getElementById('respostaModalOverlay');
     if (overlay) overlay.classList.remove('active');
 });
+
 document.getElementById('respostaModalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 
 document.getElementById('modalCopy')?.addEventListener('click', function() {
@@ -3508,6 +3339,7 @@ document.getElementById('modalCopy')?.addEventListener('click', function() {
         setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000);
     });
 });
+
 document.getElementById('modalCopyAll')?.addEventListener('click', function() {
     const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
     const valores = window._valoresFiltrados || (modalTransportadora ? modalTransportadora.valores : []);
@@ -3540,7 +3372,9 @@ document.getElementById('modalClose')?.addEventListener('click', function() {
     const overlay = document.getElementById('modalOverlay');
     if (overlay) overlay.classList.remove('active');
 });
+
 document.getElementById('modalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const overlays = ['modalOverlay', 'respostaModalOverlay', 'filterModalOverlay'];
@@ -3580,6 +3414,7 @@ function processarDadosInventario(data) {
     const taxaAcuraciaGeral = totalParaAcuracia > 0 ? (totalInventariado / totalParaAcuracia * 100) : 0;
     return { totalGeral, totalInventariado, totalFaltante, totalIntruso, totalNaoClassificado, taxaAcuraciaGeral, zonas: zonaList };
 }
+
 function renderKPI_Inventario(data) {
     const grid = document.getElementById('kpiStripInventario');
     if (!grid) return;
@@ -3602,6 +3437,7 @@ function renderKPI_Inventario(data) {
     const footerTotal = document.getElementById('footerTotalInventario');
     if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
+
 function renderGraficos_Inventario(data) {
     try { if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; } if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; } } catch(e) {}
     const ctxZona = document.getElementById('chartZona');
@@ -3629,6 +3465,7 @@ function renderGraficos_Inventario(data) {
         });
     } catch(e) {}
 }
+
 function renderZonas(data) {
     const grid = document.getElementById('zonaGrid');
     if (!grid) return;
@@ -3654,7 +3491,6 @@ async function carregarDadosInventario() {
         if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
         if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-dim);">⏳ Buscando dados do inventário...</div>';
 
-        // 1. Carregar planilha atual (para KPIs e total geral)
         const data = await lerPlanilhaGoogleInventario();
         rawDataInventario = data;
         processedDataInventario = processarDadosInventario(data);
@@ -3666,7 +3502,6 @@ async function carregarDadosInventario() {
         if (statusText) { statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`; statusText.style.color = 'var(--success)'; }
         if (recordCount) recordCount.textContent = `📦 ${data.length} registros`;
 
-        // 2. Carregar backups semanais (para a acurácia diária)
         let weeklyStats = null;
         try {
             weeklyStats = await carregarBackupsSemanais();
@@ -3675,12 +3510,9 @@ async function carregarDadosInventario() {
             weeklyStats = null;
         }
 
-        // 3. Renderizar os KPIs (usam dados atuais)
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-
-        // 4. Renderizar preview semanal (USA OS BACKUPS)
         renderPreviewInventario(processedDataInventario, weeklyStats);
 
         const footerTotal = document.getElementById('footerTotalInventario');
@@ -3694,7 +3526,6 @@ async function carregarDadosInventario() {
         if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
         processedDataInventario = processarDadosInventario(rawDataInventario);
-        // Fallback: tenta carregar backups mesmo em erro, ou passa null
         let weeklyStats = null;
         try {
             weeklyStats = await carregarBackupsSemanais();
@@ -3740,10 +3571,10 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
     const responsabilidadeId = totalComTransportadora - emAmbos;
     return { dados: resultado, totalComTransportadora, totalFaltantes, emAmbos, responsabilidadeId, transportadoraList };
 }
+
 function renderFiltroTransportadoras(data) {
     const container = document.getElementById('transpFilterContainer');
     if (!container) return;
-    
     if (!data || data.transportadoraList.length === 0) {
         container.innerHTML = `<span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 0;">Nenhuma transportadora encontrada</span>`;
         return;
@@ -3774,6 +3605,7 @@ function renderFiltroTransportadoras(data) {
     if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
     if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
 }
+
 function toggleTransportadora(nome, tipo) {
     if (tipo === 'ambos') {
         if (filtroTransportadoras.has(nome)) filtroTransportadoras.delete(nome);
@@ -3803,6 +3635,7 @@ function toggleTransportadora(nome, tipo) {
     }
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
+
 function selecionarTodasTransportadoras() {
     const container = document.getElementById('transpFilterContainer');
     if (!container) return;
@@ -3824,6 +3657,7 @@ function selecionarTodasTransportadoras() {
     if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
+
 function limparTodasTransportadoras() {
     const container = document.getElementById('transpFilterContainer');
     if (!container) return;
@@ -3845,6 +3679,7 @@ function limparTodasTransportadoras() {
     if (filterTranspCount) filterTranspCount.textContent = '0 selecionadas (0 🔗 + 0 📦)';
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
+
 function aplicarFiltroTransportadoras(data, tipo) {
     if (!data) return data;
     let filtroAtivo = tipo === 'ambos' ? filtroTransportadoras : filtroTransportadorasResp;
@@ -3855,13 +3690,13 @@ function aplicarFiltroTransportadoras(data, tipo) {
     const transportadoraList = Object.entries(transportadoraCount).map(([nome, quantidade]) => ({ nome, quantidade })).sort((a, b) => b.quantidade - a.quantidade);
     return { ...data, dados: dadosFiltrados, emAmbos: dadosFiltrados.length, transportadoraList };
 }
+
 function renderCruzamento(data) {
     const statsDiv = document.getElementById('cruzamentoStats');
     const transpGrid = document.getElementById('cruzamentoTranspGrid');
     const tbody = document.getElementById('cruzamentoTbody');
     const countSpan = document.getElementById('cruzamentoCount');
     const footerSpan = document.getElementById('footerTotalCruzamento');
-    
     renderFiltroTransportadoras(data);
     if (!data || data.dados.length === 0) {
         if (statsDiv) {
@@ -3908,6 +3743,7 @@ function renderCruzamento(data) {
         }
     }
 }
+
 async function carregarCruzamento() {
     const statusDot = document.getElementById('statusDotCruzamento');
     const statusText = document.getElementById('statusTextCruzamento');
@@ -3968,16 +3804,20 @@ document.getElementById('filterFloatBtn')?.addEventListener('click', function() 
     const overlay = document.getElementById('filterModalOverlay');
     if (overlay) overlay.classList.add('active');
 });
+
 document.getElementById('filterModalClose')?.addEventListener('click', function() { 
     const overlay = document.getElementById('filterModalOverlay');
     if (overlay) overlay.classList.remove('active');
 });
+
 document.getElementById('filterModalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+
 document.getElementById('filterApplyBtn')?.addEventListener('click', function() { 
     const overlay = document.getElementById('filterModalOverlay');
     if (overlay) overlay.classList.remove('active');
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 });
+
 document.getElementById('filterSelectAll').onclick = selecionarTodasTransportadoras;
 document.getElementById('filterClearAll').onclick = limparTodasTransportadoras;
 
@@ -3994,6 +3834,7 @@ document.getElementById('refreshPacotes')?.addEventListener('click', function() 
         });
     }
 });
+
 document.getElementById('refreshInventario')?.addEventListener('click', function() {
     if (isAuthenticated) {
         carregarDadosInventario();
@@ -4007,6 +3848,7 @@ document.getElementById('refreshInventario')?.addEventListener('click', function
         });
     }
 });
+
 document.getElementById('refreshCruzamento')?.addEventListener('click', function() {
     if (isAuthenticated) {
         carregarCruzamento();
