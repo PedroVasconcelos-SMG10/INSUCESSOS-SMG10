@@ -1592,7 +1592,7 @@ const DADOS_EXEMPLO_INVENTARIO = [
 ];
 const DADOS_EXEMPLO_DESCRICAO = {
   '47756968938': '',
-  '47746968996': '10 Presilhas Tic Tac Estrelas Dourada E Prata Prendedor Y2k Prateado, 10 Presilhas Tic Tac Estrelas Dourada E Prata Prendedor 2k Prateado',
+  '47746968996': '10 Presilhas Tic Tac Estrelas Dourada E Prata Prendedor Y2k Prateado',
   '47771689687': '',
   '47732827943': 'Relógio Infantil Digital Vingadores Luz Som Vermelho Homem Aranha',
 };
@@ -1850,7 +1850,8 @@ function aplicarRestricoesPorPerfil() {
         if (tabCruzamento) tabCruzamento.style.display = 'none';
         const tabContentCruz = document.getElementById('tabCruzamento');
         if (tabContentCruz && tabContentCruz.classList.contains('active')) {
-            document.querySelector('.tab-btn[data-tab="tabPacotes"]')?.click();
+            const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
+            if (tabPacotes) tabPacotes.click();
         }
     }
 
@@ -1881,19 +1882,21 @@ function aplicarRestricoesPorPerfil() {
     });
 
     const filterInfo = document.getElementById('filterInfoTransp');
-    if (usuarioTransportadora) {
-        filterInfo.style.display = 'inline-block';
-        const nomes = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean).join(', ');
-        filterInfo.innerHTML = `🚚 <strong>${nomes}</strong> (filtro automático)`;
-    } else {
-        filterInfo.style.display = 'none';
+    if (filterInfo) {
+        if (usuarioTransportadora) {
+            filterInfo.style.display = 'inline-block';
+            const nomes = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean).join(', ');
+            filterInfo.innerHTML = `🚚 <strong>${nomes}</strong> (filtro automático)`;
+        } else {
+            filterInfo.style.display = 'none';
+        }
     }
 
     const debugBoxes = document.querySelectorAll('.debug-box');
     if (usuarioTransportadora) {
-        debugBoxes.forEach(el => el.style.display = 'none');
+        debugBoxes.forEach(el => { if (el) el.style.display = 'none'; });
     } else {
-        debugBoxes.forEach(el => el.style.display = 'block');
+        debugBoxes.forEach(el => { if (el) el.style.display = 'block'; });
     }
 
     if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
@@ -1924,11 +1927,19 @@ function processarPacotesComFiltro() {
     renderGraficosPacotes(processedDataPacotes, dadosFiltrados);
     renderSecaoTransportadoras(processedDataPacotes);
     renderPreviewPacotes(dadosFiltrados);
-    document.getElementById('statusTextPacotes').textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
-    document.getElementById('statusTextPacotes').style.color = 'var(--success)';
-    document.getElementById('statusDotPacotes').className = 'dot-status online';
-    document.getElementById('recordCountPacotes').textContent = `📦 ${dadosFiltrados.length} registros`;
-    document.getElementById('footerTotalPacotes').textContent = `${dadosFiltrados.length} registros`;
+    
+    const statusText = document.getElementById('statusTextPacotes');
+    if (statusText) {
+        statusText.textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`;
+        statusText.style.color = 'var(--success)';
+    }
+    const statusDot = document.getElementById('statusDotPacotes');
+    if (statusDot) statusDot.className = 'dot-status online';
+    const recordCount = document.getElementById('recordCountPacotes');
+    if (recordCount) recordCount.textContent = `📦 ${dadosFiltrados.length} registros`;
+    const footerTotal = document.getElementById('footerTotalPacotes');
+    if (footerTotal) footerTotal.textContent = `${dadosFiltrados.length} registros`;
+    
     if (rawDataInventario) {
         dadosCruzamento = realizarCruzamento(dadosFiltrados, rawDataInventario);
         renderCruzamento(dadosCruzamento);
@@ -1936,7 +1947,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  🔥 GRÁFICOS DE PIZZA MAIS BONITOS
+//  GRÁFICOS DE PIZZA MAIS ATRATIVOS
 // ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
@@ -1944,20 +1955,29 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         if (chartValor) { chartValor.destroy(); chartValor = null; }
     } catch(e) {}
 
+    const chartQuant = document.getElementById('chartQuantidade');
+    const chartVal = document.getElementById('chartValor');
+    
+    if (!chartQuant || !chartVal) return;
+
     if (!data || data.transportadoras.length === 0) {
-        document.querySelector('.chart-card:first-child h3').textContent = '📊 Pacotes por Transportadora';
-        document.querySelector('.chart-card:last-child h3').textContent = '💰 Valor Total por Transportadora';
+        const h3s = document.querySelectorAll('.chart-card h3');
+        if (h3s.length >= 2) {
+            h3s[0].textContent = '📊 Pacotes por Transportadora';
+            h3s[1].textContent = '💰 Valor Total por Transportadora';
+        }
         return;
     }
 
     const isTranspView = !!usuarioTransportadora;
 
-    // Paleta de cores moderna e vibrante
+    // Paleta de cores moderna e vibrante com gradientes
     const colorPalette = [
         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
         '#DDA0DD', '#FF8A5C', '#A29BFE', '#FD79A8', '#00CEC9',
         '#6C5CE7', '#FDCB6E', '#E17055', '#00B894', '#0984E3',
-        '#E84393', '#F39C12', '#2ECC71', '#3498DB', '#9B59B6'
+        '#E84393', '#F39C12', '#2ECC71', '#3498DB', '#9B59B6',
+        '#1ABC9C', '#E67E22', '#E74C3C', '#2C3E50', '#8E44AD'
     ];
 
     if (isTranspView && dadosFiltrados && dadosFiltrados.length > 0) {
@@ -1983,147 +2003,224 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         const totals = labels.map(m => motoristaMap[m].total);
         const cores = colorPalette.slice(0, labels.length);
 
-        const ctx1 = document.getElementById('chartQuantidade');
-        if (ctx1) {
-            chartQuantidade = new Chart(ctx1, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: counts,
-                        backgroundColor: cores,
-                        borderColor: '#ffffff',
-                        borderWidth: 2,
-                        hoverOffset: 15
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '10%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#8b8f99',
-                                font: { size: 11, weight: '500' },
-                                boxWidth: 12,
-                                padding: 14,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(20,22,26,0.9)',
-                            titleColor: '#edeae2',
-                            bodyColor: '#edeae2',
-                            borderColor: '#2b2f37',
-                            borderWidth: 1,
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    let value = context.parsed || 0;
-                                    let total = context.dataset.data.reduce((a,b) => a+b, 0);
-                                    let pct = total ? ((value/total)*100).toFixed(1) : 0;
-                                    return ` ${label}: ${value} pacotes (${pct}%)`;
-                                }
-                            }
+        // Gráfico de quantidade
+        chartQuantidade = new Chart(chartQuant, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: cores,
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 20,
+                    hoverBorderColor: '#ffffff',
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '8%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#8b8f99',
+                            font: { size: 11, weight: '500', family: 'Inter' },
+                            boxWidth: 14,
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
                         }
                     },
-                    animation: {
-                        animateRotate: true,
-                        duration: 800
-                    }
-                }
-            });
-        }
-
-        const ctx2 = document.getElementById('chartValor');
-        if (ctx2) {
-            chartValor = new Chart(ctx2, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: totals,
-                        backgroundColor: cores,
-                        borderColor: '#ffffff',
-                        borderWidth: 2,
-                        hoverOffset: 15
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '10%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#8b8f99',
-                                font: { size: 11, weight: '500' },
-                                boxWidth: 12,
-                                padding: 14,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(20,22,26,0.9)',
-                            titleColor: '#edeae2',
-                            bodyColor: '#edeae2',
-                            borderColor: '#2b2f37',
-                            borderWidth: 1,
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    let value = context.parsed || 0;
-                                    let total = context.dataset.data.reduce((a,b) => a+b, 0);
-                                    let pct = total ? ((value/total)*100).toFixed(1) : 0;
-                                    return ` ${label}: R$ ${value.toFixed(2)} (${pct}%)`;
-                                }
+                    tooltip: {
+                        backgroundColor: 'rgba(20,22,26,0.92)',
+                        titleColor: '#edeae2',
+                        bodyColor: '#edeae2',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 14,
+                        cornerRadius: 10,
+                        titleFont: { size: 13, weight: '600' },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.parsed || 0;
+                                let total = context.dataset.data.reduce((a,b) => a+b, 0);
+                                let pct = total ? ((value/total)*100).toFixed(1) : 0;
+                                return ` ${label}: ${value} pacotes (${pct}%)`;
                             }
                         }
-                    },
-                    animation: {
-                        animateRotate: true,
-                        duration: 800
                     }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 1000,
+                    easing: 'easeOutQuart'
                 }
-            });
-        }
+            }
+        });
 
-        document.querySelector('.chart-card:first-child h3').textContent = '📊 Pacotes por Motorista';
-        document.querySelector('.chart-card:last-child h3').textContent = '💰 Valor Total por Motorista';
+        // Gráfico de valores
+        chartValor = new Chart(chartVal, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: totals,
+                    backgroundColor: cores,
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 20,
+                    hoverBorderColor: '#ffffff',
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '8%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#8b8f99',
+                            font: { size: 11, weight: '500', family: 'Inter' },
+                            boxWidth: 14,
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(20,22,26,0.92)',
+                        titleColor: '#edeae2',
+                        bodyColor: '#edeae2',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 14,
+                        cornerRadius: 10,
+                        titleFont: { size: 13, weight: '600' },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.parsed || 0;
+                                let total = context.dataset.data.reduce((a,b) => a+b, 0);
+                                let pct = total ? ((value/total)*100).toFixed(1) : 0;
+                                return ` ${label}: R$ ${value.toFixed(2)} (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        const h3s = document.querySelectorAll('.chart-card h3');
+        if (h3s.length >= 2) {
+            h3s[0].textContent = '📊 Pacotes por Motorista';
+            h3s[1].textContent = '💰 Valor Total por Motorista';
+        }
 
     } else {
+        // Gráficos de barras para admin
         const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
         const quantidades = data.transportadoras.map(t => t.quantidade);
         const valores = data.transportadoras.map(t => t.valorTotal);
 
-        const ctx1 = document.getElementById('chartQuantidade');
-        if (ctx1) {
-            chartQuantidade = new Chart(ctx1, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Pacotes', data: quantidades, backgroundColor: '#e0aa3d', borderColor: '#e0aa3d', borderWidth: 1, borderRadius: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
-            });
-        }
-        const ctx2 = document.getElementById('chartValor');
-        if (ctx2) {
-            chartValor = new Chart(ctx2, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 }, callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
-            });
-        }
+        chartQuantidade = new Chart(chartQuant, {
+            type: 'bar',
+            data: { 
+                labels, 
+                datasets: [{ 
+                    label: 'Pacotes', 
+                    data: quantidades, 
+                    backgroundColor: '#e0aa3d', 
+                    borderColor: '#e0aa3d', 
+                    borderWidth: 1, 
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#f1c40f'
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false } 
+                }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#8b8f99', font: { size: 10 } }, 
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { 
+                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
+                        grid: { display: false } 
+                    } 
+                } 
+            }
+        });
 
-        document.querySelector('.chart-card:first-child h3').textContent = '📊 Pacotes por Transportadora';
-        document.querySelector('.chart-card:last-child h3').textContent = '💰 Valor Total por Transportadora';
+        chartValor = new Chart(chartVal, {
+            type: 'bar',
+            data: { 
+                labels, 
+                datasets: [{ 
+                    label: 'Valor Total (R$)', 
+                    data: valores, 
+                    backgroundColor: '#4fae7c', 
+                    borderColor: '#4fae7c', 
+                    borderWidth: 1, 
+                    borderRadius: 4,
+                    hoverBackgroundColor: '#2ecc71'
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false }, 
+                    tooltip: { 
+                        callbacks: { 
+                            label: function(context) { 
+                                return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
+                            } 
+                        } 
+                    } 
+                }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { 
+                            color: '#8b8f99', 
+                            font: { size: 10 }, 
+                            callback: function(value) { 
+                                return 'R$ ' + value.toLocaleString('pt-BR'); 
+                            } 
+                        }, 
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { 
+                        ticks: { color: '#8b8f99', font: { size: 9 } }, 
+                        grid: { display: false } 
+                    } 
+                } 
+            }
+        });
+
+        const h3s = document.querySelectorAll('.chart-card h3');
+        if (h3s.length >= 2) {
+            h3s[0].textContent = '📊 Pacotes por Transportadora';
+            h3s[1].textContent = '💰 Valor Total por Transportadora';
+        }
     }
 }
 
@@ -2134,6 +2231,8 @@ function renderSecaoTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     const titulo = document.getElementById('tituloSecaoTransportadoras');
     const legenda = document.getElementById('legendaSecaoTransportadoras');
+
+    if (!container) return;
 
     if (!data || data.transportadoras.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
@@ -2171,8 +2270,8 @@ function renderSecaoTransportadoras(data) {
             valorTotal: valoresConsolidados.reduce((a,b) => a+b, 0),
             valorFormatado: 'R$ ' + valoresConsolidados.reduce((a,b) => a+b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
         };
-        titulo.textContent = `📦 Pacotes - ${usuarioTransportadora.replace(/;/g, ', ')}`;
-        legenda.textContent = `Total: ${transpObjConsolidado.ids.length} pacotes`;
+        if (titulo) titulo.textContent = `📦 Pacotes - ${usuarioTransportadora.replace(/;/g, ', ')}`;
+        if (legenda) legenda.textContent = `Total: ${transpObjConsolidado.ids.length} pacotes`;
 
         let linhasFiltradas = [];
         if (window._dadosFiltradosCompletos) {
@@ -2191,8 +2290,8 @@ function renderSecaoTransportadoras(data) {
 
         renderListaIdsTransportadora(transpObjConsolidado, linhasFiltradas);
     } else {
-        titulo.textContent = '🚚 Transportadoras';
-        legenda.textContent = 'Clique em uma transportadora para ver os IDs';
+        if (titulo) titulo.textContent = '🚚 Transportadoras';
+        if (legenda) legenda.textContent = 'Clique em uma transportadora para ver os IDs';
         renderTransportadoras(data);
     }
 }
@@ -2202,6 +2301,8 @@ function renderSecaoTransportadoras(data) {
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
+    if (!container) return;
+    
     let linhas = linhasFiltradas || [];
 
     if (linhas.length === 0 && transpObj.ids) {
@@ -2368,7 +2469,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
             const link = linksPagina[index] || '';
 
-            // ID com link se houver
             let idHtml = link 
                 ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
                 : `<strong>${id}</strong>`;
@@ -2467,6 +2567,8 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
 // ================================================================
 function renderTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
+    if (!container) return;
+    
     if (!data || data.transportadoras.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
         return;
@@ -2498,6 +2600,7 @@ function renderTransportadoras(data) {
 // ================================================================
 function renderPreviewPacotes(data) {
     const preview = document.getElementById('previewPacotes');
+    if (!preview) return;
     if (!data || data.length === 0) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
@@ -2517,6 +2620,7 @@ function renderPreviewPacotes(data) {
 }
 function renderPreviewInventario(data) {
     const preview = document.getElementById('previewInventario');
+    if (!preview) return;
     if (!data || data.length === 0) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
@@ -2550,14 +2654,19 @@ function logout() {
     descricaoMap = {}; respostasSet = new Set();
     const btn = document.getElementById('loginBtn');
     if (btn) { btn.textContent = '🔑 Login com Google'; btn.classList.remove('logged', 'error'); btn.disabled = false; }
-    document.getElementById('statusTextPacotes').textContent = '🔑 Desconectado. Clique em "Login com Google" para reconectar.';
-    document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
-    document.getElementById('statusDotPacotes').className = 'dot-status loading';
+    const statusText = document.getElementById('statusTextPacotes');
+    if (statusText) {
+        statusText.textContent = '🔑 Desconectado. Clique em "Login com Google" para reconectar.';
+        statusText.style.color = 'var(--warning)';
+    }
+    const statusDot = document.getElementById('statusDotPacotes');
+    if (statusDot) statusDot.className = 'dot-status loading';
     carregarDadosExemplo();
     document.querySelectorAll('#roleBadgeContainer, #roleBadgeContainerInventario, #roleBadgeContainerCruzamento, #filterInfoTransp')
         .forEach(el => { if(el) el.innerHTML = ''; });
-    document.getElementById('filterInfoTransp').style.display = 'none';
-    document.querySelectorAll('.debug-box').forEach(el => el.style.display = 'block');
+    const filterInfo = document.getElementById('filterInfoTransp');
+    if (filterInfo) filterInfo.style.display = 'none';
+    document.querySelectorAll('.debug-box').forEach(el => { if(el) el.style.display = 'block'; });
 }
 
 // ================================================================
@@ -2567,27 +2676,42 @@ function initOAuth() {
     const savedToken = sessionStorage.getItem('accessToken');
     if (savedToken) {
         accessToken = savedToken; isAuthenticated = true;
-        document.getElementById('statusTextPacotes').textContent = '✅ Autenticado! Carregando dados...';
-        document.getElementById('statusTextPacotes').style.color = 'var(--success)';
-        document.getElementById('statusDotPacotes').className = 'dot-status online';
+        const statusText = document.getElementById('statusTextPacotes');
+        if (statusText) {
+            statusText.textContent = '✅ Autenticado! Carregando dados...';
+            statusText.style.color = 'var(--success)';
+        }
+        const statusDot = document.getElementById('statusDotPacotes');
+        if (statusDot) statusDot.className = 'dot-status online';
         const btn = document.getElementById('loginBtn');
         if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
         getUserInfo().then(() => { carregarTodosOsDados(); });
         return;
     }
     if (isFileProtocol()) {
-        document.getElementById('statusTextPacotes').textContent = '⚠️ Abra este arquivo com um servidor local (ex: Live Server) para usar OAuth.';
-        document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
+        const statusText = document.getElementById('statusTextPacotes');
+        if (statusText) {
+            statusText.textContent = '⚠️ Abra este arquivo com um servidor local (ex: Live Server) para usar OAuth.';
+            statusText.style.color = 'var(--warning)';
+        }
         const btn = document.getElementById('loginBtn');
         if (btn) { btn.textContent = '❌ Origem inválida'; btn.classList.add('error'); btn.disabled = true; }
         carregarDadosExemplo();
         return;
     }
     if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-        document.getElementById('statusTextPacotes').textContent = '⏳ Carregando biblioteca de autenticação...';
+        const statusText = document.getElementById('statusTextPacotes');
+        if (statusText) statusText.textContent = '⏳ Carregando biblioteca de autenticação...';
         setTimeout(() => {
             if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) initOAuth();
-            else { document.getElementById('statusTextPacotes').textContent = '❌ Falha ao carregar autenticação. Carregando dados de exemplo.'; document.getElementById('statusTextPacotes').style.color = 'var(--danger)'; carregarDadosExemplo(); }
+            else {
+                const st = document.getElementById('statusTextPacotes');
+                if (st) {
+                    st.textContent = '❌ Falha ao carregar autenticação. Carregando dados de exemplo.';
+                    st.style.color = 'var(--danger)';
+                }
+                carregarDadosExemplo();
+            }
         }, 1000);
         return;
     }
@@ -2597,8 +2721,11 @@ function initOAuth() {
             scope: SCOPES,
             callback: function(tokenResponse) {
                 if (tokenResponse.error) {
-                    document.getElementById('statusTextPacotes').textContent = '❌ ' + tokenResponse.error;
-                    document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
+                    const st = document.getElementById('statusTextPacotes');
+                    if (st) {
+                        st.textContent = '❌ ' + tokenResponse.error;
+                        st.style.color = 'var(--danger)';
+                    }
                     const btn = document.getElementById('loginBtn');
                     if (btn) { btn.textContent = '❌ Erro de autenticação'; btn.classList.add('error'); }
                     carregarDadosExemplo();
@@ -2607,17 +2734,24 @@ function initOAuth() {
                 accessToken = tokenResponse.access_token;
                 isAuthenticated = true;
                 sessionStorage.setItem('accessToken', accessToken);
-                document.getElementById('statusTextPacotes').textContent = '✅ Autenticado! Carregando dados...';
-                document.getElementById('statusTextPacotes').style.color = 'var(--success)';
-                document.getElementById('statusDotPacotes').className = 'dot-status online';
+                const st = document.getElementById('statusTextPacotes');
+                if (st) {
+                    st.textContent = '✅ Autenticado! Carregando dados...';
+                    st.style.color = 'var(--success)';
+                }
+                const statusDot = document.getElementById('statusDotPacotes');
+                if (statusDot) statusDot.className = 'dot-status online';
                 const btn = document.getElementById('loginBtn');
                 if (btn) { btn.textContent = '✅ Conectado'; btn.classList.add('logged'); btn.disabled = true; }
                 getUserInfo().then(() => { carregarTodosOsDados(); });
             }
         });
     } catch (error) {
-        document.getElementById('statusTextPacotes').textContent = '❌ Erro ao inicializar OAuth. Carregando dados de exemplo.';
-        document.getElementById('statusTextPacotes').style.color = 'var(--danger)';
+        const st = document.getElementById('statusTextPacotes');
+        if (st) {
+            st.textContent = '❌ Erro ao inicializar OAuth. Carregando dados de exemplo.';
+            st.style.color = 'var(--danger)';
+        }
         carregarDadosExemplo();
     }
 }
@@ -2663,9 +2797,13 @@ function carregarDadosExemplo() {
     renderPreviewInventario(rawDataInventario);
     dadosCruzamento = realizarCruzamento(dadosPacotes, rawDataInventario);
     renderCruzamento(dadosCruzamento);
-    document.getElementById('statusTextPacotes').textContent = '📊 Exibindo dados de exemplo (fallback)';
-    document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
-    document.getElementById('statusDotPacotes').className = 'dot-status offline';
+    const st = document.getElementById('statusTextPacotes');
+    if (st) {
+        st.textContent = '📊 Exibindo dados de exemplo (fallback)';
+        st.style.color = 'var(--warning)';
+    }
+    const statusDot = document.getElementById('statusDotPacotes');
+    if (statusDot) statusDot.className = 'dot-status offline';
     aplicarRestricoesPorPerfil();
 }
 
@@ -2765,9 +2903,11 @@ function processarDadosPacotes(data) {
 
 function renderKPI_Pacotes(data) {
     const strip = document.getElementById('kpiStripPacotes');
+    if (!strip) return;
     if (!data) { strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">0</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">0</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num">R$ 0,00</div></div>`; return; }
     strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">${data.totalGeral}</div><div class="pct">${data.idsEncontrados} IDs encontrados</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">${data.transportadoras.length}</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num" style="font-size:28px;">${data.valorTotalGeral}</div></div>`;
-    document.getElementById('footerTotalPacotes').textContent = `${data.totalGeral} registros`;
+    const footerTotal = document.getElementById('footerTotalPacotes');
+    if (footerTotal) footerTotal.textContent = `${data.totalGeral} registros`;
 }
 
 // ================================================================
@@ -2780,22 +2920,24 @@ async function carregarDadosPacotes() {
     const preview = document.getElementById('previewPacotes');
     const debugBox = document.getElementById('debugPacotes');
     try {
-        statusDot.className = 'dot-status loading';
-        statusText.textContent = 'Carregando dados...';
-        statusText.style.color = 'var(--text-dim)';
-        preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
-        debugBox.innerHTML = '<div style="color:var(--text-dim);">⏳ Buscando dados da planilha...</div>';
+        if (statusDot) statusDot.className = 'dot-status loading';
+        if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-dim)'; }
+        if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
+        if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-dim);">⏳ Buscando dados da planilha...</div>';
         const data = await lerPlanilhaGooglePacotes();
         rawDataPacotes = data;
-        debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Cabeçalhos:</span> <span class="value">${Object.keys(data[0] || {}).join(', ')}</span></div>`;
-        statusDot.className = 'dot-status online';
+        if (debugBox) {
+            debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Cabeçalhos:</span> <span class="value">${Object.keys(data[0] || {}).join(', ')}</span></div>`;
+        }
+        if (statusDot) statusDot.className = 'dot-status online';
         processarPacotesComFiltro();
     } catch (error) {
-        debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`;
-        statusDot.className = 'dot-status offline';
-        statusText.textContent = `❌ Erro: ${error.message}`;
-        statusText.style.color = 'var(--danger)';
-        preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
+        if (debugBox) {
+            debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`;
+        }
+        if (statusDot) statusDot.className = 'dot-status offline';
+        if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
+        if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataPacotes = DADOS_EXEMPLO_PACOTES;
         processarPacotesComFiltro();
     }
@@ -2814,33 +2956,37 @@ function abrirModalPacotes(nome) {
     if (!t) return;
     modalTransportadora = t;
     modalCurrentPage = 1;
-    document.getElementById('modalTitle').textContent = t.nome;
+    const title = document.getElementById('modalTitle');
+    if (title) title.textContent = t.nome;
     const hasSubs = t.subIds && Object.keys(t.subIds).length > 0;
     const filterContainer = document.getElementById('filterContainer');
     const filterSelect = document.getElementById('subTransportadoraFilter');
     idsSelecionados.clear();
     motoristasSelecionados = {};
     if (hasSubs && nome === 'ENVIOS EXTRA') {
-        filterContainer.style.display = 'block';
+        if (filterContainer) filterContainer.style.display = 'block';
         const subKeys = Object.keys(t.subIds).sort();
-        filterSelect.innerHTML = `<option value="TODAS">📦 Todas as sub-transportadoras (${t.ids.length})</option>`;
-        subKeys.forEach(sub => { const count = t.subIds[sub].length; filterSelect.innerHTML += `<option value="${sub.replace(/"/g, '&quot;')}">${sub} (${count})</option>`; });
-        filterSelect.value = 'TODAS';
-        filterSelect.onchange = null;
-        filterSelect.addEventListener('change', function() { modalCurrentPage = 1; atualizarModalFiltrado(); });
+        if (filterSelect) {
+            filterSelect.innerHTML = `<option value="TODAS">📦 Todas as sub-transportadoras (${t.ids.length})</option>`;
+            subKeys.forEach(sub => { const count = t.subIds[sub].length; filterSelect.innerHTML += `<option value="${sub.replace(/"/g, '&quot;')}">${sub} (${count})</option>`; });
+            filterSelect.value = 'TODAS';
+            filterSelect.onchange = null;
+            filterSelect.addEventListener('change', function() { modalCurrentPage = 1; atualizarModalFiltrado(); });
+        }
         atualizarModalFiltrado();
     } else {
-        filterContainer.style.display = 'none';
+        if (filterContainer) filterContainer.style.display = 'none';
         modalTotalIds = t.ids;
         modalTotalValores = t.valores || [];
         modalTotalMotoristas = t.motoristas || [];
         renderizarPaginaModal(t, 1);
     }
-    document.getElementById('modalCopy').textContent = '📋 Copiar IDs';
-    document.getElementById('modalCopy').className = 'btn-copy';
-    document.getElementById('modalCopyAll').textContent = '📋 Copiar todos (com IDs)';
-    document.getElementById('modalCopyAll').className = 'btn-copy-all';
-    document.getElementById('modalOverlay').classList.add('active');
+    const modalCopy = document.getElementById('modalCopy');
+    if (modalCopy) { modalCopy.textContent = '📋 Copiar IDs'; modalCopy.className = 'btn-copy'; }
+    const modalCopyAll = document.getElementById('modalCopyAll');
+    if (modalCopyAll) { modalCopyAll.textContent = '📋 Copiar todos (com IDs)'; modalCopyAll.className = 'btn-copy-all'; }
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) overlay.classList.add('active');
 }
 function renderizarPaginaModal(t, page) {
     const start = (page - 1) * ITEMS_PER_PAGE;
@@ -2849,10 +2995,14 @@ function renderizarPaginaModal(t, page) {
     const valoresPagina = modalTotalValores.slice(start, end);
     const motoristasPagina = modalTotalMotoristas.slice(start, end);
     const idsComDetalhes = idsPagina.map((id, i) => ({ id, valor: valoresPagina[i] || 0, motorista: motoristasPagina[i] || 'N/A' }));
-    document.getElementById('modalStats').innerHTML = `<div class="stat"><div class="num">${t.quantidade}</div><div class="lbl">Pacotes</div></div><div class="stat"><div class="num">${t.valorFormatado}</div><div class="lbl">Valor Total</div></div><div class="stat"><div class="num">${t.ids.length}</div><div class="lbl">IDs</div></div>`;
+    const stats = document.getElementById('modalStats');
+    if (stats) {
+        stats.innerHTML = `<div class="stat"><div class="num">${t.quantidade}</div><div class="lbl">Pacotes</div></div><div class="stat"><div class="num">${t.valorFormatado}</div><div class="lbl">Valor Total</div></div><div class="stat"><div class="num">${t.ids.length}</div><div class="lbl">IDs</div></div>`;
+    }
     const totalPaginas = Math.ceil(modalTotalIds.length / ITEMS_PER_PAGE);
     const hasMore = end < modalTotalIds.length;
-    document.getElementById('modalIdsCount').textContent = `📋 Mostrando ${start + 1} a ${end} de ${modalTotalIds.length} IDs (Página ${page} de ${totalPaginas})`;
+    const idsCount = document.getElementById('modalIdsCount');
+    if (idsCount) idsCount.textContent = `📋 Mostrando ${start + 1} a ${end} de ${modalTotalIds.length} IDs (Página ${page} de ${totalPaginas})`;
     let html = `<div class="selecao-bar" id="selecaoBar">
         <div class="info">📌 <span id="selecionadosCount">0</span> pacotes selecionados</div>
         <button class="btn-resposta" id="btnAbrirResposta" disabled onclick="abrirModalResposta()">📝 Responder</button>
@@ -2874,7 +3024,8 @@ function renderizarPaginaModal(t, page) {
             <button class="btn-carregar-mais" onclick="carregarMaisPagina()">📥 Carregar mais ${Math.min(ITEMS_PER_PAGE, modalTotalIds.length - end)} IDs</button>
         </div>`;
     }
-    document.getElementById('modalIds').innerHTML = html;
+    const idsList = document.getElementById('modalIds');
+    if (idsList) idsList.innerHTML = html;
     atualizarSelecao();
 }
 function selecionarTodosPagina() {
@@ -2901,7 +3052,7 @@ function atualizarModalFiltrado() {
     const t = modalTransportadora;
     if (!t) return;
     const filterSelect = document.getElementById('subTransportadoraFilter');
-    const selectedSub = filterSelect.value;
+    const selectedSub = filterSelect ? filterSelect.value : 'TODAS';
     if (selectedSub === 'TODAS') {
         modalTotalIds = t.ids;
         modalTotalValores = t.valores || [];
@@ -2934,16 +3085,24 @@ const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
     const ids = Array.from(idsSelecionados);
     const motoristas = ids.map(id => motoristasSelecionados[id] || 'N/A');
-    document.getElementById('respostaCount').textContent = ids.length;
-    document.getElementById('respostaIdsList').innerHTML = ids.map(id => `<span>${id}</span>`).join('');
+    const countEl = document.getElementById('respostaCount');
+    if (countEl) countEl.textContent = ids.length;
+    const idsList = document.getElementById('respostaIdsList');
+    if (idsList) idsList.innerHTML = ids.map(id => `<span>${id}</span>`).join('');
     const motoristaUnico = motoristas.every(m => m === motoristas[0]);
-    document.getElementById('respostaMotorista').value = motoristaUnico ? motoristas[0] : '';
-    document.getElementById('respostaMotorista').placeholder = motoristaUnico ? motoristas[0] : 'Múltiplos motoristas - edite se necessário';
-    document.getElementById('respostaNome').value = '';
-    document.getElementById('respostaJustificativa').value = '';
-    document.getElementById('respostaStatus').textContent = '';
-    document.getElementById('respostaStatus').className = 'status-msg';
-    document.getElementById('respostaModalOverlay').classList.add('active');
+    const motoristaInput = document.getElementById('respostaMotorista');
+    if (motoristaInput) {
+        motoristaInput.value = motoristaUnico ? motoristas[0] : '';
+        motoristaInput.placeholder = motoristaUnico ? motoristas[0] : 'Múltiplos motoristas - edite se necessário';
+    }
+    const nomeInput = document.getElementById('respostaNome');
+    if (nomeInput) nomeInput.value = '';
+    const justInput = document.getElementById('respostaJustificativa');
+    if (justInput) justInput.value = '';
+    const statusMsg = document.getElementById('respostaStatus');
+    if (statusMsg) { statusMsg.textContent = ''; statusMsg.className = 'status-msg'; }
+    const overlay = document.getElementById('respostaModalOverlay');
+    if (overlay) overlay.classList.add('active');
 };
 window.abrirModalResposta = function() {
     if (currentUserRole === 'viewer') {
@@ -2953,18 +3112,17 @@ window.abrirModalResposta = function() {
     originalAbrirResposta();
 };
 document.getElementById('respostaEnviar').addEventListener('click', async function() {
-    const nome = document.getElementById('respostaNome').value.trim();
-    const justificativa = document.getElementById('respostaJustificativa').value.trim();
-    const motorista = document.getElementById('respostaMotorista').value.trim();
+    const nome = document.getElementById('respostaNome')?.value?.trim() || '';
+    const justificativa = document.getElementById('respostaJustificativa')?.value?.trim() || '';
+    const motorista = document.getElementById('respostaMotorista')?.value?.trim() || '';
     const statusEl = document.getElementById('respostaStatus');
-    if (!nome) { statusEl.textContent = '⚠️ Por favor, preencha seu nome.'; statusEl.className = 'status-msg error'; return; }
-    if (!justificativa) { statusEl.textContent = '⚠️ Por favor, preencha a justificativa.'; statusEl.className = 'status-msg error'; return; }
+    if (!nome) { if (statusEl) { statusEl.textContent = '⚠️ Por favor, preencha seu nome.'; statusEl.className = 'status-msg error'; } return; }
+    if (!justificativa) { if (statusEl) { statusEl.textContent = '⚠️ Por favor, preencha a justificativa.'; statusEl.className = 'status-msg error'; } return; }
     const ids = Array.from(idsSelecionados);
     const transportadora = modalTransportadora ? modalTransportadora.nome : '';
     const dataAtual = new Date().toLocaleString('pt-BR');
     const dadosResposta = ids.map(id => ({ ID: id, Transportadora: transportadora, Motorista: motorista || motoristasSelecionados[id] || 'N/A', Nome_Responsavel: nome, Justificativa: justificativa, Data_Hora: dataAtual }));
-    statusEl.textContent = '⏳ Enviando dados para a planilha...';
-    statusEl.className = 'status-msg loading';
+    if (statusEl) { statusEl.textContent = '⏳ Enviando dados para a planilha...'; statusEl.className = 'status-msg loading'; }
     this.disabled = true;
     try {
         const rows = dadosResposta.map(d => [d.ID, d.Transportadora, d.Motorista, d.Nome_Responsavel, d.Justificativa, d.Data_Hora]);
@@ -2974,30 +3132,36 @@ document.getElementById('respostaEnviar').addEventListener('click', async functi
         let nextRow = 2;
         if (readData.values && readData.values.length > 0) nextRow = readData.values.length + 1;
         await escreverPlanilhaOAuth('RESPOSTAS', `A${nextRow}:F${nextRow + rows.length - 1}`, rows);
-        statusEl.textContent = '✅ Respostas enviadas com sucesso!';
-        statusEl.className = 'status-msg success';
+        if (statusEl) { statusEl.textContent = '✅ Respostas enviadas com sucesso!'; statusEl.className = 'status-msg success'; }
         setTimeout(() => {
-            document.getElementById('respostaModalOverlay').classList.remove('active');
-            document.getElementById('modalOverlay').classList.remove('active');
+            const overlayResposta = document.getElementById('respostaModalOverlay');
+            if (overlayResposta) overlayResposta.classList.remove('active');
+            const overlayModal = document.getElementById('modalOverlay');
+            if (overlayModal) overlayModal.classList.remove('active');
             idsSelecionados.clear();
             motoristasSelecionados = {};
             this.disabled = false;
         }, 1500);
     } catch (error) {
-        statusEl.textContent = `❌ Erro: ${error.message}`;
-        statusEl.className = 'status-msg error';
+        if (statusEl) { statusEl.textContent = `❌ Erro: ${error.message}`; statusEl.className = 'status-msg error'; }
         this.disabled = false;
         console.error('Erro ao enviar respostas:', error);
     }
 });
-document.getElementById('respostaCancelar').addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
-document.getElementById('respostaModalClose').addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
-document.getElementById('respostaModalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+document.getElementById('respostaCancelar')?.addEventListener('click', function() { 
+    const overlay = document.getElementById('respostaModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+});
+document.getElementById('respostaModalClose')?.addEventListener('click', function() { 
+    const overlay = document.getElementById('respostaModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+});
+document.getElementById('respostaModalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 
 // ================================================================
 //  CÓPIA (modal)
 // ================================================================
-document.getElementById('modalCopy').addEventListener('click', function() {
+document.getElementById('modalCopy')?.addEventListener('click', function() {
     const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
     if (!ids || ids.length === 0) return;
     const text = ids.join('\n');
@@ -3017,7 +3181,7 @@ document.getElementById('modalCopy').addEventListener('click', function() {
         setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000);
     });
 });
-document.getElementById('modalCopyAll').addEventListener('click', function() {
+document.getElementById('modalCopyAll')?.addEventListener('click', function() {
     const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
     const valores = window._valoresFiltrados || (modalTransportadora ? modalTransportadora.valores : []);
     const motoristas = window._motoristasFiltrados || (modalTransportadora ? modalTransportadora.motoristas : []);
@@ -3048,13 +3212,18 @@ document.getElementById('modalCopyAll').addEventListener('click', function() {
 // ================================================================
 //  FECHAR MODAIS
 // ================================================================
-document.getElementById('modalClose').addEventListener('click', function() { document.getElementById('modalOverlay').classList.remove('active'); });
-document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+document.getElementById('modalClose')?.addEventListener('click', function() { 
+    const overlay = document.getElementById('modalOverlay');
+    if (overlay) overlay.classList.remove('active');
+});
+document.getElementById('modalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        document.getElementById('modalOverlay').classList.remove('active');
-        document.getElementById('respostaModalOverlay').classList.remove('active');
-        document.getElementById('filterModalOverlay').classList.remove('active');
+        const overlays = ['modalOverlay', 'respostaModalOverlay', 'filterModalOverlay'];
+        overlays.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+        });
     }
 });
 
@@ -3092,6 +3261,7 @@ function processarDadosInventario(data) {
 }
 function renderKPI_Inventario(data) {
     const grid = document.getElementById('kpiStripInventario');
+    if (!grid) return;
     if (!data) {
         grid.innerHTML = `<div class="kpi"><div class="tag">📦 Total</div><div class="num">0</div></div>
         <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">0</div></div>
@@ -3108,40 +3278,39 @@ function renderKPI_Inventario(data) {
         <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${data.totalIntruso > 0 ? `+ ${data.totalIntruso} itens não contabilizados` : '✅ Nenhum intruso'}</div></div>
         <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.totalNaoClassificado > 0 ? `⚠️ ${data.totalNaoClassificado} não classificados` : '✅ OK'}</div></div>
     `;
-    document.getElementById('footerTotalInventario').textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
+    const footerTotal = document.getElementById('footerTotalInventario');
+    if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
 function renderGraficos_Inventario(data) {
     try { if (chartZona && typeof chartZona.destroy === 'function') { chartZona.destroy(); chartZona = null; } if (chartOverview && typeof chartOverview.destroy === 'function') { chartOverview.destroy(); chartOverview = null; } } catch(e) {}
+    const ctxZona = document.getElementById('chartZona');
+    const ctxOverview = document.getElementById('chartOverview');
+    if (!ctxZona || !ctxOverview) return;
     if (!data || data.zonas.length === 0) return;
     const labels = data.zonas.slice(0, 15).map(z => z.nome.length > 20 ? z.nome.substring(0, 18) + '...' : z.nome);
     const inventariado = data.zonas.slice(0, 15).map(z => z.inventariado);
     const faltante = data.zonas.slice(0, 15).map(z => z.faltante);
     const intruso = data.zonas.slice(0, 15).map(z => z.intruso);
     try {
-        const ctx1 = document.getElementById('chartZona');
-        if (ctx1) {
-            chartZona = new Chart(ctx1, {
-                type: 'bar',
-                data: { labels, datasets: [
-                    { label: 'Inventariados', data: inventariado, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 2 },
-                    { label: 'Faltantes', data: faltante, backgroundColor: '#e8593f', borderColor: '#e8593f', borderWidth: 1, borderRadius: 2 },
-                    { label: 'Intrusos', data: intruso, backgroundColor: '#9b59b6', borderColor: '#9b59b6', borderWidth: 1, borderRadius: 2 }
-                ] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8b8f99', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { stacked: true, ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
-            });
-        }
-        const ctx2 = document.getElementById('chartOverview');
-        if (ctx2) {
-            chartOverview = new Chart(ctx2, {
-                type: 'doughnut',
-                data: { labels: ['Inventariados', 'Faltantes', 'Intrusos'], datasets: [{ data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], backgroundColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderWidth: 2, hoverOffset: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 11 }, padding: 16 } } }, cutout: '60%' }
-            });
-        }
+        chartZona = new Chart(ctxZona, {
+            type: 'bar',
+            data: { labels, datasets: [
+                { label: 'Inventariados', data: inventariado, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 2 },
+                { label: 'Faltantes', data: faltante, backgroundColor: '#e8593f', borderColor: '#e8593f', borderWidth: 1, borderRadius: 2 },
+                { label: 'Intrusos', data: intruso, backgroundColor: '#9b59b6', borderColor: '#9b59b6', borderWidth: 1, borderRadius: 2 }
+            ] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8b8f99', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { stacked: true, ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
+        });
+        chartOverview = new Chart(ctxOverview, {
+            type: 'doughnut',
+            data: { labels: ['Inventariados', 'Faltantes', 'Intrusos'], datasets: [{ data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], backgroundColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderColor: ['#4fae7c', '#e8593f', '#9b59b6'], borderWidth: 2, hoverOffset: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#8b8f99', font: { size: 11 }, padding: 16 } } }, cutout: '60%' }
+        });
     } catch(e) {}
 }
 function renderZonas(data) {
     const grid = document.getElementById('zonaGrid');
+    if (!grid) return;
     if (!data || data.zonas.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma zona encontrada</div>`; return; }
     grid.innerHTML = data.zonas.map(z => {
         const pctInv = z.taxaInventariado, pctFalt = z.taxaFaltante, pctInt = z.taxaIntruso, pctAcuracia = z.taxaAcuracia;
@@ -3155,42 +3324,45 @@ async function carregarDadosInventario() {
     const preview = document.getElementById('previewInventario');
     const debugBox = document.getElementById('debugInventario');
     try {
-        statusDot.className = 'dot-status loading';
-        statusText.textContent = 'Carregando dados...';
-        statusText.style.color = 'var(--text-dim)';
-        preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
-        debugBox.innerHTML = '<div style="color:var(--text-dim);">⏳ Buscando dados do inventário...</div>';
+        if (statusDot) statusDot.className = 'dot-status loading';
+        if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-dim)'; }
+        if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
+        if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-dim);">⏳ Buscando dados do inventário...</div>';
         const data = await lerPlanilhaGoogleInventario();
         rawDataInventario = data;
         processedDataInventario = processarDadosInventario(data);
-        debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Zonas:</span> <span class="value">${processedDataInventario.zonas.length}</span></div>`;
-        statusDot.className = 'dot-status online';
-        statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`;
-        statusText.style.color = 'var(--success)';
-        recordCount.textContent = `📦 ${data.length} registros`;
+        if (debugBox) {
+            debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Zonas:</span> <span class="value">${processedDataInventario.zonas.length}</span></div>`;
+        }
+        if (statusDot) statusDot.className = 'dot-status online';
+        if (statusText) { statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`; statusText.style.color = 'var(--success)'; }
+        if (recordCount) recordCount.textContent = `📦 ${data.length} registros`;
         renderPreviewInventario(data);
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-        document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
+        const footerTotal = document.getElementById('footerTotalInventario');
+        if (footerTotal) footerTotal.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
     } catch (error) {
-        debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`;
-        statusDot.className = 'dot-status offline';
-        statusText.textContent = `❌ Erro: ${error.message}`;
-        statusText.style.color = 'var(--danger)';
-        preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
+        if (debugBox) {
+            debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`;
+        }
+        if (statusDot) statusDot.className = 'dot-status offline';
+        if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
+        if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
         processedDataInventario = processarDadosInventario(rawDataInventario);
         renderPreviewInventario(rawDataInventario);
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-        document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
+        const footerTotal = document.getElementById('footerTotalInventario');
+        if (footerTotal) footerTotal.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
     }
 }
 
 // ================================================================
-//  CRUZAMENTO (funções completas)
+//  CRUZAMENTO (funções completas com verificação de elementos)
 // ================================================================
 function realizarCruzamento(dadosPacotes, dadosInventario) {
     const faltantesSet = new Set();
@@ -3224,6 +3396,8 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
 }
 function renderFiltroTransportadoras(data) {
     const container = document.getElementById('transpFilterContainer');
+    if (!container) return;
+    
     if (!data || data.transportadoraList.length === 0) {
         container.innerHTML = `<span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 0;">Nenhuma transportadora encontrada</span>`;
         return;
@@ -3244,11 +3418,15 @@ function renderFiltroTransportadoras(data) {
             <span class="transp-count">(${t.quantidade})</span>
         </div>`;
     }).join('');
-    document.getElementById('filterCountAmbos').textContent = filtroTransportadoras.size;
-    document.getElementById('filterCountResp').textContent = filtroTransportadorasResp.size;
+    const filterCountAmbos = document.getElementById('filterCountAmbos');
+    const filterCountResp = document.getElementById('filterCountResp');
+    const filterFloatBadge = document.getElementById('filterFloatBadge');
+    const filterTranspCount = document.getElementById('filterTranspCount');
+    if (filterCountAmbos) filterCountAmbos.textContent = filtroTransportadoras.size;
+    if (filterCountResp) filterCountResp.textContent = filtroTransportadorasResp.size;
     const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-    document.getElementById('filterFloatBadge').textContent = totalSelecionadas;
-    document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
+    if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
+    if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
 }
 function toggleTransportadora(nome, tipo) {
     if (tipo === 'ambos') {
@@ -3258,39 +3436,51 @@ function toggleTransportadora(nome, tipo) {
         if (filtroTransportadorasResp.has(nome)) filtroTransportadorasResp.delete(nome);
         else { filtroTransportadorasResp.add(nome); filtroTransportadoras.delete(nome); }
     }
-    document.getElementById('filterCountAmbos').textContent = filtroTransportadoras.size;
-    document.getElementById('filterCountResp').textContent = filtroTransportadorasResp.size;
+    const filterCountAmbos = document.getElementById('filterCountAmbos');
+    const filterCountResp = document.getElementById('filterCountResp');
+    const filterFloatBadge = document.getElementById('filterFloatBadge');
+    const filterTranspCount = document.getElementById('filterTranspCount');
+    if (filterCountAmbos) filterCountAmbos.textContent = filtroTransportadoras.size;
+    if (filterCountResp) filterCountResp.textContent = filtroTransportadorasResp.size;
     const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-    document.getElementById('filterFloatBadge').textContent = totalSelecionadas;
-    document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
+    if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
+    if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
     const container = document.getElementById('transpFilterContainer');
-    container.querySelectorAll('.transp-filter-item').forEach(item => {
-        const nome = item.querySelector('.transp-nome').textContent.trim();
-        const cbAmbos = item.querySelector('.cb-ambos');
-        const cbResp = item.querySelector('.cb-responsabilidade');
-        if (cbAmbos) cbAmbos.checked = filtroTransportadoras.has(nome);
-        if (cbResp) cbResp.checked = filtroTransportadorasResp.has(nome);
-    });
+    if (container) {
+        container.querySelectorAll('.transp-filter-item').forEach(item => {
+            const nome = item.querySelector('.transp-nome')?.textContent?.trim() || '';
+            const cbAmbos = item.querySelector('.cb-ambos');
+            const cbResp = item.querySelector('.cb-responsabilidade');
+            if (cbAmbos) cbAmbos.checked = filtroTransportadoras.has(nome);
+            if (cbResp) cbResp.checked = filtroTransportadorasResp.has(nome);
+        });
+    }
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
 function selecionarTodasTransportadoras() {
     const container = document.getElementById('transpFilterContainer');
+    if (!container) return;
     container.querySelectorAll('.transp-filter-item').forEach(item => {
-        const nome = item.querySelector('.transp-nome').textContent.trim();
+        const nome = item.querySelector('.transp-nome')?.textContent?.trim() || '';
         const cbAmbos = item.querySelector('.cb-ambos');
         const cbResp = item.querySelector('.cb-responsabilidade');
         if (cbAmbos) { cbAmbos.checked = true; filtroTransportadoras.add(nome); filtroTransportadorasResp.delete(nome); }
         if (cbResp) cbResp.checked = false;
     });
-    document.getElementById('filterCountAmbos').textContent = filtroTransportadoras.size;
-    document.getElementById('filterCountResp').textContent = filtroTransportadorasResp.size;
+    const filterCountAmbos = document.getElementById('filterCountAmbos');
+    const filterCountResp = document.getElementById('filterCountResp');
+    const filterFloatBadge = document.getElementById('filterFloatBadge');
+    const filterTranspCount = document.getElementById('filterTranspCount');
+    if (filterCountAmbos) filterCountAmbos.textContent = filtroTransportadoras.size;
+    if (filterCountResp) filterCountResp.textContent = filtroTransportadorasResp.size;
     const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-    document.getElementById('filterFloatBadge').textContent = totalSelecionadas;
-    document.getElementById('filterTranspCount').textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
+    if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
+    if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
 function limparTodasTransportadoras() {
     const container = document.getElementById('transpFilterContainer');
+    if (!container) return;
     container.querySelectorAll('.transp-filter-item').forEach(item => {
         const cbAmbos = item.querySelector('.cb-ambos');
         const cbResp = item.querySelector('.cb-responsabilidade');
@@ -3299,10 +3489,14 @@ function limparTodasTransportadoras() {
     });
     filtroTransportadoras.clear();
     filtroTransportadorasResp.clear();
-    document.getElementById('filterCountAmbos').textContent = '0';
-    document.getElementById('filterCountResp').textContent = '0';
-    document.getElementById('filterFloatBadge').textContent = '0';
-    document.getElementById('filterTranspCount').textContent = '0 selecionadas (0 🔗 + 0 📦)';
+    const filterCountAmbos = document.getElementById('filterCountAmbos');
+    const filterCountResp = document.getElementById('filterCountResp');
+    const filterFloatBadge = document.getElementById('filterFloatBadge');
+    const filterTranspCount = document.getElementById('filterTranspCount');
+    if (filterCountAmbos) filterCountAmbos.textContent = '0';
+    if (filterCountResp) filterCountResp.textContent = '0';
+    if (filterFloatBadge) filterFloatBadge.textContent = '0';
+    if (filterTranspCount) filterTranspCount.textContent = '0 selecionadas (0 🔗 + 0 📦)';
     if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 }
 function aplicarFiltroTransportadoras(data, tipo) {
@@ -3321,13 +3515,16 @@ function renderCruzamento(data) {
     const tbody = document.getElementById('cruzamentoTbody');
     const countSpan = document.getElementById('cruzamentoCount');
     const footerSpan = document.getElementById('footerTotalCruzamento');
+    
     renderFiltroTransportadoras(data);
     if (!data || data.dados.length === 0) {
-        statsDiv.innerHTML = `<div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 faltantes no inventário</div></div><div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 em ambos</div></div><div class="cruzamento-stat"><div class="num cruzamento" style="font-size:32px;">0</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div><div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:32px;">0</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">0 transportadoras selecionadas</div></div>`;
-        transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Nenhum pacote em ambos</div>`;
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Nenhum pacote encontrado em ambas as bases</td></tr>`;
-        countSpan.textContent = '0 registros';
-        footerSpan.textContent = '0 registros';
+        if (statsDiv) {
+            statsDiv.innerHTML = `<div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 faltantes no inventário</div></div><div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 em ambos</div></div><div class="cruzamento-stat"><div class="num cruzamento" style="font-size:32px;">0</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div><div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:32px;">0</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">0 transportadoras selecionadas</div></div>`;
+        }
+        if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Nenhum pacote em ambos</div>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Nenhum pacote encontrado em ambas as bases</td></tr>`;
+        if (countSpan) countSpan.textContent = '0 registros';
+        if (footerSpan) footerSpan.textContent = '0 registros';
         return;
     }
     const dadosFiltradosEmAmbos = aplicarFiltroTransportadoras(data, 'ambos');
@@ -3335,28 +3532,34 @@ function renderCruzamento(data) {
     if (filtroTransportadorasResp.size > 0) {
         data.transportadoraList.forEach(t => { if (filtroTransportadorasResp.has(t.nome)) totalPacotesResp += t.quantidade; });
     }
-    statsDiv.innerHTML = `
-        <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div>
-        <div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">${data.emAmbos} em ambos</div></div>
-        <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:32px;">${dadosFiltradosEmAmbos.emAmbos}</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">${filtroTransportadoras.size} transportadoras selecionadas</div></div>
-        <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:32px;">${totalPacotesResp}</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">${filtroTransportadorasResp.size} transportadoras selecionadas</div></div>
-    `;
+    if (statsDiv) {
+        statsDiv.innerHTML = `
+            <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div>
+            <div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">${data.emAmbos} em ambos</div></div>
+            <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:32px;">${dadosFiltradosEmAmbos.emAmbos}</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">${filtroTransportadoras.size} transportadoras selecionadas</div></div>
+            <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:32px;">${totalPacotesResp}</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">${filtroTransportadorasResp.size} transportadoras selecionadas</div></div>
+        `;
+    }
     if (dadosFiltradosEmAmbos.transportadoraList.length === 0) {
-        transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Nenhum pacote em ambos para as transportadoras selecionadas</div>`;
+        if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Nenhum pacote em ambos para as transportadoras selecionadas</div>`;
     } else {
         const totalEmAmbos = dadosFiltradosEmAmbos.emAmbos;
-        transpGrid.innerHTML = dadosFiltradosEmAmbos.transportadoraList.map(t => {
-            const pct = totalEmAmbos > 0 ? (t.quantidade / totalEmAmbos * 100) : 0;
-            return `<div class="cruzamento-transp-card"><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">🔗 ${t.quantidade}</span><span class="pct">${pct.toFixed(1)}%</span></div></div>`;
-        }).join('');
+        if (transpGrid) {
+            transpGrid.innerHTML = dadosFiltradosEmAmbos.transportadoraList.map(t => {
+                const pct = totalEmAmbos > 0 ? (t.quantidade / totalEmAmbos * 100) : 0;
+                return `<div class="cruzamento-transp-card"><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">🔗 ${t.quantidade}</span><span class="pct">${pct.toFixed(1)}%</span></div></div>`;
+            }).join('');
+        }
     }
     const dadosParaTabela = dadosFiltradosEmAmbos.dados;
-    countSpan.textContent = `${dadosParaTabela.length} registros`;
-    footerSpan.textContent = `${dadosParaTabela.length} registros`;
+    if (countSpan) countSpan.textContent = `${dadosParaTabela.length} registros`;
+    if (footerSpan) footerSpan.textContent = `${dadosParaTabela.length} registros`;
     if (dadosParaTabela.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Nenhum registro em ambos para as transportadoras selecionadas</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Nenhum registro em ambos para as transportadoras selecionadas</td></tr>`;
     } else {
-        tbody.innerHTML = dadosParaTabela.map(row => `<tr><td style="font-weight:500;">${row.id}</td><td>${row.transportadora}</td><td style="color:var(--danger);">${row.status}</td><td>${row.zona}</td><td><span class="status-badge">🔗 Em ambos</span></td></tr>`).join('');
+        if (tbody) {
+            tbody.innerHTML = dadosParaTabela.map(row => `<tr><td style="font-weight:500;">${row.id}</td><td>${row.transportadora}</td><td style="color:var(--danger);">${row.status}</td><td>${row.zona}</td><td><span class="status-badge">🔗 Em ambos</span></td></tr>`).join('');
+        }
     }
 }
 async function carregarCruzamento() {
@@ -3365,10 +3568,9 @@ async function carregarCruzamento() {
     const recordCount = document.getElementById('recordCountCruzamento');
     const tbody = document.getElementById('cruzamentoTbody');
     try {
-        statusDot.className = 'dot-status loading';
-        statusText.textContent = 'Carregando dados para cruzamento...';
-        statusText.style.color = 'var(--text-dim)';
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Carregando...</td></tr>`;
+        if (statusDot) statusDot.className = 'dot-status loading';
+        if (statusText) { statusText.textContent = 'Carregando dados para cruzamento...'; statusText.style.color = 'var(--text-dim)'; }
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:30px;">Carregando...</td></tr>`;
         const [pacotes, inventario] = await Promise.all([ lerPlanilhaGooglePacotes(), lerPlanilhaGoogleInventario() ]);
         rawDataPacotes = pacotes;
         rawDataInventario = inventario;
@@ -3377,7 +3579,8 @@ async function carregarCruzamento() {
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
-        document.getElementById('footerTotalInventario').textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
+        const footerTotalInventario = document.getElementById('footerTotalInventario');
+        if (footerTotalInventario) footerTotalInventario.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
         let dadosFiltrados = rawDataPacotes;
         if (usuarioTransportadora) {
             const transportadoras = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean);
@@ -3393,15 +3596,13 @@ async function carregarCruzamento() {
         }
         dadosCruzamento = realizarCruzamento(dadosFiltrados, inventario);
         renderCruzamento(dadosCruzamento);
-        statusDot.className = 'dot-status online';
-        statusText.textContent = `✅ Cruzamento concluído: ${dadosCruzamento.emAmbos} em ambos, ${dadosCruzamento.responsabilidadeId} responsabilidade ID`;
-        statusText.style.color = 'var(--success)';
-        recordCount.textContent = `📦 ${dadosCruzamento.dados.length} registros cruzados`;
+        if (statusDot) statusDot.className = 'dot-status online';
+        if (statusText) { statusText.textContent = `✅ Cruzamento concluído: ${dadosCruzamento.emAmbos} em ambos, ${dadosCruzamento.responsabilidadeId} responsabilidade ID`; statusText.style.color = 'var(--success)'; }
+        if (recordCount) recordCount.textContent = `📦 ${dadosCruzamento.dados.length} registros cruzados`;
     } catch (error) {
-        statusDot.className = 'dot-status offline';
-        statusText.textContent = `❌ Erro no cruzamento: ${error.message}`;
-        statusText.style.color = 'var(--danger)';
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:30px;">Erro: ${error.message}</td></tr>`;
+        if (statusDot) statusDot.className = 'dot-status offline';
+        if (statusText) { statusText.textContent = `❌ Erro no cruzamento: ${error.message}`; statusText.style.color = 'var(--danger)'; }
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:30px;">Erro: ${error.message}</td></tr>`;
         console.error('Erro no cruzamento:', error);
     }
 }
@@ -3423,25 +3624,35 @@ async function carregarTodosOsDados() {
 // ================================================================
 //  FILTRO FLUTUANTE (EVENTOS)
 // ================================================================
-document.getElementById('filterFloatBtn').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.add('active'); });
-document.getElementById('filterModalClose').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.remove('active'); });
-document.getElementById('filterModalOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-document.getElementById('filterApplyBtn').addEventListener('click', function() { document.getElementById('filterModalOverlay').classList.remove('active'); if (dadosCruzamento) renderCruzamento(dadosCruzamento); });
+document.getElementById('filterFloatBtn')?.addEventListener('click', function() { 
+    const overlay = document.getElementById('filterModalOverlay');
+    if (overlay) overlay.classList.add('active');
+});
+document.getElementById('filterModalClose')?.addEventListener('click', function() { 
+    const overlay = document.getElementById('filterModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+});
+document.getElementById('filterModalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+document.getElementById('filterApplyBtn')?.addEventListener('click', function() { 
+    const overlay = document.getElementById('filterModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+    if (dadosCruzamento) renderCruzamento(dadosCruzamento);
+});
 document.getElementById('filterSelectAll').onclick = selecionarTodasTransportadoras;
 document.getElementById('filterClearAll').onclick = limparTodasTransportadoras;
 
 // ================================================================
 //  EVENTOS DE REFRESH
 // ================================================================
-document.getElementById('refreshPacotes').addEventListener('click', function() {
+document.getElementById('refreshPacotes')?.addEventListener('click', function() {
     if (isAuthenticated) carregarDadosPacotes();
     else alert('Faça login primeiro.');
 });
-document.getElementById('refreshInventario').addEventListener('click', function() {
+document.getElementById('refreshInventario')?.addEventListener('click', function() {
     if (isAuthenticated) carregarDadosInventario();
     else alert('Faça login primeiro.');
 });
-document.getElementById('refreshCruzamento').addEventListener('click', function() {
+document.getElementById('refreshCruzamento')?.addEventListener('click', function() {
     if (isAuthenticated) carregarCruzamento();
     else alert('Faça login primeiro.');
 });
@@ -3462,10 +3673,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
-            document.getElementById(this.dataset.tab).classList.add('active');
+            const targetId = this.dataset.tab;
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) targetContent.classList.add('active');
             const filterBtn = document.getElementById('filterFloatBtn');
             if (filterBtn) {
-                if (this.dataset.tab === 'tabCruzamento') filterBtn.classList.remove('hidden');
+                if (targetId === 'tabCruzamento') filterBtn.classList.remove('hidden');
                 else filterBtn.classList.add('hidden');
             }
             setTimeout(() => {
