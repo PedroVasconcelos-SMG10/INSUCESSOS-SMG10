@@ -2766,167 +2766,183 @@ function renderPreviewPacotes(data) {
         </div>
     `;
 }
-function renderPreviewInventario(processedData, rawData) {
+
+// ================================================================
+//  LISTAR TODAS AS ABAS DA PLANILHA
+// ================================================================
+async function listarAbas() {
+    if (!accessToken) throw new Error('Usuário não autenticado');
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties.title`;
+    const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || `Erro ${response.status}`);
+    }
+    const data = await response.json();
+    return data.sheets.map(s => s.properties.title);
+}
+
+// ================================================================
+//  CARREGAR BACKUPS DA SEMANA ATUAL (DOMINGO A SÁBADO)
+// ================================================================
+async function carregarBackupsSemanais() {
+    // 1. Obter todas as abas da planilha
+    let abas = [];
+    try {
+        abas = await listarAbas();
+    } catch (error) {
+        console.warn('Erro ao listar abas para backups:', error);
+        return null;
+    }
+    const abaSet = new Set(abas);
+
+    // 2. Determinar a semana atual (DOMINGO a SÁBADO)
+    const hoje = new Date();
+    const diaSemana = hoje.getDay(); // 0 = domingo
+    const domingo = new Date(hoje);
+    domingo.setDate(hoje.getDate() - diaSemana);
+    domingo.setHours(0, 0, 0, 0);
+
+    // 3. Função para formatar data como YYYY-MM-DD (mesmo formato do Apps Script)
+    function formatarDataParaBackup(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // 4. Para cada dia da semana, tentar ler o backup
+    const resultados = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(domingo);
+        d.setDate(domingo.getDate() + i);
+        const dataStr = formatarDataParaBackup(d);
+        const nomeAba = `BACKUP_${dataStr}`;
+
+        let stats = {
+            date: dataStr,
+            inventariado: 0,
+            faltante: 0,
+            intruso: 0,
+            total: 0,
+            existe: false
+        };
+
+        if (abaSet.has(nomeAba)) {
+            try {
+                // Ler a aba de backup
+                const values = await lerPlanilhaOAuth(nomeAba, 'A1:K');
+                if (values && values.length > 1) {
+                    const headers = values[0];
+                    const statusCol = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
+                    if (statusCol !== -1) {
+                        for (let r = 1; r < values.length; r++) {
+                            const row = values[r];
+                            const status = String(row[statusCol] || '').trim().toUpperCase();
+                            const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
+                            const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+                            const isIntruso = status === 'INTRUSO';
+                            if (isInventariado) stats.inventariado++;
+                            else if (isFaltante) stats.faltante++;
+                            else if (isIntruso) stats.intruso++;
+                        }
+                        stats.total = stats.inventariado + stats.faltante + stats.intruso;
+                        stats.existe = true;
+                    } else {
+                        console.warn(`⚠️ Coluna CLASIFICACION não encontrada em ${nomeAba}`);
+                    }
+                }
+            } catch (error) {
+                console.warn(`⚠️ Erro ao ler backup ${nomeAba}:`, error);
+                stats.existe = false;
+            }
+        }
+
+        // Calcular acurácia do dia
+        const base = stats.inventariado + stats.faltante;
+        stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
+        resultados.push(stats);
+    }
+
+    return resultados;
+}
+
+// ================================================================
+//  RENDER PREVIEW INVENTÁRIO COM BACKUPS
+// ================================================================
+function renderPreviewInventario(processedData, weeklyStats) {
     const preview = document.getElementById('previewInventario');
     if (!preview) return;
 
+    // Se não houver dados processados, mostra mensagem padrão
     if (!processedData || !processedData.zonas || processedData.zonas.length === 0) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
     }
 
     const total = processedData.totalGeral;
-    const acuraciaGeral = processedData.taxaAcuraciaGeral || 0;
 
-    if (!rawData || rawData.length === 0) {
-        renderFallback(preview, total, acuraciaGeral);
+    // Se não houver stats semanais, mostra fallback
+    if (!weeklyStats || !Array.isArray(weeklyStats) || weeklyStats.length === 0) {
+        renderFallback(preview, total, processedData.taxaAcuraciaGeral || 0);
         return;
     }
 
     // ================================================================
-    //  FUNÇÃO AUXILIAR PARA PARSEAR DATA NO FORMATO "17 de ago. de 2026"
+    //  USAR DADOS DOS BACKUPS PARA OS 7 DIAS
     // ================================================================
-    function parseDataBR(texto) {
-        if (!texto) return null;
-        texto = texto.trim();
-        // Exemplos: "17 de ago. de 2026", "17 de ago de 2026", "17 de agosto de 2026"
-        const meses = {
-            'jan': 0, 'jan.': 0, 'janeiro': 0,
-            'fev': 1, 'fev.': 1, 'fevereiro': 1,
-            'mar': 2, 'mar.': 2, 'março': 2,
-            'abr': 3, 'abr.': 3, 'abril': 3,
-            'mai': 4, 'mai.': 4, 'maio': 4,
-            'jun': 5, 'jun.': 5, 'junho': 5,
-            'jul': 6, 'jul.': 6, 'julho': 6,
-            'ago': 7, 'ago.': 7, 'agosto': 7,
-            'set': 8, 'set.': 8, 'setembro': 8,
-            'out': 9, 'out.': 9, 'outubro': 9,
-            'nov': 10, 'nov.': 10, 'novembro': 10,
-            'dez': 11, 'dez.': 11, 'dezembro': 11
-        };
-
-        // Tenta capturar: dia, mês (texto), ano
-        const regex = /^(\d{1,2})\s+de\s+([a-zA-Z.]+)\s+de\s+(\d{4})$/;
-        const match = texto.match(regex);
-        if (match) {
-            const dia = parseInt(match[1], 10);
-            const mesTexto = match[2].toLowerCase();
-            const ano = parseInt(match[3], 10);
-            const mes = meses[mesTexto];
-            if (mes !== undefined && !isNaN(dia) && !isNaN(ano)) {
-                return new Date(ano, mes, dia);
-            }
-        }
-        // Se não der, tenta outros formatos (fallback)
-        const fallback = new Date(texto);
-        if (!isNaN(fallback.getTime())) return fallback;
-        return null;
-    }
-
-    // Determinar a semana atual (domingo a sábado)
-    const hoje = new Date();
-    const diaSemana = hoje.getDay();
-    const domingo = new Date(hoje);
-    domingo.setDate(hoje.getDate() - diaSemana);
-    domingo.setHours(0, 0, 0, 0);
-
-    // Criar mapa de datas da semana
-    const semanaMap = {};
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(domingo);
-        d.setDate(domingo.getDate() + i);
-        const key = d.toISOString().split('T')[0];
-        semanaMap[key] = { inventariado: 0, faltante: 0, intruso: 0, total: 0 };
-    }
-
-    // Percorrer rawData e agrupar por data (coluna B)
-    rawData.forEach(row => {
-        const dataRaw = row['DATA'] || row['data'] || row['Data'] || '';
-        if (!dataRaw) return;
-        const dateObj = parseDataBR(dataRaw);
-        if (!dateObj) return;
-        const dataStr = dateObj.toISOString().split('T')[0];
-        if (!semanaMap[dataStr]) return;
-
-        const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
-        const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-        const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-        const isIntruso = status === 'INTRUSO';
-
-        if (isInventariado) {
-            semanaMap[dataStr].inventariado++;
-        } else if (isFaltante) {
-            semanaMap[dataStr].faltante++;
-        } else if (isIntruso) {
-            semanaMap[dataStr].intruso++;
-        }
-        semanaMap[dataStr].total++;
-    });
-
-    // Calcular acurácia de cada dia
     const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-    const dias = [];
-    for (let i = 0; i < 7; i++) {
-        const d = new Date(domingo);
-        d.setDate(domingo.getDate() + i);
-        const key = d.toISOString().split('T')[0];
-        const dia = semanaMap[key] || { inventariado: 0, faltante: 0 };
-        const totalDia = dia.inventariado + dia.faltante;
-        const acuraciaDia = totalDia > 0 ? (dia.inventariado / totalDia * 100) : 0;
-        const dataStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-        dias.push({
-            nome: diasSemana[i],
-            data: dataStr,
-            acuracia: acuraciaDia,
-            total: dia.inventariado + dia.faltante + dia.intruso,
-            inventariado: dia.inventariado,
-            faltante: dia.faltante,
-        });
-    }
+    const hoje = new Date();
+    const diaSemana = hoje.getDay(); // 0 = domingo
 
-    // Calcular acurácia média da semana
-    const diasComDados = dias.filter(d => d.total > 0);
-    const acuraciaMedia = diasComDados.length > 0
-        ? diasComDados.reduce((acc, d) => acc + d.acuracia, 0) / diasComDados.length
-        : acuraciaGeral;
-
-    // Renderizar
+    // Função de cor
     function getColorClass(valor) {
         if (valor >= 95) return 'success';
         if (valor >= 80) return 'warning';
         return 'danger';
     }
 
+    // Calcular média semanal (apenas dias com dados)
+    const diasComDados = weeklyStats.filter(d => d.existe && (d.inventariado + d.faltante) > 0);
+    const acuraciaMedia = diasComDados.length > 0
+        ? diasComDados.reduce((acc, d) => acc + d.acuracia, 0) / diasComDados.length
+        : 0;
+
     let html = `<div style="display:flex; flex-direction:column; gap:8px; width:100%; padding:8px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
-            <span style="font-family:'Oswald',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:.03em; color:var(--text);">📊 Acurácia Semanal</span>
-            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">${total} registros carregados</span>
+            <span style="font-family:'Oswald',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:.03em; color:var(--text);">📊 Acurácia Semanal (Backups)</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">${total} registros atuais</span>
         </div>
         <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">`;
 
-    dias.forEach((dia, index) => {
+    weeklyStats.forEach((dia, index) => {
         const colorClass = getColorClass(dia.acuracia);
         const isHoje = index === diaSemana;
         const hojeClass = isHoje ? 'border:2px solid var(--cruzamento);' : '';
-        const hasData = dia.total > 0;
+        const hasData = dia.existe && (dia.inventariado + dia.faltante) > 0;
         const displayAcuracia = hasData ? dia.acuracia.toFixed(1) : '—';
+        const dataFormatada = dia.date.split('-').reverse().join('/'); // YYYY-MM-DD -> DD/MM
+
         html += `
             <div style="background:var(--panel-alt); border-radius:6px; padding:10px 6px; text-align:center; ${hojeClass} ${!hasData ? 'opacity:0.5;' : ''}">
-                <div style="font-family:'Inter',sans-serif; font-size:12px; color:var(--text-dim); font-weight:500;">${dia.nome}</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:4px;">${dia.data}</div>
+                <div style="font-family:'Inter',sans-serif; font-size:12px; color:var(--text-dim); font-weight:500;">${diasSemana[index]}</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:4px;">${dataFormatada}</div>
                 <div style="font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; color:${hasData ? 'var(--' + colorClass + ')' : 'var(--text-faint)'};">${displayAcuracia}${hasData ? '%' : ''}</div>
                 ${hasData ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:8px; color:var(--text-faint);">✅${dia.inventariado} ❌${dia.faltante}</div>` : ''}
+                ${!hasData ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:8px; color:var(--text-faint);">📭 sem backup</div>` : ''}
             </div>
         `;
     });
 
     html += `</div>`;
 
-    // Bloco de resumo semanal
+    // Bloco de resumo semanal (média dos dias com dados)
     const colorClass = getColorClass(acuraciaMedia);
     html += `
         <div style="background:var(--panel-alt); border-radius:6px; padding:12px 16px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--${colorClass});">
-            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">📌 Média Semanal</span>
+            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">📌 Média Semanal (Backups)</span>
             <span style="font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--${colorClass});">${acuraciaMedia.toFixed(1)}%</span>
         </div>
     `;
@@ -2934,17 +2950,20 @@ function renderPreviewInventario(processedData, rawData) {
     preview.innerHTML = html;
 }
 
-// Função fallback (sem dados brutos)
+// Função fallback (se não houver backups)
 function renderFallback(preview, total, acuracia) {
     const colorClass = acuracia >= 95 ? 'success' : acuracia >= 80 ? 'warning' : 'danger';
     preview.innerHTML = `
         <div style="text-align:center; padding:20px 0;">
-            <div style="font-size:24px; margin-bottom:8px;">✅</div>
-            <div style="font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--success);">
-                ${total} registros carregados com sucesso
+            <div style="font-size:24px; margin-bottom:8px;">⚠️</div>
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--warning);">
+                Backups semanais não encontrados
             </div>
             <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
-                Acurácia geral: <strong style="color:var(--${colorClass});">${acuracia.toFixed(1)}%</strong>
+                Acurácia atual: <strong style="color:var(--${colorClass});">${acuracia.toFixed(1)}%</strong>
+            </div>
+            <div style="font-size:10px; color:var(--text-faint); margin-top:8px;">
+                Verifique se o Apps Script está rodando diariamente.
             </div>
         </div>
     `;
@@ -3099,7 +3118,7 @@ function carregarDadosExemplo() {
     renderKPI_Inventario(processedDataInventario);
     renderGraficos_Inventario(processedDataInventario);
     renderZonas(processedDataInventario);
-    renderPreviewInventario(processedDataInventario, rawDataInventario); // 🔥 CORRIGIDO
+    renderPreviewInventario(processedDataInventario, null);
     dadosCruzamento = realizarCruzamento(dadosPacotes, rawDataInventario);
     renderCruzamento(dadosCruzamento);
     const st = document.getElementById('statusTextPacotes');
@@ -3619,6 +3638,10 @@ function renderZonas(data) {
         return `<div class="zona-card"><div class="nome">${z.nome}</div><div class="detalhes"><span class="total">📦 ${z.total}</span><span class="inventariado">✅ ${z.inventariado}</span><span class="faltante">❌ ${z.faltante}</span><span class="intruso">🟣 ${z.intruso}</span></div><div class="barra"><div class="fill-success" style="width:${pctInv}%;"></div><div class="fill-danger" style="width:${pctFalt}%;"></div><div class="fill-intruso" style="width:${pctInt}%;"></div></div><div class="status-labels"><span>✅ ${pctInv.toFixed(1)}%</span><span>❌ ${pctFalt.toFixed(1)}%</span><span>🟣 ${pctInt.toFixed(1)}%</span><span style="color:${pctAcuracia >= 95 ? 'var(--success)' : pctAcuracia >= 80 ? 'var(--warning)' : 'var(--danger)'};">🎯 ${pctAcuracia.toFixed(1)}%</span></div></div>`;
     }).join('');
 }
+
+// ================================================================
+//  CARREGAR DADOS INVENTÁRIO (COM BACKUPS)
+// ================================================================
 async function carregarDadosInventario() {
     const statusDot = document.getElementById('statusDotInventario');
     const statusText = document.getElementById('statusTextInventario');
@@ -3630,19 +3653,36 @@ async function carregarDadosInventario() {
         if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-dim)'; }
         if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
         if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-dim);">⏳ Buscando dados do inventário...</div>';
+
+        // 1. Carregar planilha atual (para KPIs e total geral)
         const data = await lerPlanilhaGoogleInventario();
         rawDataInventario = data;
         processedDataInventario = processarDadosInventario(data);
+
         if (debugBox) {
             debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Zonas:</span> <span class="value">${processedDataInventario.zonas.length}</span></div>`;
         }
         if (statusDot) statusDot.className = 'dot-status online';
         if (statusText) { statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`; statusText.style.color = 'var(--success)'; }
         if (recordCount) recordCount.textContent = `📦 ${data.length} registros`;
-        renderPreviewInventario(processedDataInventario, rawDataInventario); // 🔥 CORRIGIDO
+
+        // 2. Carregar backups semanais (para a acurácia diária)
+        let weeklyStats = null;
+        try {
+            weeklyStats = await carregarBackupsSemanais();
+        } catch (e) {
+            console.warn('Erro ao carregar backups semanais:', e);
+            weeklyStats = null;
+        }
+
+        // 3. Renderizar os KPIs (usam dados atuais)
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
+
+        // 4. Renderizar preview semanal (USA OS BACKUPS)
+        renderPreviewInventario(processedDataInventario, weeklyStats);
+
         const footerTotal = document.getElementById('footerTotalInventario');
         if (footerTotal) footerTotal.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
     } catch (error) {
@@ -3654,7 +3694,14 @@ async function carregarDadosInventario() {
         if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:24px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:9px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
         rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
         processedDataInventario = processarDadosInventario(rawDataInventario);
-        renderPreviewInventario(processedDataInventario, rawDataInventario); // 🔥 CORRIGIDO
+        // Fallback: tenta carregar backups mesmo em erro, ou passa null
+        let weeklyStats = null;
+        try {
+            weeklyStats = await carregarBackupsSemanais();
+        } catch (e) {
+            weeklyStats = null;
+        }
+        renderPreviewInventario(processedDataInventario, weeklyStats);
         renderKPI_Inventario(processedDataInventario);
         renderGraficos_Inventario(processedDataInventario);
         renderZonas(processedDataInventario);
@@ -4013,7 +4060,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderKPI_Inventario(null);
     renderGraficos_Inventario(null);
     renderZonas(null);
-    renderPreviewInventario(null, null); // 🔥 CORRIGIDO
+    renderPreviewInventario(null, null);
 
     initOAuth();
 });
