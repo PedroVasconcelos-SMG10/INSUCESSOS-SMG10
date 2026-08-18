@@ -1652,36 +1652,46 @@ async function criarAbaSeNaoExistir(nomeAba) {
 }
 
 async function garantirUsuarioNaPlanilha(email) {
-    if (!email) return;
+    if (!email) {
+        console.warn('Email vazio, ignorando.');
+        return;
+    }
     try {
-        await criarAbaSeNaoExistir('USUARIOS');
+        console.log(`🔍 Verificando usuário "${email}" na aba USUARIOS...`);
+
+        // 1. Ler a aba USUARIOS
         let data;
         try {
             data = await lerPlanilhaOAuth('USUARIOS', 'A:C');
         } catch (err) {
+            console.warn('Erro ao ler USUARIOS, tentando criar cabeçalho...', err);
+            // Se falhar, tenta criar o cabeçalho forçadamente
             await escreverPlanilhaOAuth('USUARIOS', 'A1:C1', [['EMAIL', 'ROLE', 'TRANSPORTADORA']]);
             data = [['EMAIL', 'ROLE', 'TRANSPORTADORA']];
         }
 
+        // 2. Verificar se o email já existe (case-insensitive, sem espaços extras)
         let encontrado = false;
         if (data && data.length > 0) {
             for (let i = 1; i < data.length; i++) {
                 const row = data[i];
-                if (row && row[0] && row[0].trim().toLowerCase() === email.toLowerCase()) {
+                if (row && row[0] && row[0].trim().toLowerCase() === email.trim().toLowerCase()) {
                     encontrado = true;
+                    console.log(`ℹ️ Usuário ${email} já cadastrado na linha ${i+1}.`);
                     break;
                 }
             }
         }
+
+        // 3. Se não existir, adiciona na próxima linha disponível
         if (!encontrado) {
             const nextRow = data ? data.length + 1 : 2;
-            await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email, 'viewer', '']]);
-            console.log(`✅ Usuário ${email} adicionado como viewer.`);
-        } else {
-            console.log(`ℹ️ Usuário ${email} já cadastrado.`);
+            await escreverPlanilhaOAuth('USUARIOS', `A${nextRow}:C${nextRow}`, [[email.trim(), 'viewer', '']]);
+            console.log(`✅ Usuário ${email} adicionado como viewer na linha ${nextRow}.`);
         }
     } catch (error) {
-        console.error('Erro ao garantir usuário na planilha:', error);
+        console.error('❌ Erro ao garantir usuário na planilha:', error);
+        // Não interrompe o fluxo principal
     }
 }
 
