@@ -2766,48 +2766,137 @@ function renderPreviewPacotes(data) {
         </div>
     `;
 }
-function renderPreviewInventario(data) {
+function renderPreviewInventario(processedData, rawData) {
     const preview = document.getElementById('previewInventario');
     if (!preview) return;
-    
-    // Se não houver dados processados, mostra mensagem padrão
-    if (!data || !data.zonas || data.zonas.length === 0) {
+
+    if (!processedData || !processedData.zonas || processedData.zonas.length === 0) {
         preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`;
         return;
     }
 
-    const total = data.totalGeral;
-    const acuracia = data.taxaAcuraciaGeral || 0;
-    const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const total = processedData.totalGeral;
+    const acuraciaGeral = processedData.taxaAcuraciaGeral || 0;
+
+    if (!rawData || rawData.length === 0) {
+        renderFallback(preview, total, acuraciaGeral);
+        return;
+    }
+
+    // ================================================================
+    //  FUNÇÃO AUXILIAR PARA PARSEAR DATA NO FORMATO "17 de ago. de 2026"
+    // ================================================================
+    function parseDataBR(texto) {
+        if (!texto) return null;
+        texto = texto.trim();
+        // Exemplos: "17 de ago. de 2026", "17 de ago de 2026", "17 de agosto de 2026"
+        const meses = {
+            'jan': 0, 'jan.': 0, 'janeiro': 0,
+            'fev': 1, 'fev.': 1, 'fevereiro': 1,
+            'mar': 2, 'mar.': 2, 'março': 2,
+            'abr': 3, 'abr.': 3, 'abril': 3,
+            'mai': 4, 'mai.': 4, 'maio': 4,
+            'jun': 5, 'jun.': 5, 'junho': 5,
+            'jul': 6, 'jul.': 6, 'julho': 6,
+            'ago': 7, 'ago.': 7, 'agosto': 7,
+            'set': 8, 'set.': 8, 'setembro': 8,
+            'out': 9, 'out.': 9, 'outubro': 9,
+            'nov': 10, 'nov.': 10, 'novembro': 10,
+            'dez': 11, 'dez.': 11, 'dezembro': 11
+        };
+
+        // Tenta capturar: dia, mês (texto), ano
+        const regex = /^(\d{1,2})\s+de\s+([a-zA-Z.]+)\s+de\s+(\d{4})$/;
+        const match = texto.match(regex);
+        if (match) {
+            const dia = parseInt(match[1], 10);
+            const mesTexto = match[2].toLowerCase();
+            const ano = parseInt(match[3], 10);
+            const mes = meses[mesTexto];
+            if (mes !== undefined && !isNaN(dia) && !isNaN(ano)) {
+                return new Date(ano, mes, dia);
+            }
+        }
+        // Se não der, tenta outros formatos (fallback)
+        const fallback = new Date(texto);
+        if (!isNaN(fallback.getTime())) return fallback;
+        return null;
+    }
+
+    // Determinar a semana atual (domingo a sábado)
     const hoje = new Date();
-    const diaSemana = hoje.getDay(); // 0=Domingo, 6=Sábado
-    
-    // Determinar o domingo mais recente (início da semana)
+    const diaSemana = hoje.getDay();
     const domingo = new Date(hoje);
     domingo.setDate(hoje.getDate() - diaSemana);
     domingo.setHours(0, 0, 0, 0);
-    
-    // Gerar os dias da semana atual
+
+    // Criar mapa de datas da semana
+    const semanaMap = {};
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(domingo);
+        d.setDate(domingo.getDate() + i);
+        const key = d.toISOString().split('T')[0];
+        semanaMap[key] = { inventariado: 0, faltante: 0, intruso: 0, total: 0 };
+    }
+
+    // Percorrer rawData e agrupar por data (coluna B)
+    rawData.forEach(row => {
+        const dataRaw = row['DATA'] || row['data'] || row['Data'] || '';
+        if (!dataRaw) return;
+        const dateObj = parseDataBR(dataRaw);
+        if (!dateObj) return;
+        const dataStr = dateObj.toISOString().split('T')[0];
+        if (!semanaMap[dataStr]) return;
+
+        const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
+        const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
+        const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+        const isIntruso = status === 'INTRUSO';
+
+        if (isInventariado) {
+            semanaMap[dataStr].inventariado++;
+        } else if (isFaltante) {
+            semanaMap[dataStr].faltante++;
+        } else if (isIntruso) {
+            semanaMap[dataStr].intruso++;
+        }
+        semanaMap[dataStr].total++;
+    });
+
+    // Calcular acurácia de cada dia
+    const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
     const dias = [];
     for (let i = 0; i < 7; i++) {
         const d = new Date(domingo);
         d.setDate(domingo.getDate() + i);
-        const diaStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        const key = d.toISOString().split('T')[0];
+        const dia = semanaMap[key] || { inventariado: 0, faltante: 0 };
+        const totalDia = dia.inventariado + dia.faltante;
+        const acuraciaDia = totalDia > 0 ? (dia.inventariado / totalDia * 100) : 0;
+        const dataStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
         dias.push({
             nome: diasSemana[i],
-            data: diaStr,
-            acuracia: acuracia,
+            data: dataStr,
+            acuracia: acuraciaDia,
+            total: dia.inventariado + dia.faltante + dia.intruso,
+            inventariado: dia.inventariado,
+            faltante: dia.faltante,
         });
     }
 
-    // Função para obter classe de cor baseada na acurácia
+    // Calcular acurácia média da semana
+    const diasComDados = dias.filter(d => d.total > 0);
+    const acuraciaMedia = diasComDados.length > 0
+        ? diasComDados.reduce((acc, d) => acc + d.acuracia, 0) / diasComDados.length
+        : acuraciaGeral;
+
+    // Renderizar
     function getColorClass(valor) {
         if (valor >= 95) return 'success';
         if (valor >= 80) return 'warning';
         return 'danger';
     }
 
-    // Construir os blocos
     let html = `<div style="display:flex; flex-direction:column; gap:8px; width:100%; padding:8px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
             <span style="font-family:'Oswald',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:.03em; color:var(--text);">📊 Acurácia Semanal</span>
@@ -2819,11 +2908,14 @@ function renderPreviewInventario(data) {
         const colorClass = getColorClass(dia.acuracia);
         const isHoje = index === diaSemana;
         const hojeClass = isHoje ? 'border:2px solid var(--cruzamento);' : '';
+        const hasData = dia.total > 0;
+        const displayAcuracia = hasData ? dia.acuracia.toFixed(1) : '—';
         html += `
-            <div style="background:var(--panel-alt); border-radius:6px; padding:10px 6px; text-align:center; ${hojeClass}">
+            <div style="background:var(--panel-alt); border-radius:6px; padding:10px 6px; text-align:center; ${hojeClass} ${!hasData ? 'opacity:0.5;' : ''}">
                 <div style="font-family:'Inter',sans-serif; font-size:12px; color:var(--text-dim); font-weight:500;">${dia.nome}</div>
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:4px;">${dia.data}</div>
-                <div style="font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; color:var(--${colorClass});">${dia.acuracia.toFixed(1)}%</div>
+                <div style="font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; color:${hasData ? 'var(--' + colorClass + ')' : 'var(--text-faint)'};">${displayAcuracia}${hasData ? '%' : ''}</div>
+                ${hasData ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:8px; color:var(--text-faint);">✅${dia.inventariado} ❌${dia.faltante}</div>` : ''}
             </div>
         `;
     });
@@ -2831,15 +2923,31 @@ function renderPreviewInventario(data) {
     html += `</div>`;
 
     // Bloco de resumo semanal
-    const colorClass = getColorClass(acuracia);
+    const colorClass = getColorClass(acuraciaMedia);
     html += `
         <div style="background:var(--panel-alt); border-radius:6px; padding:12px 16px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--${colorClass});">
-            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">📌 Acurácia Semanal</span>
-            <span style="font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--${colorClass});">${acuracia.toFixed(1)}%</span>
+            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">📌 Média Semanal</span>
+            <span style="font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--${colorClass});">${acuraciaMedia.toFixed(1)}%</span>
         </div>
     `;
 
     preview.innerHTML = html;
+}
+
+// Função fallback (sem dados brutos)
+function renderFallback(preview, total, acuracia) {
+    const colorClass = acuracia >= 95 ? 'success' : acuracia >= 80 ? 'warning' : 'danger';
+    preview.innerHTML = `
+        <div style="text-align:center; padding:20px 0;">
+            <div style="font-size:24px; margin-bottom:8px;">✅</div>
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--success);">
+                ${total} registros carregados com sucesso
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+                Acurácia geral: <strong style="color:var(--${colorClass});">${acuracia.toFixed(1)}%</strong>
+            </div>
+        </div>
+    `;
 }
 
 function isFileProtocol() { return window.location.protocol === 'file:'; }
