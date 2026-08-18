@@ -2721,10 +2721,19 @@ function renderPreviewInventario(processedData, weeklyStats) {
         return 'danger';
     }
 
-    const diasComDados = weeklyStats.filter(d => d.existe && (d.inventariado + d.faltante) > 0);
-    const acuraciaMedia = diasComDados.length > 0
-        ? diasComDados.reduce((acc, d) => acc + d.acuracia, 0) / diasComDados.length
-        : 0;
+    // ================================================================
+    //  CÁLCULO DA MÉDIA SEMANAL (TOTAL ACUMULADO)
+    // ================================================================
+    let totalInvSemana = 0;
+    let totalFaltSemana = 0;
+    weeklyStats.forEach(d => {
+        if (d.existe) {
+            totalInvSemana += d.inventariado;
+            totalFaltSemana += d.faltante;
+        }
+    });
+    const baseSemana = totalInvSemana + totalFaltSemana;
+    const acuraciaMedia = baseSemana > 0 ? (totalInvSemana / baseSemana * 100) : 0;
 
     let html = `<div style="display:flex; flex-direction:column; gap:8px; width:100%; padding:8px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
@@ -2739,7 +2748,6 @@ function renderPreviewInventario(processedData, weeklyStats) {
         const hojeClass = isHoje ? 'border:2px solid var(--cruzamento);' : '';
         const hasData = dia.existe && (dia.inventariado + dia.faltante) > 0;
         const displayAcuracia = hasData ? dia.acuracia.toFixed(1) : '—';
-        // Data formatada a partir do objeto Date (coluna B)
         const dataFormatada = dia.date ? dia.date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '--/--';
 
         html += `
@@ -2755,10 +2763,13 @@ function renderPreviewInventario(processedData, weeklyStats) {
 
     html += `</div>`;
 
+    // Bloco de resumo semanal (USANDO O TOTAL ACUMULADO)
     const colorClass = getColorClass(acuraciaMedia);
     html += `
         <div style="background:var(--panel-alt); border-radius:6px; padding:12px 16px; margin-top:4px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--${colorClass});">
-            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">📌 Média Semanal (Backups)</span>
+            <span style="font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);">
+                📌 Média Semanal (${totalInvSemana + totalFaltSemana} itens)
+            </span>
             <span style="font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--${colorClass});">${acuraciaMedia.toFixed(1)}%</span>
         </div>
     `;
