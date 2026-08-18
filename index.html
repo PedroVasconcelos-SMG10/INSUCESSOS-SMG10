@@ -8,8 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
+<!-- 🔥 SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  /* ===== ESTILOS ===== */
+  /* ===== ESTILOS (mesmos de antes) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1591,10 +1593,10 @@ const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT': '47755039490', 'CLASIFICACION': 'INVENTARIADO PLANIFICADO', 'SHP_ZONE_NAME': 'dispatch' },
 ];
 const DADOS_EXEMPLO_DESCRICAO = {
-  '47766750140': 'Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia, Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia',
+  '47766750140': 'Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia',
   '47755039490': 'Kit Sandália Infantil Papete + Bolsa Trançada Margarida Baby Rosa Bebê 29/30 Trançado',
   '47753274288': 'Mecanismo Reparo Saída Caixa Acoplada Universal Duplo',
-  '47740732761': 'Espelho Redondo 60cm Diam Multiuso Fita Dupla Face Lapidado Espelho Prata',
+  '47740732761': 'Espelho Redondo 60cm Diam Multiuso Fita Dupla Face Lapidado',
 };
 const DADOS_EXEMPLO_RESPOSTAS = ['47755039490'];
 
@@ -1789,9 +1791,18 @@ async function carregarDescricoesERespostas() {
     }
 }
 
+// ================================================================
+//  🔥 ALTERAR STATUS - COM SWEETALERT
+// ================================================================
 async function toggleStatus(id, transportadora, motorista) {
     if (currentUserRole !== 'admin') {
-        alert('⛔ Apenas administradores podem alternar o status.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Acesso Negado',
+            text: 'Apenas administradores podem alternar o status.',
+            confirmButtonColor: '#e8593f',
+            confirmButtonText: 'OK'
+        });
         return;
     }
     if (!id) return;
@@ -1804,13 +1815,25 @@ async function toggleStatus(id, transportadora, motorista) {
             const newData = header.concat(rows.map(row => [row[0]]));
             await escreverPlanilhaOAuth('RESPOSTAS', 'A1:A' + newData.length, newData);
             respostasSet.delete(id);
-            alert(`✅ Pacote ${id} marcado como PENDENTE.`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Status alterado!',
+                text: `Pacote ${id} marcado como PENDENTE.`,
+                confirmButtonColor: '#4fae7c',
+                confirmButtonText: 'OK'
+            });
         } else {
             const data = await lerPlanilhaOAuth('RESPOSTAS', 'A:A');
             const nextRow = data ? data.length + 1 : 2;
             await escreverPlanilhaOAuth('RESPOSTAS', `A${nextRow}:A${nextRow}`, [[id]]);
             respostasSet.add(id);
-            alert(`✅ Pacote ${id} marcado como JUSTIFICADO.`);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Status alterado!',
+                text: `Pacote ${id} marcado como JUSTIFICADO.`,
+                confirmButtonColor: '#4fae7c',
+                confirmButtonText: 'OK'
+            });
         }
         await carregarDescricoesERespostas();
         if (usuarioTransportadora && rawDataPacotes) {
@@ -1820,7 +1843,13 @@ async function toggleStatus(id, transportadora, motorista) {
         }
     } catch (error) {
         console.error('Erro ao alternar status:', error);
-        alert('❌ Erro ao alternar status. Verifique o console.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Ocorreu um erro ao alternar status. Verifique o console.',
+            confirmButtonColor: '#e8593f',
+            confirmButtonText: 'OK'
+        });
     }
 }
 
@@ -1840,7 +1869,13 @@ function aplicarRestricoesPorPerfil() {
     const originalAbrirResposta = window.abrirModalResposta || function() {};
     window.abrirModalResposta = function() {
         if (currentUserRole === 'viewer') {
-            alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Acesso Negado',
+                text: 'Você não tem permissão para responder pacotes. Contate o administrador.',
+                confirmButtonColor: '#e8593f',
+                confirmButtonText: 'OK'
+            });
             return;
         }
         originalAbrirResposta();
@@ -2196,9 +2231,6 @@ function renderGraficosPacotes(data, dadosFiltrados) {
     }
 }
 
-// ================================================================
-//  RENDERIZAR SEÇÃO DE TRANSPORTADORAS (ou lista de IDs)
-// ================================================================
 function renderSecaoTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     const titulo = document.getElementById('tituloSecaoTransportadoras');
@@ -2269,7 +2301,7 @@ function renderSecaoTransportadoras(data) {
 }
 
 // ================================================================
-//  🔥 FUNÇÃO CORRIGIDA: RENDERIZA LISTA DE IDs COM LINK NO ID
+//  RENDERIZAR LISTA DE IDs COM LINK
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2341,7 +2373,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             return m;
         });
 
-        // 🔥 BUSCA FORÇADA PELA COLUNA LINK
         let linkField = null;
         const colunasPossiveis = ['LINK', 'Link', 'link', 'URL', 'Url', 'url'];
         if (linhasOrdenadas.length > 0) {
@@ -2355,7 +2386,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 }
             }
             if (!linkField) {
-                console.warn('⚠️ Nenhuma coluna de link encontrada. Verifique o cabeçalho da coluna T.');
+                console.warn('⚠️ Nenhuma coluna de link encontrada.');
             }
         }
         const links = linhasOrdenadas.map(row => linkField ? (row[linkField] || '') : '');
@@ -2459,7 +2490,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
             const link = linksPagina[index] || '';
 
-            // 🔥 ID CLICÁVEL SE HOUVER LINK
             let idHtml = link 
                 ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
                 : `<strong>${id}</strong>`;
@@ -2543,7 +2573,13 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     };
     window.abrirRespostaIds = function() {
         if (idsSelecionados.size === 0) {
-            alert('Selecione pelo menos um pacote para responder.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nenhum pacote selecionado',
+                text: 'Selecione pelo menos um pacote para responder.',
+                confirmButtonColor: '#e0aa3d',
+                confirmButtonText: 'OK'
+            });
             return;
         }
         modalTransportadora = transpObj;
@@ -2554,7 +2590,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
 }
 
 // ================================================================
-//  RENDER TRANSPORTADORAS (cards)
+//  RENDER TRANSPORTADORAS
 // ================================================================
 function renderTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
@@ -2580,7 +2616,13 @@ function renderTransportadoras(data) {
         container.querySelectorAll('.transportadora-card.blocked').forEach(card => {
             card.addEventListener('click', function(e) {
                 e.stopPropagation();
-                alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Acesso Negado',
+                    text: 'Você não tem permissão para visualizar os IDs. Contate o administrador.',
+                    confirmButtonColor: '#e8593f',
+                    confirmButtonText: 'OK'
+                });
             });
         });
     }
@@ -2736,7 +2778,13 @@ function initOAuth() {
 }
 function autenticar() {
     if (isFileProtocol()) {
-        alert('⚠️ Você está abrindo o arquivo localmente (file://).\n\nPara usar o login com Google, por favor:\n1. Instale a extensão "Live Server" no VS Code\n2. Clique com o botão direito no arquivo e selecione "Open with Live Server"\n\nOu faça o upload para o GitHub Pages e acesse via HTTPS.');
+        Swal.fire({
+            icon: 'warning',
+            title: '⚠️ Arquivo local',
+            text: 'Você está abrindo o arquivo localmente (file://).\n\nPara usar o login com Google, por favor:\n1. Instale a extensão "Live Server" no VS Code\n2. Clique com o botão direito no arquivo e selecione "Open with Live Server"\n\nOu faça o upload para o GitHub Pages e acesse via HTTPS.',
+            confirmButtonColor: '#e0aa3d',
+            confirmButtonText: 'OK'
+        });
         return;
     }
     if (!tokenClient) { initOAuth(); setTimeout(() => { if (tokenClient) tokenClient.requestAccessToken(); else alert('Não foi possível iniciar a autenticação. Recarregue a página.'); }, 500); return; }
@@ -2912,7 +2960,13 @@ async function carregarDadosPacotes() {
 
 function abrirModalPacotes(nome) {
     if (currentUserRole === 'viewer') {
-        alert('⛔ Você não tem permissão para visualizar os IDs. Contate o administrador.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Acesso Negado',
+            text: 'Você não tem permissão para visualizar os IDs. Contate o administrador.',
+            confirmButtonColor: '#e8593f',
+            confirmButtonText: 'OK'
+        });
         return;
     }
     if (!processedDataPacotes) return;
@@ -3043,7 +3097,16 @@ function atualizarSelecao() {
 }
 
 const originalAbrirResposta = function() {
-    if (idsSelecionados.size === 0) { alert('Selecione pelo menos um pacote para responder.'); return; }
+    if (idsSelecionados.size === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Nenhum pacote selecionado',
+            text: 'Selecione pelo menos um pacote para responder.',
+            confirmButtonColor: '#e0aa3d',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
     const ids = Array.from(idsSelecionados);
     const motoristas = ids.map(id => motoristasSelecionados[id] || 'N/A');
     const countEl = document.getElementById('respostaCount');
@@ -3067,7 +3130,13 @@ const originalAbrirResposta = function() {
 };
 window.abrirModalResposta = function() {
     if (currentUserRole === 'viewer') {
-        alert('⛔ Você não tem permissão para responder pacotes. Contate o administrador.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Acesso Negado',
+            text: 'Você não tem permissão para responder pacotes. Contate o administrador.',
+            confirmButtonColor: '#e8593f',
+            confirmButtonText: 'OK'
+        });
         return;
     }
     originalAbrirResposta();
@@ -3567,6 +3636,9 @@ async function carregarTodosOsDados() {
     }
 }
 
+// ================================================================
+//  EVENTOS COM SWEETALERT NOS REFRESH
+// ================================================================
 document.getElementById('filterFloatBtn')?.addEventListener('click', function() { 
     const overlay = document.getElementById('filterModalOverlay');
     if (overlay) overlay.classList.add('active');
@@ -3585,16 +3657,43 @@ document.getElementById('filterSelectAll').onclick = selecionarTodasTransportado
 document.getElementById('filterClearAll').onclick = limparTodasTransportadoras;
 
 document.getElementById('refreshPacotes')?.addEventListener('click', function() {
-    if (isAuthenticated) carregarDadosPacotes();
-    else alert('Faça login primeiro.');
+    if (isAuthenticated) {
+        carregarDadosPacotes();
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Não autenticado',
+            text: 'Faça login primeiro para atualizar os dados.',
+            confirmButtonColor: '#e0aa3d',
+            confirmButtonText: 'OK'
+        });
+    }
 });
 document.getElementById('refreshInventario')?.addEventListener('click', function() {
-    if (isAuthenticated) carregarDadosInventario();
-    else alert('Faça login primeiro.');
+    if (isAuthenticated) {
+        carregarDadosInventario();
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Não autenticado',
+            text: 'Faça login primeiro para atualizar os dados.',
+            confirmButtonColor: '#e0aa3d',
+            confirmButtonText: 'OK'
+        });
+    }
 });
 document.getElementById('refreshCruzamento')?.addEventListener('click', function() {
-    if (isAuthenticated) carregarCruzamento();
-    else alert('Faça login primeiro.');
+    if (isAuthenticated) {
+        carregarCruzamento();
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Não autenticado',
+            text: 'Faça login primeiro para atualizar os dados.',
+            confirmButtonColor: '#e0aa3d',
+            confirmButtonText: 'OK'
+        });
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
