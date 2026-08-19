@@ -1,23 +1,26 @@
 // api/proxy.js
 export default async function handler(req, res) {
-  // Cabeçalhos CORS
+  // Configuração CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // Responde ao preflight (OPTIONS)
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   try {
-    // 🔽 SUBSTITUA PELA URL CORRETA DO SEU WEB APP
-    const TARGET_URL = https://script.google.com/macros/s/AKfycbygQQggppWGOcb-WthkJ22tR4Jf7EcCecCubapINdIWXXYjshPvLoVHhezkKnh_WQcx/exec';
+    // 🔽 SUBSTITUA PELA URL DO SEU WEB APP
+    const TARGET_URL = 'https://script.google.com/macros/s/SEU_ID_AQUI/exec';
 
-    // Constrói a URL com os parâmetros (para GET)
+    // Constrói a URL com os parâmetros da requisição
     const queryParams = new URLSearchParams(req.query).toString();
     const url = queryParams ? `${TARGET_URL}?${queryParams}` : TARGET_URL;
 
-    // Headers da requisição para o Apps Script
+    console.log(`[Proxy] Chamando: ${url}`);
+
+    // Prepara os headers
     const headers = {
       'Content-Type': req.headers['content-type'] || 'application/json',
     };
@@ -27,33 +30,40 @@ export default async function handler(req, res) {
       headers: headers,
     };
 
-    // Se for POST, adiciona o body
+    // Se for POST, envia o body
     if (req.method === 'POST') {
       fetchOptions.body = JSON.stringify(req.body);
     }
 
-    console.log(`[Proxy] Encaminhando ${req.method} para ${url}`);
-
+    // Faz a requisição para o Apps Script
     const response = await fetch(url, fetchOptions);
-    const contentType = response.headers.get('content-type') || '';
+    const text = await response.text();
 
-    // Verifica se a resposta é JSON
-    if (!contentType.includes('application/json')) {
-      const text = await response.text();
-      console.error('[Proxy] Resposta não é JSON. Status:', response.status);
-      console.error('[Proxy] Conteúdo:', text.substring(0, 500));
-      throw new Error(`Resposta do Apps Script não é JSON (status ${response.status}). Verifique a URL e as permissões.`);
+    console.log(`[Proxy] Status: ${response.status}`);
+    console.log(`[Proxy] Resposta (primeiros 200 chars): ${text.substring(0, 200)}`);
+
+    // Tenta parsear como JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      // Se não for JSON, retorna erro
+      console.error('[Proxy] Resposta não é JSON:', text.substring(0, 500));
+      return res.status(500).json({
+        success: false,
+        error: 'Apps Script retornou resposta inválida (não é JSON). Verifique a URL e as permissões.',
+        details: text.substring(0, 200)
+      });
     }
 
-    const data = await response.json();
+    // Retorna a resposta
+    return res.status(response.status).json(data);
 
-    // Retorna a resposta com o status original
-    res.status(response.status).json(data);
   } catch (error) {
     console.error('[Proxy] Erro:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      error: 'Erro interno do proxy: ' + error.message,
+      error: 'Erro interno do proxy: ' + error.message
     });
   }
 }
