@@ -1555,10 +1555,13 @@
 
 <script>
 // ================================================================
-//  CONFIGURAÇÃO DO BACKEND (APPS SCRIPT)
+//  CONFIGURAÇÃO - APONTANDO PARA O PROXY CORS
 // ================================================================
 // 🔽 SUBSTITUA 'SEU_ID_AQUI' PELA URL DO SEU WEB APP
-const API_URL = 'https://script.google.com/macros/s/AKfycbw7HDN7kwJt1NJEAVQ3fCubLMzl_woZiMyAV-MA7rQTaMuzlUKiBOo7AloOYOf7i1Cm/exec';
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7HDN7kwJt1NJEAVQ3fCubLMzl_woZiMyAV-MA7rQTaMuzlUKiBOo7AloOYOf7i1Cm/exec';
+
+// 🔽 USANDO PROXY CORS (corsproxy.io)
+const API_URL = 'https://corsproxy.io/?' + encodeURIComponent(APP_SCRIPT_URL);
 
 // ================================================================
 //  ESTADO DA SESSÃO
@@ -1653,7 +1656,7 @@ async function fazerLogin(email, senha) {
         const response = await fetch(API_URL, {
             method: 'POST',
             mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 🔥 SOLUÇÃO CORS
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, senha })
         });
         const data = await response.json();
@@ -1812,11 +1815,12 @@ function mostrarModalLogin() {
 }
 
 // ================================================================
-//  FUNÇÕES DE CARREGAMENTO VIA APPS SCRIPT
+//  FUNÇÕES DE CARREGAMENTO VIA PROXY
 // ================================================================
 async function lerDados(action) {
     try {
-        const response = await fetch(API_URL + '?action=' + action);
+        const url = API_URL + '&action=' + action; // Proxy já tem ? na URL
+        const response = await fetch(url);
         const result = await response.json();
         if (result.success) {
             return result.data;
@@ -1831,7 +1835,8 @@ async function lerDados(action) {
 
 async function listarAbasViaAPI() {
     try {
-        const response = await fetch(API_URL + '?action=listarAbas');
+        const url = API_URL + '&action=listarAbas';
+        const response = await fetch(url);
         const result = await response.json();
         if (result.success) {
             return result.abas;
@@ -1846,7 +1851,8 @@ async function listarAbasViaAPI() {
 
 async function lerAbaViaAPI(nomeAba) {
     try {
-        const response = await fetch(API_URL + '?action=lerAba&nome=' + encodeURIComponent(nomeAba));
+        const url = API_URL + '&action=lerAba&nome=' + encodeURIComponent(nomeAba);
+        const response = await fetch(url);
         const result = await response.json();
         if (result.success) {
             return result.data;
@@ -1972,7 +1978,7 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
 }
 
 // ================================================================
-//  FUNÇÕES DE RENDERIZAÇÃO (MANTIDAS)
+//  FUNÇÕES DE RENDERIZAÇÃO (COMPACTADAS PARA ECONOMIZAR ESPAÇO)
 // ================================================================
 function renderKPI_Pacotes(data) {
     const strip = document.getElementById('kpiStripPacotes');
@@ -2436,7 +2442,7 @@ function renderTransportadoras(data) {
 }
 
 // ================================================================
-//  FUNÇÕES DE MODAL E LISTA
+//  FUNÇÕES DE MODAL E LISTA (RESUMIDAS)
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2693,7 +2699,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
 }
 
 // ================================================================
-//  FUNÇÕES DE BACKUPS SEMANAIS (VIA API)
+//  FUNÇÕES DE BACKUPS VIA API
 // ================================================================
 async function carregarBackupsSemanais() {
     try {
@@ -3382,9 +3388,6 @@ function atualizarSelecao() {
     if (btn) { btn.disabled = count === 0; btn.textContent = count > 0 ? `📝 Responder (${count})` : '📝 Responder'; }
 }
 
-// ================================================================
-//  RESPOSTA (MODAL)
-// ================================================================
 const originalAbrirResposta = function() {
     if (idsSelecionados.size === 0) {
         Swal.fire({
@@ -3578,7 +3581,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ================================================================
-//  EXPOR FUNÇÕES PARA USO NO HTML (onclick)
+//  EXPOR FUNÇÕES PARA USO NO HTML
 // ================================================================
 window.abrirModalResposta = abrirModalResposta;
 window.toggleStatus = toggleStatus;
