@@ -1555,13 +1555,9 @@
 
 <script>
 // ================================================================
-//  CONFIGURAÇÃO - APONTANDO PARA O PROXY CORS
+//  CONFIGURAÇÃO - PROXY PRÓPRIO NA VERCEL
 // ================================================================
-// 🔽 SUBSTITUA 'SEU_ID_AQUI' PELA URL DO SEU WEB APP
-const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7HDN7kwJt1NJEAVQ3fCubLMzl_woZiMyAV-MA7rQTaMuzlUKiBOo7AloOYOf7i1Cm/exec';
-
-// 🔽 USANDO PROXY CORS (corsproxy.io)
-const API_URL = 'https://corsproxy.io/?' + encodeURIComponent(APP_SCRIPT_URL);
+const API_URL = '/api/proxy';  // 🔥 AGORA USA O PROXY LOCAL
 
 // ================================================================
 //  ESTADO DA SESSÃO
@@ -1819,7 +1815,7 @@ function mostrarModalLogin() {
 // ================================================================
 async function lerDados(action) {
     try {
-        const url = API_URL + '&action=' + action; // Proxy já tem ? na URL
+        const url = API_URL + '?action=' + encodeURIComponent(action);
         const response = await fetch(url);
         const result = await response.json();
         if (result.success) {
@@ -1835,7 +1831,7 @@ async function lerDados(action) {
 
 async function listarAbasViaAPI() {
     try {
-        const url = API_URL + '&action=listarAbas';
+        const url = API_URL + '?action=listarAbas';
         const response = await fetch(url);
         const result = await response.json();
         if (result.success) {
@@ -1851,7 +1847,7 @@ async function listarAbasViaAPI() {
 
 async function lerAbaViaAPI(nomeAba) {
     try {
-        const url = API_URL + '&action=lerAba&nome=' + encodeURIComponent(nomeAba);
+        const url = API_URL + '?action=lerAba&nome=' + encodeURIComponent(nomeAba);
         const response = await fetch(url);
         const result = await response.json();
         if (result.success) {
@@ -1978,7 +1974,7 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
 }
 
 // ================================================================
-//  FUNÇÕES DE RENDERIZAÇÃO (COMPACTADAS PARA ECONOMIZAR ESPAÇO)
+//  FUNÇÕES DE RENDERIZAÇÃO (COMPACTADAS)
 // ================================================================
 function renderKPI_Pacotes(data) {
     const strip = document.getElementById('kpiStripPacotes');
