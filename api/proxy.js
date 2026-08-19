@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     // 🔽 SUBSTITUA PELA URL CORRETA DO SEU WEB APP
-    const TARGET_URL = 'https://script.google.com/macros/s/AKfycbzK7Kxi7iSfEQiw5ZESpWQmucz5FYN-Obe1ZMlLyOzosz7IQFDLmoqIi-tpE_UT1NxQ/exec';
+    const TARGET_URL = 'https://script.google.com/macros/s/AKfycbzuQmuvCzsukWc-QkvZgRArg_zCPYXgZllJO08cvN6txsFUlrq21P_jB4rZ_fnOULpU/exec';
 
     // Constrói a URL com os parâmetros (para GET)
     const queryParams = new URLSearchParams(req.query).toString();
