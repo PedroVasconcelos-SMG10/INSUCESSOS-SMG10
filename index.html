@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  /* ===== ESTILOS COMPLETOS (MANTIDOS) ===== */
+  /* ===== ESTILOS COMPLETOS ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1555,9 +1555,11 @@
 
 <script>
 // ================================================================
-//  CONFIGURAÇÃO - PROXY PRÓPRIO NA VERCEL
+//  CONFIGURAÇÃO - USANDO A NOVA API NODE.JS
 // ================================================================
-const API_URL = '/api/proxy';  // 🔥 AGORA USA O PROXY LOCAL
+// As rotas são:
+// - /api/login (POST) para login
+// - /api/dados?action=... (GET) para buscar dados
 
 // ================================================================
 //  ESTADO DA SESSÃO
@@ -1649,9 +1651,8 @@ function parseDataBR(texto) {
 // ================================================================
 async function fazerLogin(email, senha) {
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch('/api/login', {
             method: 'POST',
-            mode: 'cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, senha })
         });
@@ -1811,12 +1812,11 @@ function mostrarModalLogin() {
 }
 
 // ================================================================
-//  FUNÇÕES DE CARREGAMENTO VIA PROXY
+//  FUNÇÕES DE CARREGAMENTO VIA API NODE.JS
 // ================================================================
 async function lerDados(action) {
     try {
-        const url = API_URL + '?action=' + encodeURIComponent(action);
-        const response = await fetch(url);
+        const response = await fetch(`/api/dados?action=${encodeURIComponent(action)}`);
         const result = await response.json();
         if (result.success) {
             return result.data;
@@ -1831,8 +1831,7 @@ async function lerDados(action) {
 
 async function listarAbasViaAPI() {
     try {
-        const url = API_URL + '?action=listarAbas';
-        const response = await fetch(url);
+        const response = await fetch('/api/dados?action=listarAbas');
         const result = await response.json();
         if (result.success) {
             return result.abas;
@@ -1847,8 +1846,7 @@ async function listarAbasViaAPI() {
 
 async function lerAbaViaAPI(nomeAba) {
     try {
-        const url = API_URL + '?action=lerAba&nome=' + encodeURIComponent(nomeAba);
-        const response = await fetch(url);
+        const response = await fetch(`/api/dados?action=lerAba&nome=${encodeURIComponent(nomeAba)}`);
         const result = await response.json();
         if (result.success) {
             return result.data;
