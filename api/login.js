@@ -22,17 +22,53 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ============================================================
+    // VERIFICAÇÃO DAS VARIÁVEIS DE AMBIENTE
+    // ============================================================
+    if (!process.env.GOOGLE_CREDENTIALS) {
+      console.error('GOOGLE_CREDENTIALS não definida');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Configuração do servidor incompleta. Contate o administrador.' 
+      });
+    }
+
+    if (!process.env.SPREADSHEET_ID) {
+      console.error('SPREADSHEET_ID não definida');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Configuração do servidor incompleta. Contate o administrador.' 
+      });
+    }
+
+    // ============================================================
+    // AUTENTICAÇÃO COM A SERVICE ACCOUNT
+    // ============================================================
+    let credentials;
+    try {
+      credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    } catch (parseError) {
+      console.error('Erro ao parsear GOOGLE_CREDENTIALS:', parseError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Configuração do servidor inválida. Contate o administrador.' 
+      });
+    }
+
     const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+      credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
+    // ============================================================
+    // LER A ABA USUARIOS
+    // ============================================================
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'USUARIOS!A:D',
+      range: 'USUARIOS!A:D', // EMAIL, ROLE, TRANSPORTADORA, SENHA
     });
 
     const rows = response.data.values || [];
@@ -42,12 +78,15 @@ export default async function handler(req, res) {
 
     const headers = rows[0];
     const colEmail = headers.indexOf('EMAIL');
+    const colSenha = headers.indexOf('SENHA');
     const colRole = headers.indexOf('ROLE');
     const colTransp = headers.indexOf('TRANSPORTADORA');
-    const colSenha = headers.indexOf('SENHA');
 
     if (colEmail === -1 || colSenha === -1 || colRole === -1) {
-      return res.status(500).json({ success: false, error: 'Colunas necessárias não encontradas: EMAIL, ROLE, SENHA.' });
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Colunas necessárias não encontradas: EMAIL, ROLE, SENHA.' 
+      });
     }
 
     let usuario = null;
@@ -56,9 +95,9 @@ export default async function handler(req, res) {
       if (row[colEmail]?.trim().toLowerCase() === email.toLowerCase()) {
         usuario = {
           email: row[colEmail].trim(),
+          senha: row[colSenha]?.trim() || '',
           role: row[colRole]?.trim().toLowerCase() || 'viewer',
           transportadora: row[colTransp]?.trim() || null,
-          senha: row[colSenha]?.trim() || '',
         };
         break;
       }
@@ -76,6 +115,9 @@ export default async function handler(req, res) {
     res.status(200).json({ success: true, ...usuario });
   } catch (error) {
     console.error('Erro no login:', error);
-    res.status(500).json({ success: false, error: 'Erro interno do servidor.' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erro interno do servidor: ' + error.message 
+    });
   }
 }
