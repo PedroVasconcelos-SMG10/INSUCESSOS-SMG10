@@ -1501,7 +1501,7 @@
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
 
-  <!-- MODAIS (MANTIDOS) -->
+  <!-- MODAIS -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header"><h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button></div>
@@ -1558,7 +1558,7 @@
 //  CONFIGURAÇÃO DO BACKEND (APPS SCRIPT)
 // ================================================================
 // 🔽 SUBSTITUA 'SEU_ID_AQUI' PELA URL DO SEU WEB APP
-const API_URL = 'https://script.google.com/macros/s/AKfycbza1mgR__dyyONCyCNdKyIoJq0Ox4tnAh_2JXds9J9MkbdsaPmCFIRnXjtXDRmJMT-a/exec';
+const API_URL = 'https://script.google.com/macros/s/SEU_ID_AQUI/exec';
 
 // ================================================================
 //  ESTADO DA SESSÃO
@@ -1569,7 +1569,7 @@ let usuarioTransportadora = null;
 let isAuthenticated = false;
 
 // ================================================================
-//  DADOS GLOBAIS (MANTIDOS)
+//  DADOS GLOBAIS
 // ================================================================
 let rawDataPacotes = null;
 let processedDataPacotes = null;
@@ -1653,7 +1653,7 @@ async function fazerLogin(email, senha) {
         const response = await fetch(API_URL, {
             method: 'POST',
             mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 🔥 SOLUÇÃO CORS
             body: JSON.stringify({ email, senha })
         });
         const data = await response.json();
@@ -1972,7 +1972,7 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
 }
 
 // ================================================================
-//  FUNÇÕES DE RENDERIZAÇÃO (MANTIDAS, COM PEQUENOS AJUSTES)
+//  FUNÇÕES DE RENDERIZAÇÃO (MANTIDAS)
 // ================================================================
 function renderKPI_Pacotes(data) {
     const strip = document.getElementById('kpiStripPacotes');
@@ -2436,7 +2436,7 @@ function renderTransportadoras(data) {
 }
 
 // ================================================================
-//  FUNÇÕES DE MODAL E LISTA (MANTIDAS)
+//  FUNÇÕES DE MODAL E LISTA
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2958,7 +2958,7 @@ function carregarDadosExemplo() {
 }
 
 // ================================================================
-//  FUNÇÕES DE PERFIL E PERMISSÕES (MANTIDAS)
+//  FUNÇÕES DE PERFIL E PERMISSÕES
 // ================================================================
 function aplicarRestricoesPorPerfil() {
     const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
@@ -3060,7 +3060,7 @@ function processarPacotesComFiltro() {
 }
 
 // ================================================================
-//  FUNÇÕES DE CRUZAMENTO E FILTRO (MANTIDAS)
+//  FUNÇÕES DE CRUZAMENTO E FILTRO
 // ================================================================
 function renderFiltroTransportadoras(data) {
     const container = document.getElementById('transpFilterContainer');
@@ -3235,7 +3235,7 @@ function renderCruzamento(data) {
 }
 
 // ================================================================
-//  FUNÇÕES DE MODAL E RESPOSTA (MANTIDAS)
+//  FUNÇÕES DE MODAL E RESPOSTA
 // ================================================================
 function abrirModalPacotes(nome) {
     if (currentUserRole === 'viewer') {
@@ -3450,7 +3450,6 @@ async function toggleStatus(id, transportadora, motorista) {
     try {
         const isJustificado = respostasSet.has(id);
         if (isJustificado) {
-            // Remover da lista de respostas (na planilha, via Apps Script? Por enquanto apenas no frontend)
             respostasSet.delete(id);
             await Swal.fire({
                 icon: 'success',
@@ -3469,7 +3468,6 @@ async function toggleStatus(id, transportadora, motorista) {
                 confirmButtonText: 'OK'
             });
         }
-        // Atualizar visualização
         if (usuarioTransportadora && rawDataPacotes) {
             processarPacotesComFiltro();
         } else {
@@ -3491,8 +3489,6 @@ async function toggleStatus(id, transportadora, motorista) {
 //  EVENT LISTENERS
 // ================================================================
 document.getElementById('respostaEnviar')?.addEventListener('click', async function() {
-    // ... (mantido igual ao original, apenas para referência)
-    // Como o escopo é grande, manteremos o código existente, mas simplificamos:
     Swal.fire({
         icon: 'info',
         title: 'Funcionalidade em desenvolvimento',
@@ -3568,13 +3564,11 @@ document.addEventListener('DOMContentLoaded', function() {
     renderZonas(null);
     renderPreviewInventario(null, null);
 
-    // Verificar sessão existente
     const temSessao = verificarSessao();
     if (!temSessao) {
         carregarDadosExemplo();
     }
 
-    // Atualizar a cada 5 minutos se autenticado
     setInterval(() => {
         if (isAuthenticated) {
             carregarDadosInventario();
