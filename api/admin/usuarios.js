@@ -1,7 +1,5 @@
 // api/admin/usuarios.js
-// Usa o Apps Script como proxy para escrita
-
-const APP_SCRIPT_URL = 'https://script.google.com/macros/s/SEU_ID_AQUI/exec'; // Substitua pela URL do seu Web App
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFbSONJqqpg23dnNak2MfLNSHM2rc2AD_KyMlYgif_2qvB94bIKEky1EgkEi-jfBHn/exec';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // ========== POST = Adicionar usuário (via Apps Script) ==========
+  // ========== POST = Adicionar usuário ==========
   if (req.method === 'POST') {
     try {
       const response = await fetch(APP_SCRIPT_URL, {
@@ -64,7 +62,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // ========== PUT = Atualizar usuário (via Apps Script) ==========
+  // ========== PUT = Atualizar usuário ==========
   if (req.method === 'PUT') {
     try {
       const response = await fetch(APP_SCRIPT_URL, {
@@ -82,7 +80,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // ========== DELETE = Excluir usuário (via Apps Script) ==========
+  // ========== DELETE = Excluir usuário ==========
   if (req.method === 'DELETE') {
     try {
       const response = await fetch(APP_SCRIPT_URL, {
