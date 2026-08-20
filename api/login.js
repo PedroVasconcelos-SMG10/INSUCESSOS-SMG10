@@ -20,9 +20,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ============================================================
-    // VARIÁVEIS DE AMBIENTE
-    // ============================================================
     const apiKey = process.env.GOOGLE_API_KEY;
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
@@ -42,9 +39,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // ============================================================
-    // BUSCAR DADOS DA PLANILHA (PÚBLICA)
-    // ============================================================
+    // Buscar dados da planilha (pública)
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/USUARIOS!A:D?key=${apiKey}`;
 
     console.log(`[Login] Buscando dados da planilha...`);
@@ -74,9 +69,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // ============================================================
-    // VERIFICAR CREDENCIAIS
-    // ============================================================
     let usuario = null;
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -99,7 +91,6 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, error: 'Senha incorreta.' });
     }
 
-    // Remove a senha antes de retornar
     delete usuario.senha;
 
     console.log(`[Login] Usuário ${usuario.email} autenticado com sucesso`);
