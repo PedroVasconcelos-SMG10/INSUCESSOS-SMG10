@@ -1610,6 +1610,49 @@
 // - /api/admin/usuarios (GET, POST, PUT, DELETE)
 
 // ================================================================
+//  CACHE DE DADOS (FRONTEND)
+// ================================================================
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+function getCacheKey(action, params = '') {
+    return `wms_cache_${action}_${params}`;
+}
+
+function getFromCache(action, params = '') {
+    const key = getCacheKey(action, params);
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    try {
+        const data = JSON.parse(cached);
+        if (Date.now() - data.timestamp > CACHE_DURATION) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return data.value;
+    } catch (e) {
+        return null;
+    }
+}
+
+function setCache(action, value, params = '') {
+    const key = getCacheKey(action, params);
+    localStorage.setItem(key, JSON.stringify({
+        timestamp: Date.now(),
+        value: value
+    }));
+}
+
+function clearCache() {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+        if (key.startsWith('wms_cache_')) {
+            localStorage.removeItem(key);
+        }
+    });
+    console.log('[Cache] Cache limpo');
+}
+
+// ================================================================
 //  ESTADO DA SESSÃO
 // ================================================================
 let currentUserEmail = '';
@@ -1781,6 +1824,7 @@ function logout() {
     renderGraficos_Inventario(null);
     renderZonas(null);
     renderPreviewInventario(null, null);
+    clearCache(); // Limpa cache ao deslogar
     carregarDadosExemplo();
 }
 
@@ -1840,7 +1884,6 @@ function atualizarUIposLogin() {
             filterInfo.style.display = 'none';
         }
     }
-    // 🔥 CARREGAR DESCRIÇÕES E RESPOSTAS
     carregarDescricoesERespostas();
     aplicarRestricoesPorPerfil();
 }
@@ -1877,13 +1920,21 @@ function mostrarModalLogin() {
 }
 
 // ================================================================
-//  FUNÇÕES DE CARREGAMENTO VIA API
+//  FUNÇÕES DE CARREGAMENTO VIA API (COM CACHE)
 // ================================================================
 async function lerDados(action) {
+    // Verificar cache
+    const cached = getFromCache(action);
+    if (cached) {
+        console.log(`[Cache] Usando cache para ${action}`);
+        return cached;
+    }
+
     try {
         const response = await fetch(`/api/dados?action=${encodeURIComponent(action)}`);
         const result = await response.json();
         if (result.success) {
+            setCache(action, result.data);
             return result.data;
         } else {
             throw new Error(result.error || 'Erro ao carregar dados');
@@ -1895,10 +1946,17 @@ async function lerDados(action) {
 }
 
 async function listarAbasViaAPI() {
+    const cached = getFromCache('listarAbas');
+    if (cached) {
+        console.log('[Cache] Usando cache para listar abas');
+        return cached;
+    }
+
     try {
         const response = await fetch('/api/dados?action=listarAbas');
         const result = await response.json();
         if (result.success) {
+            setCache('listarAbas', result.abas);
             return result.abas;
         } else {
             throw new Error(result.error || 'Erro ao listar abas');
@@ -1910,10 +1968,18 @@ async function listarAbasViaAPI() {
 }
 
 async function lerAbaViaAPI(nomeAba) {
+    const cacheKey = `aba_${nomeAba}`;
+    const cached = getFromCache(cacheKey);
+    if (cached) {
+        console.log(`[Cache] Usando cache para aba ${nomeAba}`);
+        return cached;
+    }
+
     try {
         const response = await fetch(`/api/dados?action=lerAba&nome=${encodeURIComponent(nomeAba)}`);
         const result = await response.json();
         if (result.success) {
+            setCache(cacheKey, result.data);
             return result.data;
         } else {
             throw new Error(result.error || 'Erro ao ler aba');
@@ -1925,13 +1991,12 @@ async function lerAbaViaAPI(nomeAba) {
 }
 
 // ================================================================
-//  CARREGAR DESCRIÇÕES E RESPOSTAS (USANDO API KEY)
+//  CARREGAR DESCRIÇÕES E RESPOSTAS
 // ================================================================
 async function carregarDescricoesERespostas() {
     if (!isAuthenticated) return;
     console.log('[Descrições] Carregando descrições e respostas...');
     try {
-        // Carregar descrições da aba "Descrição"
         const descData = await lerAbaViaAPI('Descrição');
         if (descData && descData.length > 0) {
             const headers = Object.keys(descData[0]);
@@ -1950,7 +2015,6 @@ async function carregarDescricoesERespostas() {
             console.log('[Descrições] Nenhuma descrição encontrada');
         }
 
-        // Carregar respostas da aba "RESPOSTAS"
         const respData = await lerAbaViaAPI('RESPOSTAS');
         respostasSet = new Set();
         if (respData && respData.length > 0) {
@@ -2820,7 +2884,6 @@ async function carregarBackupsSemanais() {
         const abas = await listarAbasViaAPI();
         const backupSheets = abas.filter(name => name.startsWith('BACKUP_'));
 
-        // Determinar a semana atual (DOMINGO a SÁBADO)
         const hoje = new Date();
         const diaSemana = hoje.getDay();
         const domingo = new Date(hoje);
@@ -2840,9 +2903,6 @@ async function carregarBackupsSemanais() {
             });
         }
 
-        // ============================================================
-        // 1. LER BACKUPS
-        // ============================================================
         for (const nomeAba of backupSheets) {
             try {
                 const data = await lerAbaViaAPI(nomeAba);
@@ -2913,9 +2973,6 @@ async function carregarBackupsSemanais() {
             }
         }
 
-        // ============================================================
-        // 2. FALLBACK: INVENTÁRIO para o dia de ONTEM (D-1)
-        // ============================================================
         const ontem = new Date(hoje);
         ontem.setDate(hoje.getDate() - 1);
         ontem.setHours(0, 0, 0, 0);
@@ -2927,23 +2984,18 @@ async function carregarBackupsSemanais() {
                 const inventarioData = await lerDados('inventario');
                 if (inventarioData && inventarioData.length > 0) {
                     const headers = Object.keys(inventarioData[0]);
-                    // Forçar coluna B (índice 1)
                     let dataColIdx = 1;
-                    // Se houver cabeçalho 'DATA', usar ele
                     const dataHeaderIndex = headers.indexOf('DATA');
                     if (dataHeaderIndex !== -1) dataColIdx = dataHeaderIndex;
                     else if (headers.indexOf('data') !== -1) dataColIdx = headers.indexOf('data');
                     else if (headers.indexOf('Data') !== -1) dataColIdx = headers.indexOf('Data');
 
-                    // Pega a data do primeiro registro
                     const firstRow = inventarioData[0];
                     const values = Object.values(firstRow);
                     const dataStr = values[dataColIdx]?.trim() || '';
                     console.log(`[Backups] Data bruta da planilha INVENTÁRIO: "${dataStr}"`);
 
-                    // Tenta parsear com a função principal
                     let dateObj = parseDataBR(dataStr);
-                    // Se falhar, tenta DD/MM/YYYY
                     if (!dateObj) {
                         const parts = dataStr.split('/');
                         if (parts.length === 3) {
@@ -2955,7 +3007,6 @@ async function carregarBackupsSemanais() {
                             }
                         }
                     }
-                    // Se falhar, tenta YYYY-MM-DD
                     if (!dateObj) {
                         const parts = dataStr.split('-');
                         if (parts.length === 3) {
@@ -3000,8 +3051,6 @@ async function carregarBackupsSemanais() {
                                 stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
                                 resultados[ontemIndex] = stats;
                                 console.log(`[Backups] ✅ Fallback INVENTÁRIO para ontem (${dataStrOntem}): inv=${stats.inventariado}, falt=${stats.faltante}, acurácia=${stats.acuracia.toFixed(1)}%`);
-                            } else {
-                                console.warn('[Backups] Coluna CLASIFICACION não encontrada na planilha INVENTÁRIO');
                             }
                         } else {
                             console.log(`[Backups] ⚠️ Data da planilha INVENTÁRIO (${dataStrInventario}) não corresponde a ontem (${dataStrOntem})`);
@@ -3026,6 +3075,7 @@ async function carregarBackupsSemanais() {
         return null;
     }
 }
+
 // ================================================================
 //  CARREGAMENTO PRINCIPAL
 // ================================================================
@@ -3847,7 +3897,6 @@ document.getElementById('respostaEnviar')?.addEventListener('click', async funct
     this.disabled = true;
     try {
         const rows = dadosResposta.map(d => [d.ID, d.Transportadora, d.Motorista, d.Nome_Responsavel, d.Justificativa, d.Data_Hora]);
-        // Garantir que a role esteja definida
         let role = currentUserRole;
         if (!role) {
             try {
@@ -3972,19 +4021,39 @@ async function toggleStatus(id, transportadora, motorista) {
 }
 
 // ================================================================
-//  EVENT LISTENERS
+//  EVENT LISTENERS (COM LIMPEZA DE CACHE)
 // ================================================================
 document.getElementById('refreshPacotes')?.addEventListener('click', function() {
-    if (isAuthenticated) carregarDadosPacotes();
-    else Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.', confirmButtonColor: '#e0aa3d' });
+    if (isAuthenticated) {
+        clearCache();
+        carregarDadosPacotes();
+    } else {
+        Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.', confirmButtonColor: '#e0aa3d' });
+    }
 });
 document.getElementById('refreshInventario')?.addEventListener('click', function() {
-    if (isAuthenticated) carregarDadosInventario();
-    else Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.', confirmButtonColor: '#e0aa3d' });
+    if (isAuthenticated) {
+        clearCache();
+        carregarDadosInventario();
+    } else {
+        Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.', confirmButtonColor: '#e0aa3d' });
+    }
 });
 document.getElementById('refreshCruzamento')?.addEventListener('click', function() {
-    if (isAuthenticated) carregarCruzamento();
-    else Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.', confirmButtonColor: '#e0aa3d' });
+    if (isAuthenticated) {
+        clearCache();
+        carregarCruzamento();
+    } else {
+        Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.', confirmButtonColor: '#e0aa3d' });
+    }
+});
+document.getElementById('refreshAdmin')?.addEventListener('click', function() {
+    if (isAuthenticated && currentUserRole === 'admin') {
+        clearCache();
+        carregarUsuarios();
+    } else {
+        Swal.fire({ icon: 'warning', title: 'Acesso negado', text: 'Apenas administradores.' });
+    }
 });
 
 // ================================================================
