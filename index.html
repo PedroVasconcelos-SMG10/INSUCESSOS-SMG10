@@ -140,6 +140,9 @@
   .tab-btn.tab-cruzamento.active{
     box-shadow:inset 0 -3px 0 var(--cruzamento);
   }
+  .tab-btn.tab-admin.active{
+    box-shadow:inset 0 -3px 0 var(--purple);
+  }
   .tab-content{
     display:none;
     animation:fadeIn .4s ease;
@@ -224,6 +227,14 @@
     background:var(--danger);
     color:#fff;
   }
+  .btn-admin-salvar{
+    background:var(--plan); color:#fff; border:none; padding:4px 12px; border-radius:3px; cursor:pointer; font-size:11px;
+  }
+  .btn-admin-salvar:hover{opacity:.8;}
+  .btn-admin-excluir{
+    background:var(--danger); color:#fff; border:none; padding:4px 12px; border-radius:3px; cursor:pointer; font-size:11px; margin-left:4px;
+  }
+  .btn-admin-excluir:hover{opacity:.8;}
   .kpi-strip{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -1409,6 +1420,7 @@
     <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes</button>
     <button class="tab-btn" data-tab="tabInventario">📊 Inventário</button>
     <button class="tab-btn tab-cruzamento" data-tab="tabCruzamento">🔗 Cruzamento</button>
+    <button class="tab-btn tab-admin" data-tab="tabAdmin" style="display:none;">👑 Admin</button>
   </div>
 
   <!-- TAB 1: PACOTES -->
@@ -1501,7 +1513,42 @@
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
 
-  <!-- MODAIS -->
+  <!-- ========================================================== -->
+  <!-- TAB 4: ADMIN -->
+  <!-- ========================================================== -->
+  <div class="tab-content" id="tabAdmin">
+    <div class="status-bar">
+      <div class="info">
+        <span class="dot-status online" id="statusDotAdmin"></span>
+        <span id="statusTextAdmin">👑 Gerenciamento de Usuários</span>
+      </div>
+      <button class="btn btn-primary" id="refreshAdmin">🔄 Atualizar</button>
+    </div>
+    <div style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <h3 style="font-family:'Oswald',sans-serif; font-size:18px; text-transform:uppercase; letter-spacing:.03em; color:var(--text);">📋 Lista de Usuários</h3>
+        <button class="btn btn-primary" id="btnAdicionarUsuario" style="background:var(--success);">➕ Adicionar Usuário</button>
+      </div>
+      <div style="overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:4px;">
+        <table style="width:100%; font-size:12px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;">
+          <thead>
+            <tr style="background:var(--panel-alt); color:var(--text-dim);">
+              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid var(--line);">E-mail</th>
+              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid var(--line);">Role</th>
+              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid var(--line);">Transportadora</th>
+              <th style="padding:10px 14px; text-align:left; border-bottom:2px solid var(--line);">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsuariosTbody">
+            <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-faint);">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (USUARIOS)</span><span id="footerTotalAdmin">0 usuários</span></footer>
+  </div>
+
+  <!-- MODAIS (MANTIDOS) -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header"><h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button></div>
@@ -1560,6 +1607,7 @@
 // As rotas são:
 // - /api/login (POST) para login
 // - /api/dados?action=... (GET) para buscar dados
+// - /api/admin/usuarios (GET, POST, PUT, DELETE) para admin
 
 // ================================================================
 //  ESTADO DA SESSÃO
@@ -1972,7 +2020,7 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
 }
 
 // ================================================================
-//  FUNÇÕES DE RENDERIZAÇÃO (COMPACTADAS)
+//  FUNÇÕES DE RENDERIZAÇÃO
 // ================================================================
 function renderKPI_Pacotes(data) {
     const strip = document.getElementById('kpiStripPacotes');
@@ -2107,11 +2155,7 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     y: {
                         beginAtZero: true,
                         position: 'left',
-                      // Substitua:
-ticks: { color: '#8b8f99', font: { size: 10 }, stepSize: 1 },
-
-// Por:
-ticks: { color: '#8b8f99', font: { size: 10 } },  // Remove stepSize
+                        ticks: { color: '#8b8f99', font: { size: 10 } },
                         grid: { color: '#2b2f37' }
                     },
                     y1: {
@@ -2440,7 +2484,7 @@ function renderTransportadoras(data) {
 }
 
 // ================================================================
-//  FUNÇÕES DE MODAL E LISTA (RESUMIDAS)
+//  FUNÇÕES DE MODAL E LISTA
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2976,6 +3020,22 @@ function aplicarRestricoesPorPerfil() {
             if (tabPacotes) tabPacotes.click();
         }
     }
+
+    // Mostrar/ocultar aba Admin
+    const tabAdmin = document.querySelector('.tab-btn[data-tab="tabAdmin"]');
+    if (tabAdmin) {
+        if (currentUserRole === 'admin') {
+            tabAdmin.style.display = 'block';
+        } else {
+            tabAdmin.style.display = 'none';
+            const tabContentAdmin = document.getElementById('tabAdmin');
+            if (tabContentAdmin && tabContentAdmin.classList.contains('active')) {
+                const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
+                if (tabPacotes) tabPacotes.click();
+            }
+        }
+    }
+
     const originalAbrirResposta = window.abrirModalResposta || function() {};
     window.abrirModalResposta = function() {
         if (currentUserRole === 'viewer') {
@@ -3023,6 +3083,11 @@ function aplicarRestricoesPorPerfil() {
         debugBoxes.forEach(el => { if (el) el.style.display = 'block'; });
     }
     if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
+
+    // Se for admin, carregar dados da admin assim que logar
+    if (currentUserRole === 'admin') {
+        carregarUsuarios();
+    }
 }
 
 function processarPacotesComFiltro() {
@@ -3062,6 +3127,196 @@ function processarPacotesComFiltro() {
         renderCruzamento(dadosCruzamento);
     }
 }
+
+// ================================================================
+//  ADMIN - GERENCIAMENTO DE USUÁRIOS
+// ================================================================
+
+let usuariosList = [];
+
+async function carregarUsuarios() {
+    const tbody = document.getElementById('adminUsuariosTbody');
+    if (!tbody) return;
+    
+    try {
+        const response = await fetch('/api/admin/usuarios', {
+            headers: {
+                'x-user-role': currentUserRole
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            usuariosList = data.data;
+            renderizarUsuarios(usuariosList);
+            const footerTotal = document.getElementById('footerTotalAdmin');
+            if (footerTotal) footerTotal.textContent = `${usuariosList.length} usuários`;
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--danger);">${data.error || 'Erro ao carregar'}</td></tr>`;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--danger);">Erro ao carregar usuários</td></tr>`;
+    }
+}
+
+function renderizarUsuarios(usuarios) {
+    const tbody = document.getElementById('adminUsuariosTbody');
+    if (!tbody) return;
+    
+    if (!usuarios || usuarios.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-faint);">Nenhum usuário cadastrado</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = usuarios.map(u => `
+        <tr>
+            <td style="padding:8px 14px; border-bottom:1px solid var(--line-soft);">${u.email}</td>
+            <td style="padding:8px 14px; border-bottom:1px solid var(--line-soft);">
+                <select class="admin-role-select" data-email="${u.email}" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); border-radius:3px; padding:4px 8px; font-family:'IBM Plex Mono',monospace; font-size:11px;">
+                    <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    <option value="editor" ${u.role === 'editor' ? 'selected' : ''}>Editor</option>
+                    <option value="viewer" ${u.role === 'viewer' ? 'selected' : ''}>Viewer</option>
+                </select>
+            </td>
+            <td style="padding:8px 14px; border-bottom:1px solid var(--line-soft);">
+                <input type="text" class="admin-transp-input" data-email="${u.email}" value="${u.transportadora || ''}" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); border-radius:3px; padding:4px 8px; font-size:11px; width:150px;">
+            </td>
+            <td style="padding:8px 14px; border-bottom:1px solid var(--line-soft);">
+                <button class="btn-admin-salvar" data-email="${u.email}" style="background:var(--plan); color:#fff; border:none; padding:4px 12px; border-radius:3px; cursor:pointer; font-size:11px;">Salvar</button>
+                <button class="btn-admin-excluir" data-email="${u.email}" style="background:var(--danger); color:#fff; border:none; padding:4px 12px; border-radius:3px; cursor:pointer; font-size:11px; margin-left:4px;">Excluir</button>
+            </td>
+        </tr>
+    `).join('');
+
+    document.querySelectorAll('.btn-admin-salvar').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const email = this.dataset.email;
+            const select = document.querySelector(`.admin-role-select[data-email="${email}"]`);
+            const input = document.querySelector(`.admin-transp-input[data-email="${email}"]`);
+            const role = select ? select.value : 'viewer';
+            const transportadora = input ? input.value : '';
+            await atualizarUsuario(email, { email, role, transportadora });
+        });
+    });
+
+    document.querySelectorAll('.btn-admin-excluir').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const email = this.dataset.email;
+            await excluirUsuario(email);
+        });
+    });
+}
+
+async function atualizarUsuario(email, dados) {
+    try {
+        const response = await fetch('/api/admin/usuarios', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-user-role': currentUserRole
+            },
+            body: JSON.stringify({
+                emailOriginal: email,
+                email: dados.email,
+                role: dados.role,
+                transportadora: dados.transportadora,
+            })
+        });
+        const data = await response.json();
+        if (data.success) {
+            Swal.fire({ icon: 'success', title: 'Atualizado!', text: 'Usuário atualizado com sucesso.', timer: 1500, showConfirmButton: false });
+            carregarUsuarios();
+        } else {
+            Swal.fire({ icon: 'error', title: 'Erro', text: data.error || 'Erro ao atualizar' });
+        }
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Erro', text: 'Erro ao conectar ao servidor' });
+    }
+}
+
+async function excluirUsuario(email) {
+    const result = await Swal.fire({
+        title: 'Confirmar exclusão',
+        text: `Tem certeza que deseja excluir o usuário ${email}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e8593f',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sim, excluir',
+        cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(`/api/admin/usuarios?email=${encodeURIComponent(email)}`, {
+            method: 'DELETE',
+            headers: { 'x-user-role': currentUserRole }
+        });
+        const data = await response.json();
+        if (data.success) {
+            Swal.fire({ icon: 'success', title: 'Excluído!', text: 'Usuário removido com sucesso.', timer: 1500, showConfirmButton: false });
+            carregarUsuarios();
+        } else {
+            Swal.fire({ icon: 'error', title: 'Erro', text: data.error || 'Erro ao excluir' });
+        }
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Erro', text: 'Erro ao conectar ao servidor' });
+    }
+}
+
+// Adicionar usuário
+document.getElementById('btnAdicionarUsuario')?.addEventListener('click', async function() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Adicionar novo usuário',
+        html: `
+            <input id="swal-email" class="swal2-input" placeholder="E-mail" type="email">
+            <input id="swal-senha" class="swal2-input" placeholder="Senha" type="password">
+            <select id="swal-role" class="swal2-input" style="padding:10px 14px;">
+                <option value="viewer">Viewer</option>
+                <option value="editor">Editor</option>
+                <option value="admin">Admin</option>
+            </select>
+            <input id="swal-transp" class="swal2-input" placeholder="Transportadora (opcional)">
+        `,
+        focusConfirm: false,
+        preConfirm: () => {
+            const email = document.getElementById('swal-email').value.trim();
+            const senha = document.getElementById('swal-senha').value.trim();
+            const role = document.getElementById('swal-role').value;
+            const transportadora = document.getElementById('swal-transp').value.trim();
+            if (!email || !senha) {
+                Swal.showValidationMessage('E-mail e senha são obrigatórios');
+                return false;
+            }
+            return { email, senha, role, transportadora };
+        }
+    });
+
+    if (formValues) {
+        try {
+            const response = await fetch('/api/admin/usuarios', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-user-role': currentUserRole
+                },
+                body: JSON.stringify(formValues)
+            });
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire({ icon: 'success', title: 'Adicionado!', text: 'Usuário adicionado com sucesso.', timer: 1500, showConfirmButton: false });
+                carregarUsuarios();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Erro', text: data.error || 'Erro ao adicionar' });
+            }
+        } catch (error) {
+            Swal.fire({ icon: 'error', title: 'Erro', text: 'Erro ao conectar ao servidor' });
+        }
+    }
+});
+
+// Refresh Admin
+document.getElementById('refreshAdmin')?.addEventListener('click', carregarUsuarios);
 
 // ================================================================
 //  FUNÇÕES DE CRUZAMENTO E FILTRO

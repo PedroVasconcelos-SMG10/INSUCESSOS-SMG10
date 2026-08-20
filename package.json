@@ -1,5 +1,8 @@
 {
   "name": "wms-dashboard-backend",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "googleapis": "^155.0.0"
+  }
 }
