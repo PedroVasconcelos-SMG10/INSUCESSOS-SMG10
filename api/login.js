@@ -1,6 +1,6 @@
 // api/login.js
 export default async function handler(req, res) {
-  // CORS
+  // Configuração CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,38 +20,43 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ⚠️ VERIFICAÇÃO DAS VARIÁVEIS
     const apiKey = process.env.GOOGLE_API_KEY;
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
+    console.log('🔑 API Key:', apiKey ? '✅ Definida' : '❌ Indefinida');
+    console.log('📊 Spreadsheet ID:', spreadsheetId ? '✅ Definido' : '❌ Indefinido');
+
     if (!apiKey) {
-      console.error('GOOGLE_API_KEY não definida');
-      return res.status(500).json({
-        success: false,
-        error: 'Configuração do servidor incompleta. Contate o administrador.'
-      });
+      return res.status(500).json({ success: false, error: 'Configuração: GOOGLE_API_KEY não definida.' });
     }
 
     if (!spreadsheetId) {
-      console.error('SPREADSHEET_ID não definida');
+      return res.status(500).json({ success: false, error: 'Configuração: SPREADSHEET_ID não definido.' });
+    }
+
+    // 🔍 URL da planilha pública
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/USUARIOS!A:D?key=${apiKey}`;
+
+    console.log('📡 Fazendo requisição para Google Sheets...');
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const erro = await response.text();
+      console.error('Erro na requisição:', response.status, erro);
       return res.status(500).json({
         success: false,
-        error: 'Configuração do servidor incompleta. Contate o administrador.'
+        error: `Erro ao acessar a planilha: ${response.status}`
       });
     }
 
-    // Buscar dados da planilha (pública)
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/USUARIOS!A:D?key=${apiKey}`;
-
-    console.log(`[Login] Buscando dados da planilha...`);
-
-    const response = await fetch(url);
     const data = await response.json();
 
     if (!data.values || data.values.length < 2) {
-      console.error('Nenhum dado encontrado na planilha');
       return res.status(500).json({
         success: false,
-        error: 'Nenhum usuário cadastrado. Verifique a planilha.'
+        error: 'Nenhum usuário cadastrado na planilha.'
       });
     }
 
@@ -93,7 +98,7 @@ export default async function handler(req, res) {
 
     delete usuario.senha;
 
-    console.log(`[Login] Usuário ${usuario.email} autenticado com sucesso`);
+    console.log(`✅ Login bem-sucedido: ${usuario.email}`);
     res.status(200).json({ success: true, ...usuario });
   } catch (error) {
     console.error('Erro no login:', error);
