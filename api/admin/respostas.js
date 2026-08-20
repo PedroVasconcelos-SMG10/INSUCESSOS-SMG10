@@ -2,8 +2,7 @@
 const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmikMcDQPeIAPUSPQtt7YyptVIwB4r8AGfZqOKXjuLlV3OXbtEu-b-ueqzP-J37UT4/exec';
 
 export default async function handler(req, res) {
-  console.log('[Respostas] Iniciando...');
-
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,9 +11,15 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // ================================================================
+  //  PERMISSÕES: ADMIN e EDITOR podem responder
+  // ================================================================
   const userRole = req.headers['x-user-role'];
-  if (userRole !== 'admin') {
-    return res.status(403).json({ success: false, error: 'Acesso negado.' });
+  if (userRole !== 'admin' && userRole !== 'editor') {
+    return res.status(403).json({ 
+      success: false, 
+      error: 'Acesso negado. Apenas administradores e operadores podem responder pacotes.' 
+    });
   }
 
   if (req.method !== 'POST') {
@@ -27,6 +32,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ================================================================
+    //  CHAMAR O APPS SCRIPT PARA SALVAR AS RESPOSTAS
+    // ================================================================
     const response = await fetch(APP_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,6 +48,9 @@ export default async function handler(req, res) {
     return res.status(response.status).json(data);
   } catch (error) {
     console.error('[Respostas] Erro:', error);
-    return res.status(500).json({ success: false, error: 'Erro interno do servidor: ' + error.message });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Erro interno do servidor: ' + error.message 
+    });
   }
 }
