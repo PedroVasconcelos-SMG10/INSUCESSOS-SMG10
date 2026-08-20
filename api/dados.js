@@ -4,9 +4,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { action, nome } = req.query;
 
@@ -15,7 +13,7 @@ export default async function handler(req, res) {
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
     if (!apiKey || !spreadsheetId) {
-      return res.status(500).json({ success: false, error: 'Configuração do servidor incompleta.' });
+      return res.status(500).json({ success: false, error: 'Configuração incompleta.' });
     }
 
     let range = '';
@@ -33,7 +31,6 @@ export default async function handler(req, res) {
     }
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?key=${apiKey}`;
-
     const response = await fetch(url);
     const data = await response.json();
 
@@ -44,15 +41,13 @@ export default async function handler(req, res) {
     const headers = data.values[0];
     const rows = data.values.slice(1).map(row => {
       const obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = row[i] || '';
-      });
+      headers.forEach((h, i) => { obj[h] = row[i] || ''; });
       return obj;
     });
 
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
-    console.error('Erro ao buscar dados:', error);
+    console.error('Erro em dados:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 }
