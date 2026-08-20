@@ -15,12 +15,9 @@ export default async function handler(req, res) {
   //  PERMISSÕES: ADMIN e EDITOR podem responder
   // ================================================================
   const userRole = req.headers['x-user-role'];
-  if (userRole !== 'admin' && userRole !== 'editor') {
-    return res.status(403).json({ 
-      success: false, 
-      error: 'Acesso negado. Apenas administradores e operadores podem responder pacotes.' 
-    });
-  }
+if (userRole !== 'admin' && userRole !== 'editor') {
+    return res.status(403).json({ success: false, error: 'Acesso negado. Apenas administradores e operadores.' });
+}
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
