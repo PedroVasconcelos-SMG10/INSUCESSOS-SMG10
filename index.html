@@ -2107,7 +2107,11 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     y: {
                         beginAtZero: true,
                         position: 'left',
-                        ticks: { color: '#8b8f99', font: { size: 10 }, stepSize: 1 },
+                      // Substitua:
+ticks: { color: '#8b8f99', font: { size: 10 }, stepSize: 1 },
+
+// Por:
+ticks: { color: '#8b8f99', font: { size: 10 } },  // Remove stepSize
                         grid: { color: '#2b2f37' }
                     },
                     y1: {
