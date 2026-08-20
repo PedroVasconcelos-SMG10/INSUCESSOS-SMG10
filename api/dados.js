@@ -11,8 +11,8 @@ export default async function handler(req, res) {
   const { action, nome } = req.query;
 
   try {
-    const apiKey = process.env.GOOGLE_API_KEY;
-    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const apiKey = process.env.CHAVE_API_DO_GOOGLE;
+    const spreadsheetId = process.env.ID_DA_PLANILHA;
 
     if (!apiKey || !spreadsheetId) {
       return res.status(500).json({
@@ -27,15 +27,11 @@ export default async function handler(req, res) {
     } else if (action === 'inventario') {
       range = 'INVENTÁRIO!A:K';
     } else if (action === 'listarAbas') {
-      // Fallback para listar abas (já que API Key não permite listar abas)
       return res.status(200).json({
         success: true,
         abas: ['Página1', 'INVENTÁRIO', 'USUARIOS', 'Descrição', 'RESPOSTAS']
       });
     } else if (action === 'lerAba') {
-      if (!nome) {
-        return res.status(400).json({ error: 'Nome da aba é obrigatório.' });
-      }
       range = `${nome}!A:Z`;
     } else {
       return res.status(400).json({ error: 'Ação inválida' });
@@ -43,19 +39,9 @@ export default async function handler(req, res) {
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?key=${apiKey}`;
 
-    console.log(`📡 Buscando: ${range}`);
+    console.log(`[Dados] Buscando: ${range}`);
 
     const response = await fetch(url);
-
-    if (!response.ok) {
-      const erro = await response.text();
-      console.error('Erro na requisição:', response.status, erro);
-      return res.status(500).json({
-        success: false,
-        error: `Erro ao acessar a planilha: ${response.status}`
-      });
-    }
-
     const data = await response.json();
 
     if (!data.values || data.values.length < 2) {
