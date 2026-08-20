@@ -1840,6 +1840,8 @@ function atualizarUIposLogin() {
             filterInfo.style.display = 'none';
         }
     }
+    // 🔥 CARREGAR DESCRIÇÕES E RESPOSTAS
+    carregarDescricoesERespostas();
     aplicarRestricoesPorPerfil();
 }
 
@@ -1919,6 +1921,54 @@ async function lerAbaViaAPI(nomeAba) {
     } catch (error) {
         console.error(`Erro ao ler aba ${nomeAba}:`, error);
         throw error;
+    }
+}
+
+// ================================================================
+//  CARREGAR DESCRIÇÕES E RESPOSTAS (USANDO API KEY)
+// ================================================================
+async function carregarDescricoesERespostas() {
+    if (!isAuthenticated) return;
+    console.log('[Descrições] Carregando descrições e respostas...');
+    try {
+        // Carregar descrições da aba "Descrição"
+        const descData = await lerAbaViaAPI('Descrição');
+        if (descData && descData.length > 0) {
+            const headers = Object.keys(descData[0]);
+            const idCol = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0;
+            const descCol = headers.indexOf('DESCRIÇÃO') !== -1 ? headers.indexOf('DESCRIÇÃO') : 2;
+            descricaoMap = {};
+            descData.forEach(row => {
+                const rowValues = Object.values(row);
+                const id = rowValues[idCol]?.trim() || '';
+                const desc = rowValues[descCol]?.trim() || '';
+                if (id) descricaoMap[id] = desc;
+            });
+            console.log(`[Descrições] Carregadas ${Object.keys(descricaoMap).length} descrições`);
+        } else {
+            descricaoMap = {};
+            console.log('[Descrições] Nenhuma descrição encontrada');
+        }
+
+        // Carregar respostas da aba "RESPOSTAS"
+        const respData = await lerAbaViaAPI('RESPOSTAS');
+        respostasSet = new Set();
+        if (respData && respData.length > 0) {
+            const headers = Object.keys(respData[0]);
+            const idCol = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0;
+            respData.forEach(row => {
+                const rowValues = Object.values(row);
+                const id = rowValues[idCol]?.trim() || '';
+                if (id) respostasSet.add(id);
+            });
+            console.log(`[Descrições] Carregadas ${respostasSet.size} respostas`);
+        } else {
+            respostasSet = new Set();
+        }
+    } catch (error) {
+        console.warn('[Descrições] Erro ao carregar descrições/respostas:', error);
+        descricaoMap = {};
+        respostasSet = new Set();
     }
 }
 
@@ -3797,9 +3847,23 @@ document.getElementById('respostaEnviar')?.addEventListener('click', async funct
     this.disabled = true;
     try {
         const rows = dadosResposta.map(d => [d.ID, d.Transportadora, d.Motorista, d.Nome_Responsavel, d.Justificativa, d.Data_Hora]);
+        // Garantir que a role esteja definida
+        let role = currentUserRole;
+        if (!role) {
+            try {
+                const saved = localStorage.getItem('wms_user');
+                if (saved) {
+                    const user = JSON.parse(saved);
+                    role = user.role || 'viewer';
+                }
+            } catch (e) {
+                role = 'viewer';
+            }
+        }
+        console.log('[Enviar Resposta] Role sendo enviada:', role);
         await fetch('/api/admin/respostas', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole },
+            headers: { 'Content-Type': 'application/json', 'x-user-role': role },
             body: JSON.stringify({ rows })
         });
         statusEl.textContent = '✅ Respostas enviadas com sucesso!';
