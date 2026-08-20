@@ -2451,6 +2451,7 @@ function renderSecaoTransportadoras(data) {
 function renderTransportadoras(data) {
     const container = document.getElementById('containerTransportadoras');
     if (!container) return;
+    
     if (!data || data.transportadoras.length === 0) {
         container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
         return;
@@ -2459,14 +2460,23 @@ function renderTransportadoras(data) {
     container.innerHTML = data.transportadoras.map(t => {
         const cardClass = isViewer ? 'transportadora-card blocked' : 'transportadora-card';
         const bloqueioMsg = isViewer ? '<span style="font-size:10px;color:var(--text-faint);display:block;margin-top:4px;">🔒 Acesso restrito</span>' : '';
-        const nomeEscapado = t.nome.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-        const onclickAttr = isViewer ? '' : `onclick="abrirModalPacotes('${nomeEscapado}')"`;
-        return `<div class="${cardClass}" ${onclickAttr} data-transportadora="${nomeEscapado}">
+        // Escapa para data-* (não precisa de escape complicado)
+        const nomeEscapado = t.nome.replace(/"/g, '&quot;');
+        return `<div class="${cardClass}" data-transportadora="${nomeEscapado}">
             <div class="nome">${t.nome}</div>
             <div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div>
             ${bloqueioMsg}
         </div>`;
     }).join('');
+    
+    // Adiciona o evento de clique via JavaScript
+    container.querySelectorAll('.transportadora-card:not(.blocked)').forEach(card => {
+        card.addEventListener('click', function() {
+            const nome = this.dataset.transportadora;
+            abrirModalPacotes(nome);
+        });
+    });
+    
     if (isViewer) {
         container.querySelectorAll('.transportadora-card.blocked').forEach(card => {
             card.addEventListener('click', function(e) {
