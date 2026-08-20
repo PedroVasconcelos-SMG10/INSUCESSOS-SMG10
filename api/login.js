@@ -1,36 +1,43 @@
 // api/login.js
 export default async function handler(req, res) {
+  console.log('=== [LOGIN] INÍCIO DA REQUISIÇÃO ===');
+
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
+    console.log('[LOGIN] OPTIONS request');
     return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
+    console.log('[LOGIN] Método não permitido:', req.method);
     return res.status(405).json({ error: 'Método não permitido' });
   }
+
+  console.log('[LOGIN] Body recebido:', req.body);
 
   const { email, senha } = req.body;
 
   if (!email || !senha) {
+    console.log('[LOGIN] E-mail ou senha ausentes');
     return res.status(400).json({ success: false, error: 'E-mail e senha são obrigatórios.' });
   }
-// api/login.js (trecho no início da função handler)
-console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', process.env.CHAVE_API_DO_GOOGLE ? '✅ DEFINIDA' : '❌ UNDEFINED');
-console.log('[Login] 🔍 ID_DA_PLANILHA:', process.env.ID_DA_PLANILHA ? '✅ DEFINIDA' : '❌ UNDEFINED');
-  try {
-   // ============================================================
-// USANDO O NOME CORRETO DA VARIÁVEL
-// ============================================================
-const apiKey = process.env.CHAVE_API_DO_GOOGLE;
-const spreadsheetId = process.env.SPREADSHEET_ID;  // ← CORRIGIDO
 
-console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', apiKey ? '✅ DEFINIDA' : '❌ UNDEFINED');
-console.log('[Login] 🔍 SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '❌ UNDEFINED');
+  try {
+    // ============================================================
+    // VARIÁVEIS DE AMBIENTE
+    // ============================================================
+    const apiKey = process.env.CHAVE_API_DO_GOOGLE;
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+
+    console.log('[LOGIN] CHAVE_API_DO_GOOGLE:', apiKey ? '✅ DEFINIDA (primeiros 10: ' + apiKey.substring(0, 10) + '...)' : '❌ UNDEFINED');
+    console.log('[LOGIN] SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '❌ UNDEFINED');
+
     if (!apiKey) {
-      console.error('❌ CHAVE_API_DO_GOOGLE não definida');
+      console.error('[LOGIN] CHAVE_API_DO_GOOGLE não definida');
       return res.status(500).json({
         success: false,
         error: 'Configuração do servidor incompleta: CHAVE_API_DO_GOOGLE não definida.'
@@ -38,23 +45,28 @@ console.log('[Login] 🔍 SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '�
     }
 
     if (!spreadsheetId) {
-      console.error('❌ ID_DA_PLANILHA não definida');
+      console.error('[LOGIN] SPREADSHEET_ID não definida');
       return res.status(500).json({
         success: false,
-        error: 'Configuração do servidor incompleta: ID_DA_PLANILHA não definida.'
+        error: 'Configuração do servidor incompleta: SPREADSHEET_ID não definida.'
       });
     }
 
-    // Buscar dados da planilha (pública)
+    // ============================================================
+    // CONSTRUIR URL E FAZER REQUISIÇÃO
+    // ============================================================
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/USUARIOS!A:D?key=${apiKey}`;
 
-    console.log(`[Login] 📡 Buscando dados da planilha...`);
+    console.log('[LOGIN] URL da requisição:', url.replace(apiKey, '****'));
 
     const response = await fetch(url);
+    console.log('[LOGIN] Status da resposta:', response.status);
+
     const data = await response.json();
+    console.log('[LOGIN] Dados recebidos?', data.values ? `✅ ${data.values.length} linhas` : '❌ Sem dados');
 
     if (!data.values || data.values.length < 2) {
-      console.error('❌ Nenhum dado encontrado na planilha');
+      console.error('[LOGIN] Nenhum dado encontrado na planilha');
       return res.status(500).json({
         success: false,
         error: 'Nenhum usuário cadastrado. Verifique a planilha.'
@@ -68,7 +80,10 @@ console.log('[Login] 🔍 SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '�
     const colRole = headers.indexOf('ROLE');
     const colTransp = headers.indexOf('TRANSPORTADORA');
 
+    console.log('[LOGIN] Colunas: EMAIL=' + colEmail + ', SENHA=' + colSenha + ', ROLE=' + colRole);
+
     if (colEmail === -1 || colSenha === -1 || colRole === -1) {
+      console.error('[LOGIN] Colunas necessárias não encontradas');
       return res.status(500).json({
         success: false,
         error: 'Colunas necessárias não encontradas: EMAIL, ROLE, SENHA.'
@@ -85,24 +100,28 @@ console.log('[Login] 🔍 SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '�
           role: row[colRole]?.trim().toLowerCase() || 'viewer',
           transportadora: row[colTransp]?.trim() || null,
         };
+        console.log('[LOGIN] Usuário encontrado:', usuario.email);
         break;
       }
     }
 
     if (!usuario) {
+      console.log('[LOGIN] Usuário não encontrado:', email);
       return res.status(401).json({ success: false, error: 'Usuário não encontrado.' });
     }
 
     if (usuario.senha !== senha) {
+      console.log('[LOGIN] Senha incorreta para:', email);
       return res.status(401).json({ success: false, error: 'Senha incorreta.' });
     }
 
     delete usuario.senha;
 
-    console.log(`[Login] ✅ Usuário ${usuario.email} autenticado com sucesso`);
+    console.log('[LOGIN] ✅ Autenticação bem-sucedida:', usuario.email);
     res.status(200).json({ success: true, ...usuario });
   } catch (error) {
-    console.error('[Login] ❌ Erro:', error);
+    console.error('[LOGIN] ❌ Erro capturado:', error);
+    console.error('[LOGIN] Stack trace:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Erro interno do servidor: ' + error.message
