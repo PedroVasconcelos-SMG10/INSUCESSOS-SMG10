@@ -12,20 +12,16 @@ export default async function handler(req, res) {
 
   try {
     const apiKey = process.env.CHAVE_API_DO_GOOGLE;
-const spreadsheetId = process.env.SPREADSHEET_ID;  // ← CORRIGIDO
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+
     if (!apiKey || !spreadsheetId) {
-      return res.status(500).json({
-        success: false,
-        error: 'Configuração do servidor incompleta.'
-      });
+      return res.status(500).json({ success: false, error: 'Configuração do servidor incompleta.' });
     }
 
     let range = '';
-    if (action === 'pacotes') {
-      range = 'Página1!A:Z';
-    } else if (action === 'inventario') {
-      range = 'INVENTÁRIO!A:K';
-    } else if (action === 'listarAbas') {
+    if (action === 'pacotes') range = 'Página1!A:Z';
+    else if (action === 'inventario') range = 'INVENTÁRIO!A:K';
+    else if (action === 'listarAbas') {
       return res.status(200).json({
         success: true,
         abas: ['Página1', 'INVENTÁRIO', 'USUARIOS', 'Descrição', 'RESPOSTAS']
@@ -37,8 +33,6 @@ const spreadsheetId = process.env.SPREADSHEET_ID;  // ← CORRIGIDO
     }
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?key=${apiKey}`;
-
-    console.log(`[Dados] Buscando: ${range}`);
 
     const response = await fetch(url);
     const data = await response.json();
