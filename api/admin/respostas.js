@@ -1,5 +1,5 @@
 // api/admin/respostas.js
-const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi52btwoTGK3RsVCp2eiI_B8FgomjHzXpdgH_XSrS2tXl_T5kvxHMHTx-vn2gIdgRy/exec';
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwOYH49gOV2i2FeyEN_thI9yD4NIGyHihzjeyfV4WWp_awmf_KXVAjzHVDY_jM0tdn/exec';
 
 export default async function handler(req, res) {
   console.log('[Respostas] Iniciando...');
