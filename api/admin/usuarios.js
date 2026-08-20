@@ -1,5 +1,7 @@
 // api/admin/usuarios.js
-// Versão com suporte apenas a leitura (GET), enquanto você configura a Service Account
+// Usa o Apps Script como proxy para escrita
+
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/SEU_ID_AQUI/exec'; // Substitua pela URL do seu Web App
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ success: false, error: 'Acesso negado.' });
   }
 
-  // Apenas GET (leitura) por enquanto
+  // ========== GET = Listar usuários (via API Key) ==========
   if (req.method === 'GET') {
     try {
       const apiKey = process.env.CHAVE_API_DO_GOOGLE;
@@ -44,10 +46,59 @@ export default async function handler(req, res) {
     }
   }
 
-  // Para POST, PUT, DELETE, retorna erro avisando que precisa configurar Service Account
-  return res.status(501).json({
-    success: false,
-    error: 'Funcionalidade de escrita indisponível. Configure a Service Account para habilitar.',
-    instructions: 'Adicione a variável GOOGLE_CREDENTIALS_BASE64 com o JSON da Service Account codificado em Base64.'
-  });
+  // ========== POST = Adicionar usuário (via Apps Script) ==========
+  if (req.method === 'POST') {
+    try {
+      const response = await fetch(APP_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'adicionarUsuario',
+          ...req.body
+        })
+      });
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    } catch (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  // ========== PUT = Atualizar usuário (via Apps Script) ==========
+  if (req.method === 'PUT') {
+    try {
+      const response = await fetch(APP_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'atualizarUsuario',
+          ...req.body
+        })
+      });
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    } catch (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  // ========== DELETE = Excluir usuário (via Apps Script) ==========
+  if (req.method === 'DELETE') {
+    try {
+      const response = await fetch(APP_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'excluirUsuario',
+          email: req.query.email
+        })
+      });
+      const data = await response.json();
+      return res.status(response.status).json(data);
+    } catch (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  return res.status(405).json({ error: 'Método não permitido' });
 }
