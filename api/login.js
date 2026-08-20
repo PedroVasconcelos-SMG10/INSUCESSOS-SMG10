@@ -6,16 +6,12 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   const { email, senha } = req.body;
-
   if (!email || !senha) {
     return res.status(400).json({ success: false, error: 'E-mail e senha são obrigatórios.' });
   }
@@ -24,19 +20,14 @@ export default async function handler(req, res) {
     const apiKey = process.env.CHAVE_API_DO_GOOGLE;
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
-    console.log('[LOGIN] CHAVE_API_DO_GOOGLE:', apiKey ? '✅ DEFINIDA' : '❌ UNDEFINED');
-    console.log('[LOGIN] SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '❌ UNDEFINED');
+    console.log('[LOGIN] CHAVE_API:', apiKey ? '✅' : '❌');
+    console.log('[LOGIN] SPREADSHEET_ID:', spreadsheetId ? '✅' : '❌');
 
     if (!apiKey || !spreadsheetId) {
-      return res.status(500).json({
-        success: false,
-        error: 'Configuração do servidor incompleta.'
-      });
+      return res.status(500).json({ success: false, error: 'Configuração incompleta.' });
     }
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/USUARIOS!A:D?key=${apiKey}`;
-
-    console.log('[LOGIN] Buscando dados...');
     const response = await fetch(url);
     const data = await response.json();
 
@@ -52,10 +43,7 @@ export default async function handler(req, res) {
     const colTransp = headers.indexOf('TRANSPORTADORA');
 
     if (colEmail === -1 || colSenha === -1 || colRole === -1) {
-      return res.status(500).json({
-        success: false,
-        error: 'Colunas necessárias não encontradas: EMAIL, ROLE, SENHA.'
-      });
+      return res.status(500).json({ success: false, error: 'Colunas necessárias não encontradas.' });
     }
 
     let usuario = null;
@@ -72,13 +60,8 @@ export default async function handler(req, res) {
       }
     }
 
-    if (!usuario) {
-      return res.status(401).json({ success: false, error: 'Usuário não encontrado.' });
-    }
-
-    if (usuario.senha !== senha) {
-      return res.status(401).json({ success: false, error: 'Senha incorreta.' });
-    }
+    if (!usuario) return res.status(401).json({ success: false, error: 'Usuário não encontrado.' });
+    if (usuario.senha !== senha) return res.status(401).json({ success: false, error: 'Senha incorreta.' });
 
     delete usuario.senha;
     res.status(200).json({ success: true, ...usuario });
