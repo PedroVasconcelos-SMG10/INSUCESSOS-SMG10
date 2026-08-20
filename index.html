@@ -1664,6 +1664,19 @@ const DADOS_EXEMPLO_RESPOSTAS = ['47755039490'];
 function parseDataBR(texto) {
     if (!texto) return null;
     texto = texto.trim();
+
+    // Tenta formato ISO: YYYY-MM-DD
+    const isoMatch = texto.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+        const ano = parseInt(isoMatch[1], 10);
+        const mes = parseInt(isoMatch[2], 10) - 1;
+        const dia = parseInt(isoMatch[3], 10);
+        if (!isNaN(ano) && !isNaN(mes) && !isNaN(dia)) {
+            return new Date(ano, mes, dia);
+        }
+    }
+
+    // Tenta formato "17 de ago. de 2026"
     const meses = {
         'jan': 0, 'jan.': 0, 'janeiro': 0,
         'fev': 1, 'fev.': 1, 'fevereiro': 1,
@@ -1689,6 +1702,8 @@ function parseDataBR(texto) {
             return new Date(ano, mes, dia);
         }
     }
+
+    // Fallback: tenta o construtor padrão
     const fallback = new Date(texto);
     if (!isNaN(fallback.getTime())) return fallback;
     return null;
@@ -2750,16 +2765,23 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
 //  BACKUPS SEMANAIS
 // ================================================================
 async function carregarBackupsSemanais() {
+    console.log('[Backups] Iniciando carregamento...');
     try {
         const abas = await listarAbasViaAPI();
+        console.log('[Backups] Abas encontradas:', abas);
         const backupSheets = abas.filter(name => name.startsWith('BACKUP_'));
+        console.log('[Backups] Abas de backup:', backupSheets);
+
+        // Determinar a semana atual (DOMINGO a SÁBADO)
         const hoje = new Date();
+        const diaSemana = hoje.getDay(); // 0 = domingo
         const domingo = new Date(hoje);
-        domingo.setDate(hoje.getDate() - hoje.getDay());
+        domingo.setDate(hoje.getDate() - diaSemana);
         domingo.setHours(0, 0, 0, 0);
         const sabado = new Date(domingo);
         sabado.setDate(domingo.getDate() + 6);
         sabado.setHours(23, 59, 59, 999);
+
         const resultados = [];
         for (let i = 0; i < 7; i++) {
             resultados.push({
@@ -2772,23 +2794,52 @@ async function carregarBackupsSemanais() {
                 acuracia: 0
             });
         }
+
+        // ============================================================
+        // 1. Processar BACKUPS
+        // ============================================================
         for (const nomeAba of backupSheets) {
             try {
+                console.log(`[Backups] Lendo aba: ${nomeAba}`);
                 const data = await lerAbaViaAPI(nomeAba);
-                if (!data || data.length === 0) continue;
+                if (!data || data.length === 0) {
+                    console.warn(`[Backups] Aba ${nomeAba} vazia`);
+                    continue;
+                }
                 const headers = Object.keys(data[0]);
                 let dataColIdx = headers.indexOf('DATA');
                 if (dataColIdx === -1) dataColIdx = headers.indexOf('data');
                 if (dataColIdx === -1) dataColIdx = headers.indexOf('Data');
-                if (dataColIdx === -1) dataColIdx = 1;
+                if (dataColIdx === -1) {
+                    if (headers.length > 1) dataColIdx = 1;
+                    else continue;
+                }
                 const firstRow = data[0];
                 const values = Object.values(firstRow);
                 const dataStr = values[dataColIdx]?.trim() || '';
-                if (!dataStr) continue;
-                const dateObj = parseDataBR(dataStr);
+                let dateObj = parseDataBR(dataStr);
+
+                // Se não conseguir parsear a data interna, usa a data do nome da aba
+                if (!dateObj) {
+                    const dataNome = nomeAba.replace('BACKUP_', '');
+                    const parts = dataNome.split('-');
+                    if (parts.length === 3) {
+                        const ano = parseInt(parts[0], 10);
+                        const mes = parseInt(parts[1], 10) - 1;
+                        const dia = parseInt(parts[2], 10);
+                        if (!isNaN(ano) && !isNaN(mes) && !isNaN(dia)) {
+                            dateObj = new Date(ano, mes, dia);
+                        }
+                    }
+                }
+
                 if (!dateObj) continue;
+
+                // Verifica se a data está na semana atual
                 if (dateObj < domingo || dateObj > sabado) continue;
+
                 const index = dateObj.getDay();
+
                 let stats = {
                     date: dateObj,
                     inventariado: 0,
@@ -2798,30 +2849,110 @@ async function carregarBackupsSemanais() {
                     existe: true,
                     acuracia: 0
                 };
+
                 const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
-                if (statusColIdx !== -1) {
-                    data.forEach(row => {
-                        const rowValues = Object.values(row);
-                        const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
-                        const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-                        const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-                        const isIntruso = status === 'INTRUSO';
-                        if (isInventariado) stats.inventariado++;
-                        else if (isFaltante) stats.faltante++;
-                        else if (isIntruso) stats.intruso++;
-                    });
-                    stats.total = stats.inventariado + stats.faltante + stats.intruso;
-                    const base = stats.inventariado + stats.faltante;
-                    stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
-                    resultados[index] = stats;
+                if (statusColIdx === -1) {
+                    console.warn(`[Backups] Coluna CLASIFICACION não encontrada em ${nomeAba}`);
+                    continue;
                 }
+
+                data.forEach(row => {
+                    const rowValues = Object.values(row);
+                    const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
+                    const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
+                    const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+                    const isIntruso = status === 'INTRUSO';
+                    if (isInventariado) stats.inventariado++;
+                    else if (isFaltante) stats.faltante++;
+                    else if (isIntruso) stats.intruso++;
+                });
+                stats.total = stats.inventariado + stats.faltante + stats.intruso;
+                const base = stats.inventariado + stats.faltante;
+                stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
+                resultados[index] = stats;
+                console.log(`[Backups] ${nomeAba} -> inv: ${stats.inventariado}, falt: ${stats.faltante}, acurácia: ${stats.acuracia.toFixed(1)}%`);
             } catch (error) {
-                console.warn(`⚠️ Erro ao ler backup ${nomeAba}:`, error);
+                console.error(`[Backups] Erro ao ler ${nomeAba}:`, error);
             }
         }
+
+        // ============================================================
+        // 2. FALLBACK: Usar a planilha INVENTÁRIO para os dias sem backup
+        //    (especialmente o dia de hoje/ontem)
+        // ============================================================
+        // Carregar a planilha INVENTÁRIO atual
+        let inventarioData = null;
+        try {
+            const data = await lerDados('inventario');
+            if (data && data.length > 0) {
+                inventarioData = data;
+                console.log('[Backups] Planilha INVENTÁRIO carregada com', data.length, 'registros');
+            }
+        } catch (e) {
+            console.warn('[Backups] Não foi possível carregar INVENTÁRIO como fallback:', e);
+        }
+
+        if (inventarioData) {
+            // Para cada dia da semana que não tem backup, tentamos usar a planilha atual
+            // com a data correspondente (se a coluna DATA existir)
+            const headers = Object.keys(inventarioData[0]);
+            let dataColIdx = headers.indexOf('DATA');
+            if (dataColIdx === -1) dataColIdx = headers.indexOf('data');
+            if (dataColIdx === -1) dataColIdx = headers.indexOf('Data');
+
+            if (dataColIdx !== -1) {
+                // Agrupar por data
+                const dadosPorData = {};
+                inventarioData.forEach(row => {
+                    const rowValues = Object.values(row);
+                    const dataStr = rowValues[dataColIdx]?.trim() || '';
+                    const dateObj = parseDataBR(dataStr);
+                    if (!dateObj) return;
+                    const key = dateObj.toISOString().split('T')[0];
+                    if (!dadosPorData[key]) {
+                        dadosPorData[key] = { inventariado: 0, faltante: 0, intruso: 0 };
+                    }
+                    const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
+                    if (statusColIdx === -1) return;
+                    const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
+                    const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
+                    const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+                    const isIntruso = status === 'INTRUSO';
+                    if (isInventariado) dadosPorData[key].inventariado++;
+                    else if (isFaltante) dadosPorData[key].faltante++;
+                    else if (isIntruso) dadosPorData[key].intruso++;
+                });
+
+                // Preencher dias da semana que estão vazios
+                for (let i = 0; i < 7; i++) {
+                    if (resultados[i].existe) continue; // já tem backup
+                    const d = new Date(domingo);
+                    d.setDate(domingo.getDate() + i);
+                    const key = d.toISOString().split('T')[0];
+                    if (dadosPorData[key]) {
+                        const dia = dadosPorData[key];
+                        const base = dia.inventariado + dia.faltante;
+                        resultados[i] = {
+                            date: d,
+                            inventariado: dia.inventariado,
+                            faltante: dia.faltante,
+                            intruso: dia.intruso,
+                            total: dia.inventariado + dia.faltante + dia.intruso,
+                            existe: true,
+                            acuracia: base > 0 ? (dia.inventariado / base * 100) : 0
+                        };
+                        console.log(`[Backups] Fallback INVENTÁRIO para ${key}: inv: ${dia.inventariado}, falt: ${dia.faltante}, acurácia: ${resultados[i].acuracia.toFixed(1)}%`);
+                    }
+                }
+            } else {
+                console.warn('[Backups] Coluna DATA não encontrada na planilha INVENTÁRIO');
+            }
+        }
+
+        console.log('[Backups] Resultado final:', resultados);
         return resultados;
     } catch (error) {
-        console.warn('Erro ao carregar backups semanais:', error);
+        console.warn('[Backups] Erro ao carregar backups semanais:', error);
         return null;
     }
 }
