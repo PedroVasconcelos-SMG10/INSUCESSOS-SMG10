@@ -17,7 +17,9 @@ export default async function handler(req, res) {
   if (!email || !senha) {
     return res.status(400).json({ success: false, error: 'E-mail e senha são obrigatórios.' });
   }
-
+// api/login.js (trecho no início da função handler)
+console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', process.env.CHAVE_API_DO_GOOGLE ? '✅ DEFINIDA' : '❌ UNDEFINED');
+console.log('[Login] 🔍 ID_DA_PLANILHA:', process.env.ID_DA_PLANILHA ? '✅ DEFINIDA' : '❌ UNDEFINED');
   try {
     // ============================================================
     // LOGS DE DEPURAÇÃO (NÃO EXPÕE OS VALORES COMPLETOS)
