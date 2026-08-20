@@ -2772,12 +2772,12 @@ async function carregarBackupsSemanais() {
 
         // Determinar a semana atual (DOMINGO a SÁBADO)
         const hoje = new Date();
-        const diaSemana = hoje.getDay(); // 0 = domingo
+        const diaSemana = hoje.getDay();
         const domingo = new Date(hoje);
         domingo.setDate(hoje.getDate() - diaSemana);
         domingo.setHours(0, 0, 0, 0);
 
-        // Resultados para os 7 dias da semana
+        // Inicializa os 7 dias da semana
         const resultados = [];
         for (let i = 0; i < 7; i++) {
             resultados.push({
@@ -2792,26 +2792,26 @@ async function carregarBackupsSemanais() {
         }
 
         // ============================================================
-        // 1. Carregar BACKUPS (para todos os dias da semana)
+        // 1. LER BACKUPS (para todos os dias da semana)
         // ============================================================
         for (const nomeAba of backupSheets) {
             try {
                 const data = await lerAbaViaAPI(nomeAba);
                 if (!data || data.length === 0) continue;
+
                 const headers = Object.keys(data[0]);
+                // Procurar coluna DATA (coluna B)
                 let dataColIdx = headers.indexOf('DATA');
                 if (dataColIdx === -1) dataColIdx = headers.indexOf('data');
                 if (dataColIdx === -1) dataColIdx = headers.indexOf('Data');
-                if (dataColIdx === -1) {
-                    if (headers.length > 1) dataColIdx = 1;
-                    else continue;
-                }
+                if (dataColIdx === -1) dataColIdx = 1; // fallback para coluna 2 (índice 1)
+
                 const firstRow = data[0];
                 const values = Object.values(firstRow);
                 const dataStr = values[dataColIdx]?.trim() || '';
                 let dateObj = parseDataBR(dataStr);
 
-                // Fallback: data do nome da aba
+                // Se falhar, tenta extrair a data do nome da aba
                 if (!dateObj) {
                     const dataNome = nomeAba.replace('BACKUP_', '');
                     const parts = dataNome.split('-');
@@ -2827,7 +2827,10 @@ async function carregarBackupsSemanais() {
                 if (!dateObj) continue;
 
                 // Verifica se a data está na semana atual
-                if (dateObj < domingo || dateObj >= new Date(domingo.getTime() + 7 * 24 * 60 * 60 * 1000)) continue;
+                const dataSemana = new Date(domingo);
+                dataSemana.setDate(domingo.getDate() + 6);
+                dataSemana.setHours(23, 59, 59, 999);
+                if (dateObj < domingo || dateObj > dataSemana) continue;
 
                 const index = dateObj.getDay();
 
@@ -2858,23 +2861,23 @@ async function carregarBackupsSemanais() {
                 const base = stats.inventariado + stats.faltante;
                 stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
                 resultados[index] = stats;
-                console.log(`[Backups] ${nomeAba} -> ${dateObj.toISOString().split('T')[0]}: inv: ${stats.inventariado}, falt: ${stats.faltante}, acurácia: ${stats.acuracia.toFixed(1)}%`);
+                console.log(`[Backups] ${nomeAba} -> ${dateObj.toISOString().split('T')[0]}: inv=${stats.inventariado}, falt=${stats.faltante}, acurácia=${stats.acuracia.toFixed(1)}%`);
             } catch (error) {
                 console.error(`[Backups] Erro ao ler ${nomeAba}:`, error);
             }
         }
 
         // ============================================================
-        // 2. FALLBACK: Usar a planilha INVENTÁRIO para o dia de ONTEM (D-1)
+        // 2. FALLBACK: usar INVENTÁRIO para o dia de ONTEM (D-1)
         // ============================================================
         const ontem = new Date(hoje);
         ontem.setDate(hoje.getDate() - 1);
         ontem.setHours(0, 0, 0, 0);
-        const ontemIndex = ontem.getDay(); // índice do dia da semana (0=domingo)
+        const ontemIndex = ontem.getDay();
 
-        // Verificar se o dia de ontem já tem backup
+        // Se o dia de ontem já tem backup, ignora fallback
         if (!resultados[ontemIndex].existe) {
-            console.log('[Backups] Dia de ontem não tem backup, tentando usar planilha INVENTÁRIO...');
+            console.log('[Backups] Dia de ontem sem backup, tentando usar INVENTÁRIO...');
             try {
                 const inventarioData = await lerDados('inventario');
                 if (inventarioData && inventarioData.length > 0) {
@@ -2882,44 +2885,53 @@ async function carregarBackupsSemanais() {
                     let dataColIdx = headers.indexOf('DATA');
                     if (dataColIdx === -1) dataColIdx = headers.indexOf('data');
                     if (dataColIdx === -1) dataColIdx = headers.indexOf('Data');
-                    
-                    // Verificar se a primeira data corresponde a ontem
-                    let primeiroRegistro = inventarioData[0];
-                    let values = Object.values(primeiroRegistro);
-                    let dataStr = values[dataColIdx]?.trim() || '';
-                    let dateObj = parseDataBR(dataStr);
-                    
-                    if (dateObj && dateObj.toISOString().split('T')[0] === ontem.toISOString().split('T')[0]) {
-                        // A planilha INVENTÁRIO é de ontem – usar para preencher ontem
-                        let stats = {
-                            date: ontem,
-                            inventariado: 0,
-                            faltante: 0,
-                            intruso: 0,
-                            total: 0,
-                            existe: true,
-                            acuracia: 0
-                        };
-                        const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
-                        if (statusColIdx !== -1) {
-                            inventarioData.forEach(row => {
-                                const rowValues = Object.values(row);
-                                const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
-                                const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-                                const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-                                const isIntruso = status === 'INTRUSO';
-                                if (isInventariado) stats.inventariado++;
-                                else if (isFaltante) stats.faltante++;
-                                else if (isIntruso) stats.intruso++;
-                            });
-                            stats.total = stats.inventariado + stats.faltante + stats.intruso;
-                            const base = stats.inventariado + stats.faltante;
-                            stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
-                            resultados[ontemIndex] = stats;
-                            console.log(`[Backups] Fallback INVENTÁRIO para ontem (${ontem.toISOString().split('T')[0]}): inv: ${stats.inventariado}, falt: ${stats.faltante}, acurácia: ${stats.acuracia.toFixed(1)}%`);
+                    if (dataColIdx === -1) dataColIdx = 1;
+
+                    // Pega a data do primeiro registro para verificar se é ontem
+                    const firstRow = inventarioData[0];
+                    const values = Object.values(firstRow);
+                    const dataStr = values[dataColIdx]?.trim() || '';
+                    const dateObj = parseDataBR(dataStr);
+
+                    if (dateObj) {
+                        const dataStrOntem = ontem.toISOString().split('T')[0];
+                        const dataStrInventario = dateObj.toISOString().split('T')[0];
+                        console.log(`[Backups] Data INVENTÁRIO: ${dataStrInventario}, Data ontem: ${dataStrOntem}`);
+
+                        if (dataStrInventario === dataStrOntem) {
+                            // A planilha INVENTÁRIO é de ontem – usá-la
+                            let stats = {
+                                date: ontem,
+                                inventariado: 0,
+                                faltante: 0,
+                                intruso: 0,
+                                total: 0,
+                                existe: true,
+                                acuracia: 0
+                            };
+                            const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
+                            if (statusColIdx !== -1) {
+                                inventarioData.forEach(row => {
+                                    const rowValues = Object.values(row);
+                                    const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
+                                    const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
+                                    const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+                                    const isIntruso = status === 'INTRUSO';
+                                    if (isInventariado) stats.inventariado++;
+                                    else if (isFaltante) stats.faltante++;
+                                    else if (isIntruso) stats.intruso++;
+                                });
+                                stats.total = stats.inventariado + stats.faltante + stats.intruso;
+                                const base = stats.inventariado + stats.faltante;
+                                stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
+                                resultados[ontemIndex] = stats;
+                                console.log(`[Backups] ✅ Fallback INVENTÁRIO para ontem (${dataStrOntem}): inv=${stats.inventariado}, falt=${stats.faltante}, acurácia=${stats.acuracia.toFixed(1)}%`);
+                            }
+                        } else {
+                            console.log(`[Backups] ⚠️ Data da planilha INVENTÁRIO (${dataStrInventario}) não corresponde a ontem (${dataStrOntem})`);
                         }
                     } else {
-                        console.log(`[Backups] A data da planilha INVENTÁRIO (${dateObj ? dateObj.toISOString().split('T')[0] : 'inválida'}) não corresponde a ontem (${ontem.toISOString().split('T')[0]})`);
+                        console.warn('[Backups] Não foi possível parsear a data da planilha INVENTÁRIO');
                     }
                 } else {
                     console.warn('[Backups] Planilha INVENTÁRIO vazia ou não encontrada');
@@ -2928,7 +2940,7 @@ async function carregarBackupsSemanais() {
                 console.warn('[Backups] Erro ao carregar INVENTÁRIO como fallback:', error);
             }
         } else {
-            console.log('[Backups] Dia de ontem já tem backup, ignorando fallback.');
+            console.log('[Backups] Dia de ontem já tem backup, fallback ignorado.');
         }
 
         console.log('[Backups] Resultado final:', resultados);
