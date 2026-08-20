@@ -21,14 +21,14 @@ export default async function handler(req, res) {
 console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', process.env.CHAVE_API_DO_GOOGLE ? '✅ DEFINIDA' : '❌ UNDEFINED');
 console.log('[Login] 🔍 ID_DA_PLANILHA:', process.env.ID_DA_PLANILHA ? '✅ DEFINIDA' : '❌ UNDEFINED');
   try {
-    // ============================================================
-    // LOGS DE DEPURAÇÃO (NÃO EXPÕE OS VALORES COMPLETOS)
-    // ============================================================
-    const apiKey = process.env.CHAVE_API_DO_GOOGLE;
-const spreadsheetId = process.env.SPREADSHEET_ID;
-    console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', apiKey ? '✅ DEFINIDA (primeiros 10 chars: ' + apiKey.substring(0, 10) + '...)' : '❌ UNDEFINED');
-    console.log('[Login] 🔍 ID_DA_PLANILHA:', spreadsheetId ? '✅ DEFINIDA' : '❌ UNDEFINED');
+   // ============================================================
+// USANDO O NOME CORRETO DA VARIÁVEL
+// ============================================================
+const apiKey = process.env.CHAVE_API_DO_GOOGLE;
+const spreadsheetId = process.env.SPREADSHEET_ID;  // ← CORRIGIDO
 
+console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', apiKey ? '✅ DEFINIDA' : '❌ UNDEFINED');
+console.log('[Login] 🔍 SPREADSHEET_ID:', spreadsheetId ? '✅ DEFINIDA' : '❌ UNDEFINED');
     if (!apiKey) {
       console.error('❌ CHAVE_API_DO_GOOGLE não definida');
       return res.status(500).json({

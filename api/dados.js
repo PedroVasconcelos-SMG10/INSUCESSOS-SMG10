@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     const apiKey = process.env.CHAVE_API_DO_GOOGLE;
-const spreadsheetId = process.env.SPREADSHEET_ID;
+const spreadsheetId = process.env.SPREADSHEET_ID;  // ← CORRIGIDO
     if (!apiKey || !spreadsheetId) {
       return res.status(500).json({
         success: false,
