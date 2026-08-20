@@ -25,8 +25,7 @@ console.log('[Login] 🔍 ID_DA_PLANILHA:', process.env.ID_DA_PLANILHA ? '✅ DE
     // LOGS DE DEPURAÇÃO (NÃO EXPÕE OS VALORES COMPLETOS)
     // ============================================================
     const apiKey = process.env.CHAVE_API_DO_GOOGLE;
-    const spreadsheetId = process.env.ID_DA_PLANILHA;
-
+const spreadsheetId = process.env.SPREADSHEET_ID;
     console.log('[Login] 🔍 CHAVE_API_DO_GOOGLE:', apiKey ? '✅ DEFINIDA (primeiros 10 chars: ' + apiKey.substring(0, 10) + '...)' : '❌ UNDEFINED');
     console.log('[Login] 🔍 ID_DA_PLANILHA:', spreadsheetId ? '✅ DEFINIDA' : '❌ UNDEFINED');
 
