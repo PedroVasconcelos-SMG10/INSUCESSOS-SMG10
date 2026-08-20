@@ -1,5 +1,5 @@
 // api/admin/usuarios.js
-const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFbSONJqqpg23dnNak2MfLNSHM2rc2AD_KyMlYgif_2qvB94bIKEky1EgkEi-jfBHn/exec';
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi52btwoTGK3RsVCp2eiI_B8FgomjHzXpdgH_XSrS2tXl_T5kvxHMHTx-vn2gIdgRy/exec';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
