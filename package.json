@@ -1,9 +1,5 @@
 {
   "name": "wms-dashboard-backend",
   "version": "1.0.0",
-  "description": "Backend para WMS Dashboard",
-  "type": "module",
-  "dependencies": {
-    "googleapis": "^129.0.0"
-  }
+  "type": "module"
 }
