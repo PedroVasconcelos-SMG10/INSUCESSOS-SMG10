@@ -1,39 +1,63 @@
-// api/login.js (versão com API Key)
+// api/login.js
 export default async function handler(req, res) {
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   const { email, senha } = req.body;
+
   if (!email || !senha) {
     return res.status(400).json({ success: false, error: 'E-mail e senha são obrigatórios.' });
   }
 
   try {
-    // Verifica se a API Key está configurada
+    // ============================================================
+    // VARIÁVEIS DE AMBIENTE
+    // ============================================================
     const apiKey = process.env.GOOGLE_API_KEY;
     const spreadsheetId = process.env.SPREADSHEET_ID;
 
-    if (!apiKey || !spreadsheetId) {
+    if (!apiKey) {
+      console.error('GOOGLE_API_KEY não definida');
       return res.status(500).json({
         success: false,
         error: 'Configuração do servidor incompleta. Contate o administrador.'
       });
     }
 
-    // URL da API do Google Sheets (pública)
+    if (!spreadsheetId) {
+      console.error('SPREADSHEET_ID não definida');
+      return res.status(500).json({
+        success: false,
+        error: 'Configuração do servidor incompleta. Contate o administrador.'
+      });
+    }
+
+    // ============================================================
+    // BUSCAR DADOS DA PLANILHA (PÚBLICA)
+    // ============================================================
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/USUARIOS!A:D?key=${apiKey}`;
+
+    console.log(`[Login] Buscando dados da planilha...`);
 
     const response = await fetch(url);
     const data = await response.json();
 
     if (!data.values || data.values.length < 2) {
-      return res.status(500).json({ success: false, error: 'Nenhum usuário cadastrado.' });
+      console.error('Nenhum dado encontrado na planilha');
+      return res.status(500).json({
+        success: false,
+        error: 'Nenhum usuário cadastrado. Verifique a planilha.'
+      });
     }
 
     const rows = data.values;
@@ -50,6 +74,9 @@ export default async function handler(req, res) {
       });
     }
 
+    // ============================================================
+    // VERIFICAR CREDENCIAIS
+    // ============================================================
     let usuario = null;
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -72,7 +99,10 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, error: 'Senha incorreta.' });
     }
 
+    // Remove a senha antes de retornar
     delete usuario.senha;
+
+    console.log(`[Login] Usuário ${usuario.email} autenticado com sucesso`);
     res.status(200).json({ success: true, ...usuario });
   } catch (error) {
     console.error('Erro no login:', error);
