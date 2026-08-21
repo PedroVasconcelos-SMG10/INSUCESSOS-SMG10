@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  /* ===== ESTILOS COMPLETOS (mesmo código anterior) ===== */
+  /* ===== ESTILOS COMPLETOS ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1610,10 +1610,10 @@
 // - /api/admin/usuarios (GET, POST, PUT, DELETE)
 
 // ================================================================
-//  CACHE DE DADOS (FRONTEND) COM CONTROLE DE TAMANHO
+//  CACHE DE DADOS (FRONTEND) COM CONTROLE DE TAMANHO E EXCEÇÕES
 // ================================================================
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
-const MAX_CACHE_SIZE = 1 * 1024 * 1024; // 1 MB
+const MAX_CACHE_SIZE = 5 * 1024 * 1024; // 5 MB (aumentado)
 
 function getCacheKey(action, params = '') {
     return `wms_cache_${action}_${params}`;
@@ -1929,7 +1929,7 @@ function mostrarModalLogin() {
 }
 
 // ================================================================
-//  FUNÇÕES DE CARREGAMENTO VIA API (COM CACHE)
+//  FUNÇÕES DE CARREGAMENTO VIA API (COM CACHE E EXCEÇÕES)
 // ================================================================
 async function lerDados(action) {
     const cached = getFromCache(action);
@@ -1976,18 +1976,28 @@ async function listarAbasViaAPI() {
 }
 
 async function lerAbaViaAPI(nomeAba) {
-    const cacheKey = `aba_${nomeAba}`;
-    const cached = getFromCache(cacheKey);
-    if (cached) {
-        console.log(`[Cache] Usando cache para aba ${nomeAba}`);
-        return cached;
+    // Abas que NÃO devem ser cacheadas (grandes ou sensíveis)
+    const noCache = ['Descrição', 'DESCRIÇÃO', 'RESPOSTAS', 'respostas'];
+    const shouldCache = !noCache.includes(nomeAba);
+
+    if (shouldCache) {
+        const cacheKey = `aba_${nomeAba}`;
+        const cached = getFromCache(cacheKey);
+        if (cached) {
+            console.log(`[Cache] Usando cache para aba ${nomeAba}`);
+            return cached;
+        }
     }
 
     try {
         const response = await fetch(`/api/dados?action=lerAba&nome=${encodeURIComponent(nomeAba)}`);
         const result = await response.json();
         if (result.success) {
-            setCache(cacheKey, result.data);
+            if (shouldCache) {
+                setCache(`aba_${nomeAba}`, result.data);
+            } else {
+                console.log(`[Cache] Ignorando cache para aba ${nomeAba} (grande ou sensível)`);
+            }
             return result.data;
         } else {
             throw new Error(result.error || 'Erro ao ler aba');
