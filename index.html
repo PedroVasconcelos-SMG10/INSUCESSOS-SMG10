@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  /* ===== ESTILOS COMPLETOS ===== */
+  /* ===== ESTILOS COMPLETOS (mesmo código anterior) ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1610,9 +1610,10 @@
 // - /api/admin/usuarios (GET, POST, PUT, DELETE)
 
 // ================================================================
-//  CACHE DE DADOS (FRONTEND)
+//  CACHE DE DADOS (FRONTEND) COM CONTROLE DE TAMANHO
 // ================================================================
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+const MAX_CACHE_SIZE = 1 * 1024 * 1024; // 1 MB
 
 function getCacheKey(action, params = '') {
     return `wms_cache_${action}_${params}`;
@@ -1635,11 +1636,22 @@ function getFromCache(action, params = '') {
 }
 
 function setCache(action, value, params = '') {
-    const key = getCacheKey(action, params);
-    localStorage.setItem(key, JSON.stringify({
-        timestamp: Date.now(),
-        value: value
-    }));
+    try {
+        const key = getCacheKey(action, params);
+        const serialized = JSON.stringify({
+            timestamp: Date.now(),
+            value: value
+        });
+        // Verifica o tamanho antes de armazenar
+        if (serialized.length > MAX_CACHE_SIZE) {
+            console.warn(`[Cache] Dados muito grandes para ${action} (${serialized.length} bytes) - não armazenado.`);
+            return;
+        }
+        localStorage.setItem(key, serialized);
+    } catch (e) {
+        // Se der quota excedida, apenas ignora
+        console.warn(`[Cache] Não foi possível armazenar ${action}:`, e.message);
+    }
 }
 
 function clearCache() {
@@ -1708,7 +1720,6 @@ function parseDataBR(texto) {
     if (!texto) return null;
     texto = texto.trim();
 
-    // Tenta formato ISO: YYYY-MM-DD
     const isoMatch = texto.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
         const ano = parseInt(isoMatch[1], 10);
@@ -1719,7 +1730,6 @@ function parseDataBR(texto) {
         }
     }
 
-    // Tenta formato "17 de ago. de 2026"
     const meses = {
         'jan': 0, 'jan.': 0, 'janeiro': 0,
         'fev': 1, 'fev.': 1, 'fevereiro': 1,
@@ -1746,7 +1756,6 @@ function parseDataBR(texto) {
         }
     }
 
-    // Fallback: tenta o construtor padrão
     const fallback = new Date(texto);
     if (!isNaN(fallback.getTime())) return fallback;
     return null;
@@ -1824,7 +1833,7 @@ function logout() {
     renderGraficos_Inventario(null);
     renderZonas(null);
     renderPreviewInventario(null, null);
-    clearCache(); // Limpa cache ao deslogar
+    clearCache();
     carregarDadosExemplo();
 }
 
@@ -1923,7 +1932,6 @@ function mostrarModalLogin() {
 //  FUNÇÕES DE CARREGAMENTO VIA API (COM CACHE)
 // ================================================================
 async function lerDados(action) {
-    // Verificar cache
     const cached = getFromCache(action);
     if (cached) {
         console.log(`[Cache] Usando cache para ${action}`);
@@ -2183,6 +2191,9 @@ function renderKPI_Inventario(data) {
     if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
 
+// ================================================================
+//  GRÁFICOS COM CORREÇÃO DE TICKS
+// ================================================================
 function renderGraficosPacotes(data, dadosFiltrados) {
     try {
         if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; }
@@ -2211,6 +2222,14 @@ function renderGraficosPacotes(data, dadosFiltrados) {
             acumulado += val;
             return parseFloat((acumulado / total * 100).toFixed(1));
         });
+        // Define stepSize dinamicamente
+        const maxVal = Math.max(...sortedValues, 1);
+        let stepSize = 1;
+        if (maxVal > 20) stepSize = Math.ceil(maxVal / 10);
+        if (maxVal > 200) stepSize = Math.ceil(maxVal / 20);
+        if (maxVal > 1000) stepSize = Math.ceil(maxVal / 30);
+        const yMax = maxVal + stepSize * 2;
+
         return new Chart(ctx, {
             type: 'bar',
             data: {
@@ -2284,7 +2303,13 @@ function renderGraficosPacotes(data, dadosFiltrados) {
                     y: {
                         beginAtZero: true,
                         position: 'left',
-                        ticks: { color: '#8b8f99', font: { size: 10 }, stepSize: 1 },
+                        max: yMax,
+                        ticks: { 
+                            color: '#8b8f99', 
+                            font: { size: 10 },
+                            stepSize: stepSize,
+                            maxTicksLimit: 20
+                        },
                         grid: { color: '#2b2f37' }
                     },
                     y1: {
@@ -2350,12 +2375,36 @@ function renderGraficosPacotes(data, dadosFiltrados) {
         chartQuantidade = new Chart(chartQuant, {
             type: 'bar',
             data: { labels, datasets: [{ label: 'Pacotes', data: quantidades, backgroundColor: '#e0aa3d', borderColor: '#e0aa3d', borderWidth: 1, borderRadius: 4, hoverBackgroundColor: '#f1c40f' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#8b8f99', font: { size: 10 }, maxTicksLimit: 15 },
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } 
+                } 
+            }
         });
         chartValor = new Chart(chartVal, {
             type: 'bar',
             data: { labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: '#4fae7c', borderColor: '#4fae7c', borderWidth: 1, borderRadius: 4, hoverBackgroundColor: '#2ecc71' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#8b8f99', font: { size: 10 }, callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); } }, grid: { color: '#2b2f37' } }, x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#8b8f99', font: { size: 10 }, callback: function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }, maxTicksLimit: 15 },
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } 
+                } 
+            }
         });
         const h3s = document.querySelectorAll('.chart-card h3');
         if (h3s.length >= 2) {
@@ -2386,7 +2435,20 @@ function renderGraficos_Inventario(data) {
                 { label: 'Faltantes', data: faltante, backgroundColor: '#e8593f', borderColor: '#e8593f', borderWidth: 1, borderRadius: 2 },
                 { label: 'Intrusos', data: intruso, backgroundColor: '#9b59b6', borderColor: '#9b59b6', borderWidth: 1, borderRadius: 2 }
             ] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8b8f99', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#8b8f99', font: { size: 10 } }, grid: { color: '#2b2f37' } }, x: { stacked: true, ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { labels: { color: '#8b8f99', font: { size: 10 } } } }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        stacked: true, 
+                        ticks: { color: '#8b8f99', font: { size: 10 }, maxTicksLimit: 10 },
+                        grid: { color: '#2b2f37' } 
+                    }, 
+                    x: { stacked: true, ticks: { color: '#8b8f99', font: { size: 9 } }, grid: { display: false } } 
+                } 
+            }
         });
         chartOverview = new Chart(ctxOverview, {
             type: 'doughnut',
@@ -2577,49 +2639,8 @@ function renderSecaoTransportadoras(data) {
     }
 }
 
-function renderTransportadoras(data) {
-    const container = document.getElementById('containerTransportadoras');
-    if (!container) return;
-    if (!data || data.transportadoras.length === 0) {
-        container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
-        return;
-    }
-    const isViewer = currentUserRole === 'viewer';
-    container.innerHTML = data.transportadoras.map(t => {
-        const cardClass = isViewer ? 'transportadora-card blocked' : 'transportadora-card';
-        const bloqueioMsg = isViewer ? '<span style="font-size:10px;color:var(--text-faint);display:block;margin-top:4px;">🔒 Acesso restrito</span>' : '';
-        const nomeEscapado = t.nome.replace(/"/g, '&quot;');
-        return `<div class="${cardClass}" data-transportadora="${nomeEscapado}">
-            <div class="nome">${t.nome}</div>
-            <div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div>
-            ${bloqueioMsg}
-        </div>`;
-    }).join('');
-
-    container.querySelectorAll('.transportadora-card:not(.blocked)').forEach(card => {
-        card.addEventListener('click', function() {
-            const nome = this.dataset.transportadora;
-            abrirModalPacotes(nome);
-        });
-    });
-    if (isViewer) {
-        container.querySelectorAll('.transportadora-card.blocked').forEach(card => {
-            card.addEventListener('click', function(e) {
-                e.stopPropagation();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Acesso Negado',
-                    text: 'Você não tem permissão para visualizar os IDs. Contate o administrador.',
-                    confirmButtonColor: '#e8593f',
-                    confirmButtonText: 'OK'
-                });
-            });
-        });
-    }
-}
-
 // ================================================================
-//  FUNÇÕES DE MODAL E LISTA
+//  RENDERIZAR LISTA DE IDs COM LINK AUTOMÁTICO (CORRIGIDO)
 // ================================================================
 function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     const container = document.getElementById('containerTransportadoras');
@@ -2640,6 +2661,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     window._linhasAtuais = linhas;
     window._ordenacaoAtual = 'valor_asc';
     window._paginaIdsAtual = 1;
+
     function ordenarERenderizar(opcao) {
         window._ordenacaoAtual = opcao;
         let linhasOrdenadas = [...window._linhasAtuais];
@@ -2675,6 +2697,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 break;
             default: break;
         }
+
         const ids = linhasOrdenadas.map(row => String(row['ID do envio'] || '').trim());
         const valores = linhasOrdenadas.map(row => parseFloat(String(row['Valor declarado'] || '0').replace(',', '.')) || 0);
         const motoristas = linhasOrdenadas.map(row => {
@@ -2682,6 +2705,10 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
+
+        // ================================================================
+        //  GERAR LINK AUTOMATICAMENTE A PARTIR DO ID (CORRIGIDO)
+        // ================================================================
         let linkField = null;
         const colunasPossiveis = ['LINK', 'Link', 'link', 'URL', 'Url', 'url'];
         if (linhasOrdenadas.length > 0) {
@@ -2693,7 +2720,17 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 }
             }
         }
-        const links = linhasOrdenadas.map(row => linkField ? (row[linkField] || '') : '');
+        const links = linhasOrdenadas.map(row => {
+            if (linkField && row[linkField]) {
+                return row[linkField];
+            }
+            const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
+            if (id) {
+                return `https://envios.adminml.com/logistics/package-management/package/${id}`;
+            }
+            return '';
+        });
+
         const objOrdenado = {
             nome: transpObj.nome,
             ids: ids,
@@ -2704,8 +2741,10 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             valorTotal: valores.reduce((a, b) => a + b, 0),
             valorFormatado: 'R$ ' + valores.reduce((a, b) => a + b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
         };
+
         renderizarListaPaginada(objOrdenado);
     }
+
     function renderizarListaPaginada(objOrdenado) {
         const ids = objOrdenado.ids;
         const valores = objOrdenado.valores;
@@ -2723,6 +2762,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         const linksPagina = links.slice(start, end);
         const descricoesPagina = descricoes.slice(start, end);
         const justificadosPagina = justificados.slice(start, end);
+
         const navHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
             <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">
                 Mostrando ${start + 1} a ${end} de ${ids.length} IDs (Página ${page} de ${totalPaginas})
@@ -2736,12 +2776,14 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 </button>
             </div>
         </div>`;
+
         const selecaoBar = `<div class="selecao-bar" id="selecaoBarIds">
             <div class="info">📌 <span id="selecionadosCountIds">0</span> pacotes selecionados</div>
             <button class="btn-resposta" id="btnAbrirRespostaIds" disabled onclick="abrirRespostaIds()">📝 Responder</button>
             <button class="btn-selecionar" onclick="selecionarTodosIds()">Selecionar todos</button>
             <button class="btn-selecionar" onclick="limparSelecaoIds()">Limpar</button>
         </div>`;
+
         const isAdmin = currentUserRole === 'admin';
         let headerCols = `
             <th style="width:30px;"></th>
@@ -2754,6 +2796,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         if (isAdmin) {
             headerCols += `<th style="width:80px;">Ação</th>`;
         }
+
         const ordenacaoHtml = `<div style="display:flex; align-items:center; gap:10px; padding:8px 14px; background:var(--bg); border-bottom:1px solid var(--line-soft); flex-wrap:wrap;">
             <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Ordenar por:</span>
             <select id="ordenacaoSelect" style="background:var(--panel); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:11px; cursor:pointer; outline:none;">
@@ -2763,6 +2806,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <option value="data_desc" ${window._ordenacaoAtual === 'data_desc' ? 'selected' : ''}>Data (mais recente)</option>
             </select>
         </div>`;
+
         let tableHtml = `<div class="ids-tabela-wrap">
             <div class="header">
                 <h3>📋 Lista de Pacotes</h3>
@@ -2774,6 +2818,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <table>
                     <thead><tr>${headerCols}</tr></thead>
                     <tbody>`;
+
         idsPagina.forEach((id, index) => {
             const globalIndex = start + index + 1;
             const valor = valoresPagina[index] || 0;
@@ -2783,9 +2828,11 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             const statusClass = justificado ? 'justificado' : 'pendente';
             const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
             const link = linksPagina[index] || '';
+
             let idHtml = link 
                 ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
                 : `<strong>${id}</strong>`;
+
             let row = `<tr>
                 <td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}', '${motorista.replace(/'/g, "\\'")}')"></td>
                 <td>${globalIndex}</td>
@@ -2794,6 +2841,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 <td>R$ ${valor.toFixed(2)}</td>
                 <td>${motorista}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
+
             if (isAdmin) {
                 const btnText = justificado ? 'Desmarcar' : 'Justificar';
                 const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle';
@@ -2802,9 +2850,11 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             row += `</tr>`;
             tableHtml += row;
         });
+
         tableHtml += `</tbody></table>${navHtml}</div></div>`;
         container.innerHTML = tableHtml;
         atualizarSelecaoIds();
+
         const select = document.getElementById('ordenacaoSelect');
         if (select) {
             select.addEventListener('change', function() {
@@ -2814,12 +2864,14 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             });
         }
     }
+
     window.irParaPaginaIds = function(pagina) {
         const totalPaginas = Math.ceil(window._linhasAtuais.length / ITEMS_PER_PAGE);
         if (pagina < 1 || pagina > totalPaginas) return;
         window._paginaIdsAtual = pagina;
         ordenarERenderizar(window._ordenacaoAtual);
     };
+
     window.selecionarTodosIds = function() {
         document.querySelectorAll('.id-checkbox-ids').forEach(cb => {
             cb.checked = true;
@@ -2872,7 +2924,49 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
         modalTransportadora = transpObj;
         abrirModalResposta();
     };
+
     ordenarERenderizar('valor_asc');
+}
+
+function renderTransportadoras(data) {
+    const container = document.getElementById('containerTransportadoras');
+    if (!container) return;
+    if (!data || data.transportadoras.length === 0) {
+        container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`;
+        return;
+    }
+    const isViewer = currentUserRole === 'viewer';
+    container.innerHTML = data.transportadoras.map(t => {
+        const cardClass = isViewer ? 'transportadora-card blocked' : 'transportadora-card';
+        const bloqueioMsg = isViewer ? '<span style="font-size:10px;color:var(--text-faint);display:block;margin-top:4px;">🔒 Acesso restrito</span>' : '';
+        const nomeEscapado = t.nome.replace(/"/g, '&quot;');
+        return `<div class="${cardClass}" data-transportadora="${nomeEscapado}">
+            <div class="nome">${t.nome}</div>
+            <div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div>
+            ${bloqueioMsg}
+        </div>`;
+    }).join('');
+
+    container.querySelectorAll('.transportadora-card:not(.blocked)').forEach(card => {
+        card.addEventListener('click', function() {
+            const nome = this.dataset.transportadora;
+            abrirModalPacotes(nome);
+        });
+    });
+    if (isViewer) {
+        container.querySelectorAll('.transportadora-card.blocked').forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.stopPropagation();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Acesso Negado',
+                    text: 'Você não tem permissão para visualizar os IDs. Contate o administrador.',
+                    confirmButtonColor: '#e8593f',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+    }
 }
 
 // ================================================================
@@ -4021,7 +4115,7 @@ async function toggleStatus(id, transportadora, motorista) {
 }
 
 // ================================================================
-//  EVENT LISTENERS (COM LIMPEZA DE CACHE)
+//  EVENT LISTENERS
 // ================================================================
 document.getElementById('refreshPacotes')?.addEventListener('click', function() {
     if (isAuthenticated) {
