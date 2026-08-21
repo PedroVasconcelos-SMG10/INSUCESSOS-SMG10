@@ -2640,7 +2640,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
     window._linhasAtuais = linhas;
     window._ordenacaoAtual = 'valor_asc';
     window._paginaIdsAtual = 1;
-
     function ordenarERenderizar(opcao) {
         window._ordenacaoAtual = opcao;
         let linhasOrdenadas = [...window._linhasAtuais];
@@ -2676,7 +2675,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 break;
             default: break;
         }
-
         const ids = linhasOrdenadas.map(row => String(row['ID do envio'] || '').trim());
         const valores = linhasOrdenadas.map(row => parseFloat(String(row['Valor declarado'] || '0').replace(',', '.')) || 0);
         const motoristas = linhasOrdenadas.map(row => {
@@ -2684,10 +2682,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
             return m;
         });
-
-        // ================================================================
-        //  GERAR LINK AUTOMATICAMENTE A PARTIR DO ID
-        // ================================================================
         let linkField = null;
         const colunasPossiveis = ['LINK', 'Link', 'link', 'URL', 'Url', 'url'];
         if (linhasOrdenadas.length > 0) {
@@ -2699,17 +2693,7 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
                 }
             }
         }
-        const links = linhasOrdenadas.map(row => {
-            if (linkField && row[linkField]) {
-                return row[linkField];
-            }
-            const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-            if (id) {
-                return `https://envios.adminml.com/logistics/package-management/package/${id}`;
-            }
-            return '';
-        });
-
+        const links = linhasOrdenadas.map(row => linkField ? (row[linkField] || '') : '');
         const objOrdenado = {
             nome: transpObj.nome,
             ids: ids,
@@ -2720,195 +2704,6 @@ function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
             valorTotal: valores.reduce((a, b) => a + b, 0),
             valorFormatado: 'R$ ' + valores.reduce((a, b) => a + b, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
         };
-
-        renderizarListaPaginada(objOrdenado);
-    }
-
-    // ================================================================
-    //  RENDERIZAR LISTA PAGINADA (mantido igual)
-    // ================================================================
-    function renderizarListaPaginada(objOrdenado) {
-        const ids = objOrdenado.ids;
-        const valores = objOrdenado.valores;
-        const motoristas = objOrdenado.motoristas;
-        const links = objOrdenado.links || [];
-        const descricoes = ids.map(id => descricaoMap[id] || '');
-        const justificados = ids.map(id => respostasSet.has(id));
-        const page = window._paginaIdsAtual || 1;
-        const totalPaginas = Math.ceil(ids.length / ITEMS_PER_PAGE);
-        const start = (page - 1) * ITEMS_PER_PAGE;
-        const end = Math.min(start + ITEMS_PER_PAGE, ids.length);
-        const idsPagina = ids.slice(start, end);
-        const valoresPagina = valores.slice(start, end);
-        const motoristasPagina = motoristas.slice(start, end);
-        const linksPagina = links.slice(start, end);
-        const descricoesPagina = descricoes.slice(start, end);
-        const justificadosPagina = justificados.slice(start, end);
-
-        const navHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
-            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">
-                Mostrando ${start + 1} a ${end} de ${ids.length} IDs (Página ${page} de ${totalPaginas})
-            </span>
-            <div style="display:flex; gap:8px;">
-                <button class="btn-secondary" style="padding:4px 14px; font-size:11px; background:var(--panel);" onclick="irParaPaginaIds(${page - 1})" ${page <= 1 ? 'disabled' : ''}>
-                    ◀ Anterior
-                </button>
-                <button class="btn-secondary" style="padding:4px 14px; font-size:11px; background:var(--panel);" onclick="irParaPaginaIds(${page + 1})" ${end >= ids.length ? 'disabled' : ''}>
-                    Próximo ▶
-                </button>
-            </div>
-        </div>`;
-
-        const selecaoBar = `<div class="selecao-bar" id="selecaoBarIds">
-            <div class="info">📌 <span id="selecionadosCountIds">0</span> pacotes selecionados</div>
-            <button class="btn-resposta" id="btnAbrirRespostaIds" disabled onclick="abrirRespostaIds()">📝 Responder</button>
-            <button class="btn-selecionar" onclick="selecionarTodosIds()">Selecionar todos</button>
-            <button class="btn-selecionar" onclick="limparSelecaoIds()">Limpar</button>
-        </div>`;
-
-        const isAdmin = currentUserRole === 'admin';
-        let headerCols = `
-            <th style="width:30px;"></th>
-            <th style="width:30px;">#</th>
-            <th>ID do Envio</th>
-            <th>Descrição</th>
-            <th>Valor (R$)</th>
-            <th>Motorista</th>
-            <th>Status</th>`;
-        if (isAdmin) {
-            headerCols += `<th style="width:80px;">Ação</th>`;
-        }
-
-        const ordenacaoHtml = `<div style="display:flex; align-items:center; gap:10px; padding:8px 14px; background:var(--bg); border-bottom:1px solid var(--line-soft); flex-wrap:wrap;">
-            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);">Ordenar por:</span>
-            <select id="ordenacaoSelect" style="background:var(--panel); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-family:'IBM Plex Mono',monospace; font-size:11px; cursor:pointer; outline:none;">
-                <option value="valor_asc" ${window._ordenacaoAtual === 'valor_asc' ? 'selected' : ''}>Valor (menor → maior)</option>
-                <option value="valor_desc" ${window._ordenacaoAtual === 'valor_desc' ? 'selected' : ''}>Valor (maior → menor)</option>
-                <option value="data_asc" ${window._ordenacaoAtual === 'data_asc' ? 'selected' : ''}>Data (mais antigo)</option>
-                <option value="data_desc" ${window._ordenacaoAtual === 'data_desc' ? 'selected' : ''}>Data (mais recente)</option>
-            </select>
-        </div>`;
-
-        let tableHtml = `<div class="ids-tabela-wrap">
-            <div class="header">
-                <h3>📋 Lista de Pacotes</h3>
-                <span class="badge">${ids.length} registros</span>
-            </div>
-            ${ordenacaoHtml}
-            ${selecaoBar}
-            <div class="ids-tabela">
-                <table>
-                    <thead><tr>${headerCols}</tr></thead>
-                    <tbody>`;
-
-        idsPagina.forEach((id, index) => {
-            const globalIndex = start + index + 1;
-            const valor = valoresPagina[index] || 0;
-            const motorista = motoristasPagina[index] || 'N/A';
-            const descricao = descricoesPagina[index]?.trim() || 'Pacote de devolução sem identificação';
-            const justificado = justificadosPagina[index];
-            const statusClass = justificado ? 'justificado' : 'pendente';
-            const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
-            const link = linksPagina[index] || '';
-
-            let idHtml = link 
-                ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;" title="Abrir link do pacote">${id}</a>`
-                : `<strong>${id}</strong>`;
-
-            let row = `<tr>
-                <td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}', '${motorista.replace(/'/g, "\\'")}')"></td>
-                <td>${globalIndex}</td>
-                <td>${idHtml}</td>
-                <td>${descricao}</td>
-                <td>R$ ${valor.toFixed(2)}</td>
-                <td>${motorista}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
-
-            if (isAdmin) {
-                const btnText = justificado ? 'Desmarcar' : 'Justificar';
-                const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle';
-                row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}', '${objOrdenado.nome.replace(/'/g, "\\'")}', '${motorista.replace(/'/g, "\\'")}')">${btnText}</button></td>`;
-            }
-            row += `</tr>`;
-            tableHtml += row;
-        });
-
-        tableHtml += `</tbody></table>${navHtml}</div></div>`;
-        container.innerHTML = tableHtml;
-        atualizarSelecaoIds();
-
-        const select = document.getElementById('ordenacaoSelect');
-        if (select) {
-            select.addEventListener('change', function() {
-                const opcao = this.value;
-                window._paginaIdsAtual = 1;
-                ordenarERenderizar(opcao);
-            });
-        }
-    }
-
-    window.irParaPaginaIds = function(pagina) {
-        const totalPaginas = Math.ceil(window._linhasAtuais.length / ITEMS_PER_PAGE);
-        if (pagina < 1 || pagina > totalPaginas) return;
-        window._paginaIdsAtual = pagina;
-        ordenarERenderizar(window._ordenacaoAtual);
-    };
-
-    window.selecionarTodosIds = function() {
-        document.querySelectorAll('.id-checkbox-ids').forEach(cb => {
-            cb.checked = true;
-            const id = cb.dataset.id;
-            const motorista = cb.dataset.motorista;
-            idsSelecionados.add(id);
-            motoristasSelecionados[id] = motorista;
-        });
-        atualizarSelecaoIds();
-    };
-    window.limparSelecaoIds = function() {
-        document.querySelectorAll('.id-checkbox-ids').forEach(cb => {
-            cb.checked = false;
-        });
-        idsSelecionados.clear();
-        motoristasSelecionados = {};
-        atualizarSelecaoIds();
-    };
-    window.toggleSelecaoIds = function(id, motorista) {
-        if (idsSelecionados.has(id)) {
-            idsSelecionados.delete(id);
-            delete motoristasSelecionados[id];
-        } else {
-            idsSelecionados.add(id);
-            motoristasSelecionados[id] = motorista;
-        }
-        atualizarSelecaoIds();
-    };
-    window.atualizarSelecaoIds = function() {
-        const count = idsSelecionados.size;
-        const countEl = document.getElementById('selecionadosCountIds');
-        const btn = document.getElementById('btnAbrirRespostaIds');
-        if (countEl) countEl.textContent = count;
-        if (btn) {
-            btn.disabled = count === 0;
-            btn.textContent = count > 0 ? `📝 Responder (${count})` : '📝 Responder';
-        }
-    };
-    window.abrirRespostaIds = function() {
-        if (idsSelecionados.size === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Nenhum pacote selecionado',
-                text: 'Selecione pelo menos um pacote para responder.',
-                confirmButtonColor: '#e0aa3d',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-        modalTransportadora = transpObj;
-        abrirModalResposta();
-    };
-
-    ordenarERenderizar('valor_asc');
-}
         renderizarListaPaginada(objOrdenado);
     }
     function renderizarListaPaginada(objOrdenado) {
