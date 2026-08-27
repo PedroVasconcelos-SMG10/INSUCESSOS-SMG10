@@ -143,6 +143,9 @@
   .tab-btn.tab-admin.active{
     box-shadow:inset 0 -3px 0 var(--purple);
   }
+  .tab-btn.tab-respostas.active{
+    box-shadow:inset 0 -3px 0 var(--info);
+  }
   .tab-content{
     display:none;
     animation:fadeIn .4s ease;
@@ -1420,6 +1423,7 @@
     <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes</button>
     <button class="tab-btn" data-tab="tabInventario">📊 Inventário</button>
     <button class="tab-btn tab-cruzamento" data-tab="tabCruzamento">🔗 Cruzamento</button>
+    <button class="tab-btn tab-respostas" data-tab="tabRespostas">📝 Respostas</button>
     <button class="tab-btn tab-admin" data-tab="tabAdmin" style="display:none;">👑 Admin</button>
   </div>
 
@@ -1513,9 +1517,79 @@
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- TAB 4: ADMIN -->
-  <!-- ========================================================== -->
+  <!-- TAB 4: RESPOSTAS -->
+  <div class="tab-content" id="tabRespostas">
+    <div class="status-bar">
+      <div class="info">
+        <span class="dot-status loading" id="statusDotRespostas"></span>
+        <span id="statusTextRespostas">📥 Carregando respostas...</span>
+        <span id="recordCountRespostas" style="color:var(--text-faint);"></span>
+        <span id="roleBadgeContainerRespostas"></span>
+      </div>
+      <button class="btn btn-primary" id="refreshRespostas">🔄 Atualizar</button>
+    </div>
+
+    <!-- Filtros -->
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; background:var(--panel); padding:12px 16px; border:1px solid var(--line-soft); border-radius:4px;">
+      <div>
+        <label style="font-size:11px; color:var(--text-dim);">🔍 Filtrar por:</label>
+        <select id="filtroRespostasTransportadora" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-size:11px;">
+          <option value="TODAS">Todas transportadoras</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--text-dim);">👤 Responsável:</label>
+        <input type="text" id="filtroRespostasResponsavel" placeholder="Nome..." style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-size:11px; width:150px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--text-dim);">📅 Data inicial:</label>
+        <input type="date" id="filtroRespostasDataInicio" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-size:11px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--text-dim);">📅 Data final:</label>
+        <input type="date" id="filtroRespostasDataFim" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); padding:4px 8px; border-radius:3px; font-size:11px;">
+      </div>
+      <button class="btn btn-secondary" id="btnFiltrarRespostas" style="padding:4px 16px; font-size:11px;">✅ Filtrar</button>
+      <button class="btn btn-secondary" id="btnLimparFiltrosRespostas" style="padding:4px 16px; font-size:11px;">❌ Limpar</button>
+      <button class="btn btn-cruzamento" id="btnExportarRespostas" style="padding:4px 16px; font-size:11px;">📤 Exportar CSV</button>
+    </div>
+
+    <!-- Tabela de respostas -->
+    <div class="ids-tabela-wrap">
+      <div class="header">
+        <h3>📋 Histórico de Respostas</h3>
+        <span class="badge" id="respostasCount">0 registros</span>
+      </div>
+      <div class="ids-tabela">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ID do Envio</th>
+              <th>Transportadora</th>
+              <th>Motorista</th>
+              <th>Responsável</th>
+              <th>Justificativa</th>
+              <th>Data/Hora</th>
+            </tr>
+          </thead>
+          <tbody id="respostasTbody">
+            <tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:30px;">Carregando respostas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="respostasPaginacao" style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:8px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim);" id="respostasInfoPagina">Mostrando 0 a 0 de 0</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:4px 14px; font-size:11px; background:var(--panel);" disabled>◀ Anterior</button>
+          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:4px 14px; font-size:11px; background:var(--panel);" disabled>Próximo ▶</button>
+        </div>
+      </div>
+    </div>
+    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (RESPOSTAS)</span><span id="footerTotalRespostas">0 registros</span></footer>
+  </div>
+
+  <!-- TAB 5: ADMIN -->
   <div class="tab-content" id="tabAdmin">
     <div class="status-bar">
       <div class="info">
@@ -2980,6 +3054,219 @@ function renderTransportadoras(data) {
 }
 
 // ================================================================
+//  TAB RESPOSTAS
+// ================================================================
+let respostasData = [];
+let respostasFiltradas = [];
+let respostasPaginaAtual = 1;
+const RESPOSTAS_POR_PAGINA = 20;
+
+async function carregarRespostas() {
+    const tbody = document.getElementById('respostasTbody');
+    const statusDot = document.getElementById('statusDotRespostas');
+    const statusText = document.getElementById('statusTextRespostas');
+    const countSpan = document.getElementById('respostasCount');
+    const footerSpan = document.getElementById('footerTotalRespostas');
+    const roleBadge = document.getElementById('roleBadgeContainerRespostas');
+
+    // Verifica permissão
+    if (currentUserRole === 'viewer') {
+        if (statusText) statusText.textContent = '🔒 Acesso negado. Apenas administradores e operadores.';
+        if (statusDot) statusDot.className = 'dot-status offline';
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:30px;">Você não tem permissão para visualizar as respostas.</td></tr>`;
+        if (countSpan) countSpan.textContent = '0 registros';
+        if (footerSpan) footerSpan.textContent = '0 registros';
+        return;
+    }
+
+    try {
+        if (statusDot) statusDot.className = 'dot-status loading';
+        if (statusText) statusText.textContent = '📥 Carregando respostas...';
+
+        const data = await lerAbaViaAPI('RESPOSTAS');
+        respostasData = data || [];
+
+        // Preencher filtro de transportadoras
+        const transportadoras = [...new Set(respostasData.map(r => r['Transportadora'] || '').filter(Boolean))];
+        const selectTransp = document.getElementById('filtroRespostasTransportadora');
+        if (selectTransp) {
+            selectTransp.innerHTML = '<option value="TODAS">Todas transportadoras</option>';
+            transportadoras.sort().forEach(t => {
+                selectTransp.innerHTML += `<option value="${t.replace(/"/g, '&quot;')}">${t}</option>`;
+            });
+        }
+
+        // Exibir papel
+        if (roleBadge) {
+            roleBadge.innerHTML = '';
+            const badge = document.createElement('span');
+            badge.className = `role-badge ${currentUserRole === 'admin' ? 'admin' : 'editor'}`;
+            badge.textContent = currentUserRole === 'admin' ? '👑 Admin' : '📦 Operador';
+            roleBadge.appendChild(badge);
+        }
+
+        if (statusDot) statusDot.className = 'dot-status online';
+        if (statusText) statusText.textContent = `✅ ${respostasData.length} respostas carregadas`;
+
+        // Aplicar filtros iniciais (sem filtro)
+        aplicarFiltrosRespostas();
+
+    } catch (error) {
+        console.error('[Respostas] Erro ao carregar:', error);
+        if (statusDot) statusDot.className = 'dot-status offline';
+        if (statusText) statusText.textContent = `❌ Erro: ${error.message}`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:30px;">Erro ao carregar respostas: ${error.message}</td></tr>`;
+    }
+}
+
+function aplicarFiltrosRespostas() {
+    const transpFiltro = document.getElementById('filtroRespostasTransportadora')?.value || 'TODAS';
+    const responsavelFiltro = document.getElementById('filtroRespostasResponsavel')?.value.trim().toLowerCase() || '';
+    const dataInicio = document.getElementById('filtroRespostasDataInicio')?.value;
+    const dataFim = document.getElementById('filtroRespostasDataFim')?.value;
+
+    respostasFiltradas = respostasData.filter(row => {
+        const transp = row['Transportadora'] || '';
+        if (transpFiltro !== 'TODAS' && transp !== transpFiltro) return false;
+
+        const responsavel = (row['Nome_Responsavel'] || '').toLowerCase();
+        if (responsavelFiltro && !responsavel.includes(responsavelFiltro)) return false;
+
+        const dataHoraStr = row['Data_Hora'] || '';
+        if (dataInicio || dataFim) {
+            // Tenta parsear Data_Hora (formato esperado: "DD/MM/YYYY HH:MM:SS" ou similar)
+            const parts = dataHoraStr.split(' ');
+            const datePart = parts[0] || '';
+            const [dia, mes, ano] = datePart.split('/').map(Number);
+            if (dia && mes && ano) {
+                const dataObj = new Date(ano, mes - 1, dia);
+                if (dataInicio) {
+                    const inicio = new Date(dataInicio);
+                    if (dataObj < inicio) return false;
+                }
+                if (dataFim) {
+                    const fim = new Date(dataFim);
+                    fim.setHours(23, 59, 59);
+                    if (dataObj > fim) return false;
+                }
+            }
+        }
+        return true;
+    });
+
+    // Ordenar por Data_Hora descendente (mais recente primeiro)
+    respostasFiltradas.sort((a, b) => {
+        const da = a['Data_Hora'] || '';
+        const db = b['Data_Hora'] || '';
+        return db.localeCompare(da);
+    });
+
+    respostasPaginaAtual = 1;
+    renderizarRespostas();
+}
+
+function renderizarRespostas() {
+    const tbody = document.getElementById('respostasTbody');
+    const countSpan = document.getElementById('respostasCount');
+    const footerSpan = document.getElementById('footerTotalRespostas');
+    const infoPagina = document.getElementById('respostasInfoPagina');
+    const btnAnterior = document.getElementById('respostasPaginaAnterior');
+    const btnProximo = document.getElementById('respostasPaginaProximo');
+
+    const total = respostasFiltradas.length;
+    const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
+    const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
+    const start = (pagina - 1) * RESPOSTAS_POR_PAGINA;
+    const end = Math.min(start + RESPOSTAS_POR_PAGINA, total);
+    const paginaData = respostasFiltradas.slice(start, end);
+
+    if (countSpan) countSpan.textContent = `${total} registros`;
+    if (footerSpan) footerSpan.textContent = `${total} registros`;
+
+    if (infoPagina) {
+        infoPagina.textContent = total > 0 ? `Mostrando ${start + 1} a ${end} de ${total}` : 'Nenhum registro';
+    }
+
+    if (btnAnterior) btnAnterior.disabled = pagina <= 1;
+    if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
+
+    if (paginaData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:30px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = paginaData.map((row, index) => {
+        const globalIndex = start + index + 1;
+        const id = row['ID'] || row['ID do envio'] || '';
+        const transportadora = row['Transportadora'] || '';
+        const motorista = row['Motorista'] || '';
+        const responsavel = row['Nome_Responsavel'] || '';
+        const justificativa = row['Justificativa'] || '';
+        const dataHora = row['Data_Hora'] || '';
+
+        return `<tr>
+            <td>${globalIndex}</td>
+            <td><strong>${id}</strong></td>
+            <td>${transportadora}</td>
+            <td>${motorista}</td>
+            <td>${responsavel}</td>
+            <td style="max-width:250px; white-space:normal; word-break:break-word;">${justificativa}</td>
+            <td>${dataHora}</td>
+        </tr>`;
+    }).join('');
+}
+
+// Eventos dos filtros e paginação
+document.getElementById('btnFiltrarRespostas')?.addEventListener('click', aplicarFiltrosRespostas);
+document.getElementById('btnLimparFiltrosRespostas')?.addEventListener('click', function() {
+    document.getElementById('filtroRespostasTransportadora').value = 'TODAS';
+    document.getElementById('filtroRespostasResponsavel').value = '';
+    document.getElementById('filtroRespostasDataInicio').value = '';
+    document.getElementById('filtroRespostasDataFim').value = '';
+    aplicarFiltrosRespostas();
+});
+document.getElementById('respostasPaginaAnterior')?.addEventListener('click', function() {
+    if (respostasPaginaAtual > 1) {
+        respostasPaginaAtual--;
+        renderizarRespostas();
+    }
+});
+document.getElementById('respostasPaginaProxima')?.addEventListener('click', function() {
+    const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
+    if (respostasPaginaAtual < totalPaginas) {
+        respostasPaginaAtual++;
+        renderizarRespostas();
+    }
+});
+document.getElementById('refreshRespostas')?.addEventListener('click', function() {
+    if (isAuthenticated) carregarRespostas();
+    else Swal.fire({ icon: 'warning', title: 'Não autenticado', text: 'Faça login primeiro.' });
+});
+
+// Exportar CSV
+document.getElementById('btnExportarRespostas')?.addEventListener('click', function() {
+    if (respostasFiltradas.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Nenhum dado', text: 'Não há respostas para exportar.' });
+        return;
+    }
+    const headers = ['ID', 'Transportadora', 'Motorista', 'Responsável', 'Justificativa', 'Data_Hora'];
+    const rows = respostasFiltradas.map(r => [
+        r['ID'] || r['ID do envio'] || '',
+        r['Transportadora'] || '',
+        r['Motorista'] || '',
+        r['Nome_Responsavel'] || '',
+        r['Justificativa'] || '',
+        r['Data_Hora'] || ''
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `respostas_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+});
+
+// ================================================================
 //  BACKUPS SEMANAIS
 // ================================================================
 async function carregarBackupsSemanais() {
@@ -3378,6 +3665,15 @@ function aplicarRestricoesPorPerfil() {
         if (tabContentCruz && tabContentCruz.classList.contains('active')) {
             const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
             if (tabPacotes) tabPacotes.click();
+        }
+    }
+
+    const tabRespostas = document.querySelector('.tab-btn[data-tab="tabRespostas"]');
+    if (tabRespostas) {
+        if (currentUserRole === 'viewer') {
+            tabRespostas.style.display = 'none';
+        } else {
+            tabRespostas.style.display = 'block';
         }
     }
 
@@ -4186,6 +4482,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filterBtn) {
                 if (targetId === 'tabCruzamento') filterBtn.classList.remove('hidden');
                 else filterBtn.classList.add('hidden');
+            }
+            // Se a tab for Respostas, carregar os dados
+            if (targetId === 'tabRespostas') {
+                if (isAuthenticated && currentUserRole !== 'viewer') {
+                    carregarRespostas();
+                } else {
+                    const tbody = document.getElementById('respostasTbody');
+                    if (tbody) {
+                        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:30px;">🔒 Acesso restrito. Faça login ou contate o administrador.</td></tr>`;
+                    }
+                    const statusText = document.getElementById('statusTextRespostas');
+                    if (statusText) statusText.textContent = '🔒 Acesso restrito';
+                }
             }
             setTimeout(() => {
                 try {
