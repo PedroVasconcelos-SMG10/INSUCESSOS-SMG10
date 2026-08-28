@@ -1,1236 +1,1243 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - WMS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>
-  /* ===== NOVA PALETA DE CORES ===== */
-  :root{
-    --bg-primary: #123A6B;
-    --bg-secondary: #E6F0FA;
-    --bg-white: #FFFFFF;
-    --bg-card: #FFFFFF;
-    --bg-panel: #F5F9FF;
-    --text-primary: #123A6B;
-    --text-on-blue: #FFFFFF;
-    --text-muted: #4A6A8A;
-    --text-faint: #7A9AB5;
-    --border-color: #B0C4DE;
-    --accent: #D32F2F;
-    --accent-hover: #B71C1C;
-    --success: #2E7D32;
-    --danger: #C62828;
-    --warning: #F57F17;
-    --info: #1565C0;
-    --purple: #6A1B9A;
-    --cruzamento: #E65100;
-    --faltante: var(--danger);
-    --intruso: var(--info);
-    --naoplan: var(--warning);
-    --plan: var(--success);
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background: var(--bg-primary);
-    color: var(--text-on-blue);
-    font-family:'Inter', sans-serif;
-    font-size:16px;
-    padding:0 0 80px 0;
-    min-height:100vh;
-  }
-  .wrap{
-    max-width:1400px;
-    margin:0 auto;
-    padding:0 32px;
-  }
-  .masthead{
-    background: var(--bg-primary);
-    border-bottom:2px solid var(--border-color);
-    padding:48px 0 30px 0;
-    position:relative;
-    overflow:hidden;
-    border-radius:0 0 12px 12px;
-    margin-bottom:8px;
-  }
-  .masthead::before{
-    content:"";
-    position:absolute; top:0; left:0; right:0; height:4px;
-    background: repeating-linear-gradient(90deg, var(--accent) 0 40px, var(--bg-primary) 40px 80px, #FFFFFF 80px 120px, var(--bg-secondary) 120px 160px);
-    opacity:1;
-  }
-  .eyebrow{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    letter-spacing:.16em;
-    color: var(--text-on-blue);
-    opacity:1;
-    text-transform:uppercase;
-    display:flex; gap:12px; align-items:center;
-  }
-  .eyebrow .dot{width:8px; height:8px; background:var(--accent); border-radius:50%; display:inline-block;}
-  h1{
-    font-family:'Oswald', sans-serif;
-    font-weight:700;
-    font-size:clamp(40px, 5.5vw, 62px);
-    letter-spacing:.01em;
-    text-transform:uppercase;
-    line-height:1.02;
-    margin-top:12px;
-    color: var(--text-on-blue);
-  }
-  .masthead p{
-    color: var(--text-on-blue);
-    opacity:1;
-    max-width:780px;
-    margin-top:14px;
-    font-size:16px;
-    line-height:1.6;
-  }
-  .masthead p b{color: var(--text-on-blue); font-weight:600;}
-  .login-btn{
-    position:fixed;
-    top:20px;
-    right:20px;
-    z-index:9999;
-    padding:14px 28px;
-    background: var(--accent);
-    color: #fff;
-    border:none;
-    border-radius:4px;
-    cursor:pointer;
-    font-family:'Oswald', sans-serif;
-    font-size:16px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    box-shadow:0 4px 16px rgba(211,47,47,0.4);
-    transition:all .3s;
-  }
-  .login-btn:hover{background: var(--accent-hover); transform:scale(1.03);}
-  .login-btn.logged{background: var(--success); cursor:default; opacity:1; box-shadow:0 4px 16px rgba(46,125,50,0.4);}
-  .login-btn.error{background: var(--danger); cursor:default; opacity:1;}
-  .tabs{
-    display:flex;
-    gap:4px;
-    background: var(--bg-white);
-    padding:4px;
-    margin-top:30px;
-    border-radius:6px;
-    flex-wrap:wrap;
-    border:1px solid var(--border-color);
-    box-shadow:0 2px 8px rgba(0,0,0,0.06);
-  }
-  .tab-btn{
-    flex:1;
-    padding:16px 24px;
-    font-family:'Oswald', sans-serif;
-    font-size:17px;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    border:none;
-    cursor:pointer;
-    background: transparent;
-    color: var(--text-muted);
-    transition:all .3s;
-    border-radius:4px;
-    min-width:140px;
-  }
-  .tab-btn:hover{color: var(--text-primary); background: var(--bg-secondary);}
-  .tab-btn.active{
-    background: var(--bg-primary);
-    color: var(--text-on-blue);
-    box-shadow:inset 0 -3px 0 var(--accent);
-  }
-  .tab-btn.tab-cruzamento.active{box-shadow:inset 0 -3px 0 var(--cruzamento);}
-  .tab-btn.tab-admin.active{box-shadow:inset 0 -3px 0 var(--purple);}
-  .tab-btn.tab-respostas.active{box-shadow:inset 0 -3px 0 var(--info);}
-  .tab-content{display:none; animation:fadeIn .4s ease;}
-  .tab-content.active{display:block;}
-  @keyframes fadeIn{0%{opacity:0; transform:translateY(8px);} 100%{opacity:1; transform:translateY(0);}}
-  .status-bar{
-    background: var(--bg-white);
-    border:1px solid var(--border-color);
-    padding:18px 28px;
-    margin-top:28px;
-    border-radius:6px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:14px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.04);
-  }
-  .status-bar .info{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    color: var(--text-primary);
-    display:flex;
-    align-items:center;
-    gap:14px;
-    flex-wrap:wrap;
-  }
-  .status-bar .info .dot-status{width:12px; height:12px; border-radius:50%; display:inline-block;}
-  .status-bar .info .dot-status.online{background:var(--success);}
-  .status-bar .info .dot-status.offline{background:var(--danger);}
-  .status-bar .info .dot-status.loading{background:var(--warning); animation: pulse 1s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
-  .btn{
-    padding:10px 24px;
-    font-family:'Oswald', sans-serif;
-    font-size:15px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    border:none;
-    cursor:pointer;
-    transition:all .2s;
-    font-weight:600;
-    border-radius:4px;
-  }
-  .btn-primary{background: var(--info); color:#fff;}
-  .btn-primary:hover{background: #0D47A1;}
-  .btn-cruzamento{background: var(--cruzamento); color:#fff;}
-  .btn-cruzamento:hover{background: #BF360C;}
-  .btn-secondary{background:transparent; color:var(--text-primary); border:1px solid var(--border-color);}
-  .btn-secondary:hover{background:var(--bg-secondary); color:var(--text-primary);}
-  .btn-success{background: var(--success); color:#fff;}
-  .btn-success:hover{background: #1B5E20;}
-  .btn-danger{background: var(--danger); color:#fff;}
-  .btn-danger:hover{background: #B71C1C;}
-  .kpi-strip{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:2px;
-    background: var(--border-color);
-    border:1px solid var(--border-color);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .kpi{
-    background: var(--bg-white);
-    padding:20px 20px 18px;
-    position:relative;
-  }
-  .kpi .tag{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color: var(--text-muted);
-    display:flex; align-items:center; gap:8px;
-  }
-  .kpi .num{
-    font-family:'Oswald', sans-serif;
-    font-size:38px;
-    font-weight:600;
-    margin-top:8px;
-    color: var(--text-primary);
-  }
-  .kpi .pct{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--text-muted); margin-top:4px;}
-  .kpi .sub{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-muted); margin-top:4px;}
-  .kpi.total{background: var(--bg-secondary);}
-  .kpi.total .num{font-size:42px;}
-  .kpi .num.success{color:var(--success);}
-  .kpi .num.danger{color:var(--danger);}
-  .kpi .num.warning{color:var(--warning);}
-  .kpi .num.info{color:var(--info);}
-  .kpi .num.purple{color:var(--purple);}
-  .kpi .num.cruzamento{color:var(--cruzamento);}
-  .kpi .num.svc{color:var(--danger);}
-  .kpi .num.transp{color:var(--success);}
-  @media (max-width:860px){
-    .kpi-strip{grid-template-columns:repeat(3,1fr);}
-  }
-  @media (max-width:480px){
-    .kpi-strip{grid-template-columns:1fr 1fr;}
-  }
-  .charts-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:2px;
-    background: var(--border-color);
-    border:1px solid var(--border-color);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .chart-card{
-    background: var(--bg-white);
-    padding:24px;
-  }
-  .chart-card h3{
-    font-family:'Oswald', sans-serif;
-    font-size:16px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    color: var(--text-muted);
-    font-weight:500;
-    margin-bottom:18px;
-  }
-  .chart-card .chart-container{height:240px; position:relative;}
-  .transportadoras-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:2px;
-    background: var(--border-color);
-    border:1px solid var(--border-color);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .transportadora-card{
-    background: var(--bg-white);
-    padding:20px 18px;
-    transition:background .2s;
-    cursor:pointer;
-  }
-  .transportadora-card:hover{background: var(--bg-secondary);}
-  .transportadora-card.blocked{cursor:not-allowed; opacity:0.7;}
-  .transportadora-card.blocked:hover{background: var(--bg-white);}
-  .transportadora-card .nome{
-    font-family:'Oswald', sans-serif;
-    font-size:18px;
-    font-weight:500;
-    color: var(--text-primary);
-  }
-  .transportadora-card .detalhes{
-    display:flex;
-    justify-content:space-between;
-    margin-top:10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    color: var(--text-muted);
-  }
-  .transportadora-card .detalhes .qtd{color:var(--warning); font-weight:600;}
-  .transportadora-card .detalhes .valor{color:var(--success); font-weight:600;}
-  .ids-tabela-wrap{
-    border:1px solid var(--border-color);
-    background: var(--bg-white);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-    width:100%;
-  }
-  .ids-tabela-wrap .header{
-    padding:18px 24px;
-    background: var(--bg-secondary);
-    border-bottom:1px solid var(--border-color);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
-  }
-  .ids-tabela-wrap .header h3{
-    font-family:'Oswald', sans-serif;
-    font-size:18px;
-    text-transform:uppercase;
-    letter-spacing:.03em;
-    color: var(--text-primary);
-  }
-  .ids-tabela-wrap .header .badge{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-primary);
-    background: var(--bg-white);
-    padding:6px 16px;
-    border:1px solid var(--border-color);
-    border-radius:4px;
-  }
-  .ids-tabela{overflow-x:auto; width:100%;}
-  .ids-tabela table{
-    width:100%;
-    font-size:15px;
-    border-collapse:collapse;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .ids-tabela table th{
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    padding:14px 18px;
-    text-align:left;
-    position:sticky;
-    top:0;
-    border-bottom:2px solid var(--border-color);
-    font-weight:600;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  .ids-tabela table td{
-    padding:12px 18px;
-    border-bottom:1px solid var(--border-color);
-    color: var(--text-primary);
-    vertical-align:middle;
-  }
-  .ids-tabela table tr:hover td{background: var(--bg-secondary);}
-  .ids-tabela .status-badge{
-    display:inline-block;
-    padding:4px 14px;
-    border-radius:4px;
-    font-size:11px;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  .ids-tabela .status-badge.justificado{background:var(--success); color:#fff;}
-  .ids-tabela .status-badge.pendente{background:var(--danger); color:#fff;}
-  .ids-tabela .status-badge.svc{background:var(--danger); color:#fff;}
-  .ids-tabela .status-badge.transp{background:var(--success); color:#fff;}
-  .zona-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:2px;
-    background: var(--border-color);
-    border:1px solid var(--border-color);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .zona-card{
-    background: var(--bg-white);
-    padding:20px 22px;
-    transition:background .2s;
-  }
-  .zona-card:hover{background: var(--bg-secondary);}
-  .zona-card .nome{
-    font-family:'Oswald', sans-serif;
-    font-size:20px;
-    font-weight:500;
-    color: var(--text-primary);
-  }
-  .zona-card .detalhes{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px 16px;
-    margin-top:10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    color: var(--text-muted);
-  }
-  .zona-card .detalhes .total{color:var(--text-primary); font-weight:600;}
-  .zona-card .detalhes .inventariado{color:var(--success); font-weight:600;}
-  .zona-card .detalhes .faltante{color:var(--danger); font-weight:600;}
-  .zona-card .detalhes .intruso{color:var(--purple); font-weight:600;}
-  .zona-card .detalhes .svc{color:var(--danger); font-weight:600;}
-  .zona-card .detalhes .transp{color:var(--success); font-weight:600;}
-  .zona-card .barra{
-    margin-top:12px;
-    height:10px;
-    background: var(--bg-secondary);
-    border-radius:4px;
-    overflow:hidden;
-    display:flex;
-  }
-  .zona-card .barra .fill-success{background:var(--success); height:100%; transition:width .8s ease;}
-  .zona-card .barra .fill-danger{background:var(--danger); height:100%; transition:width .8s ease;}
-  .zona-card .barra .fill-intruso{background:var(--purple); height:100%; transition:width .8s ease;}
-  .zona-card .status-labels{
-    display:flex;
-    justify-content:space-between;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-muted);
-    margin-top:6px;
-  }
-  .cruzamento-stats{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr 1fr;
-    gap:2px;
-    background: var(--border-color);
-    border:1px solid var(--border-color);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .cruzamento-stat{
-    background: var(--bg-white);
-    padding:24px;
-    text-align:center;
-  }
-  .cruzamento-stat .num{
-    font-family:'Oswald', sans-serif;
-    font-size:40px;
-    font-weight:600;
-    color: var(--text-primary);
-  }
-  .cruzamento-stat .label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-muted);
-    margin-top:6px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  .cruzamento-stat .sub-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color: var(--text-muted);
-    margin-top:4px;
-  }
-  .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
-  .cruzamento-stat .num.success{color:var(--success);}
-  .cruzamento-stat .num.responsabilidade{color:var(--info);}
-  .cruzamento-transp-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr 1fr;
-    gap:2px;
-    background: var(--border-color);
-    border:1px solid var(--border-color);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .cruzamento-transp-card{
-    background: var(--bg-white);
-    padding:18px 20px;
-    transition:background .2s;
-  }
-  .cruzamento-transp-card:hover{background: var(--bg-secondary);}
-  .cruzamento-transp-card .nome{
-    font-family:'Oswald', sans-serif;
-    font-size:17px;
-    font-weight:500;
-    color: var(--text-primary);
-  }
-  .cruzamento-transp-card .detalhes{
-    display:flex;
-    flex-wrap:wrap;
-    gap:4px 16px;
-    margin-top:8px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    color: var(--text-muted);
-  }
-  .cruzamento-transp-card .detalhes .qtd{color:var(--cruzamento); font-weight:600;}
-  .cruzamento-transp-card .detalhes .pct{color:var(--text-muted);}
-  .cruzamento-transp-card .detalhes .svc{color:var(--danger); font-weight:600;}
-  .cruzamento-transp-card .detalhes .transp{color:var(--success); font-weight:600;}
-  .cruzamento-tabela-wrap{
-    border:1px solid var(--border-color);
-    background: var(--bg-white);
-    margin-top:28px;
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .cruzamento-tabela-wrap .header{
-    padding:18px 24px;
-    background: var(--bg-secondary);
-    border-bottom:1px solid var(--border-color);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
-  }
-  .cruzamento-tabela-wrap .header h3{
-    font-family:'Oswald', sans-serif;
-    font-size:18px;
-    text-transform:uppercase;
-    letter-spacing:.03em;
-    color: var(--text-primary);
-  }
-  .cruzamento-tabela-wrap .header .badge{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-primary);
-    background: var(--bg-white);
-    padding:6px 16px;
-    border:1px solid var(--border-color);
-    border-radius:4px;
-  }
-  .cruzamento-tabela{overflow-x:auto; max-height:500px; overflow-y:auto;}
-  .cruzamento-tabela table{
-    width:100%;
-    font-size:15px;
-    border-collapse:collapse;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .cruzamento-tabela table th{
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    padding:14px 18px;
-    text-align:left;
-    position:sticky;
-    top:0;
-    border-bottom:2px solid var(--border-color);
-    font-weight:600;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  .cruzamento-tabela table td{
-    padding:12px 18px;
-    border-bottom:1px solid var(--border-color);
-    color: var(--text-primary);
-  }
-  .cruzamento-tabela table tr:hover td{background: var(--bg-secondary);}
-  .cruzamento-tabela .status-badge{
-    display:inline-block;
-    padding:4px 14px;
-    border-radius:4px;
-    font-size:11px;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  .cruzamento-tabela .status-badge.svc{background:var(--danger); color:#fff;}
-  .cruzamento-tabela .status-badge.transp{background:var(--success); color:#fff;}
-  .preview-box{
-    border:1px solid var(--border-color);
-    background: var(--bg-white);
-    padding:16px;
-    min-height:100px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    max-height:220px;
-    overflow:auto;
-    margin-top:18px;
-    border-radius:6px;
-  }
-  .preview-box .empty-message{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-muted);
-    text-align:center;
-  }
-  .preview-box table{width:100%; font-size:12px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;}
-  .preview-box table th{background:var(--bg-secondary); color:var(--text-primary); padding:6px 8px; text-align:left; position:sticky; top:0; border-bottom:1px solid var(--border-color);}
-  .preview-box table td{padding:4px 8px; border-bottom:1px solid var(--border-color); color:var(--text-primary); white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;}
-  .preview-box table tr:hover td{background:var(--bg-secondary);}
-  .preview-box .col-destaque{background:var(--warning); color:var(--text-primary); font-weight:600;}
-  .badge{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-primary);
-    background: var(--bg-white);
-    padding:6px 16px;
-    border:1px solid var(--border-color);
-    border-radius:4px;
-  }
-  .filter-float-btn{
-    position:fixed;
-    bottom:30px;
-    right:30px;
-    z-index:900;
-    padding:16px 28px;
-    background: var(--accent);
-    color:#fff;
-    border:none;
-    border-radius:50px;
-    font-family:'Oswald', sans-serif;
-    font-size:16px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    cursor:pointer;
-    box-shadow:0 4px 24px rgba(211,47,47,0.4);
-    transition:all .3s;
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .filter-float-btn:hover{transform:scale(1.05); background: var(--accent-hover); box-shadow:0 6px 36px rgba(211,47,47,0.6);}
-  .filter-float-btn .badge-count{
-    background:rgba(255,255,255,0.25);
-    padding:4px 14px;
-    border-radius:20px;
-    font-size:14px;
-  }
-  .filter-float-btn.hidden{display:none;}
-  .filter-modal-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(18,58,107,0.92);
-    z-index:1001;
-    justify-content:center;
-    align-items:center;
-    padding:24px;
-    backdrop-filter:blur(4px);
-  }
-  .filter-modal-overlay.active{display:flex;}
-  .filter-modal{
-    background: var(--bg-white);
-    border:1px solid var(--border-color);
-    max-width:800px;
-    width:100%;
-    max-height:85vh;
-    display:flex;
-    flex-direction:column;
-    border-radius:10px;
-    box-shadow:0 8px 48px rgba(0,0,0,0.2);
-  }
-  .filter-modal-header{
-    padding:20px 28px;
-    border-bottom:1px solid var(--border-color);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
-    background: var(--bg-secondary);
-    border-radius:10px 10px 0 0;
-  }
-  .filter-modal-header h2{font-family:'Oswald', sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);}
-  .filter-modal-header .close-btn{
-    background:transparent;
-    border:1px solid var(--border-color);
-    color:var(--text-primary);
-    width:36px;
-    height:36px;
-    font-size:20px;
-    cursor:pointer;
-    transition:all .2s;
-    border-radius:4px;
-  }
-  .filter-modal-header .close-btn:hover{border-color:var(--danger); color:var(--danger);}
-  .filter-modal-body{
-    padding:24px 28px;
-    overflow-y:auto;
-    flex:1;
-  }
-  .filter-modal-body .filter-info{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:14px;
-    margin-bottom:18px;
-    padding-bottom:14px;
-    border-bottom:1px solid var(--border-color);
-  }
-  .filter-modal-body .filter-info .counts{
-    display:flex;
-    gap:20px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    color: var(--text-primary);
-  }
-  .filter-modal-body .filter-info .counts span{color:var(--text-primary); font-weight:600;}
-  .filter-modal-body .filter-actions{display:flex; gap:10px; flex-wrap:wrap;}
-  .filter-modal-body .filter-actions .btn-sm{
-    padding:6px 18px;
-    font-size:13px;
-    font-family:'Oswald', sans-serif;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    border:none;
-    cursor:pointer;
-    border-radius:4px;
-    font-weight:600;
-    transition:all .2s;
-  }
-  .filter-modal-body .filter-actions .btn-sm:hover{opacity:.8;}
-  .filter-modal-body .filter-actions .btn-sm.btn-select-all{background:var(--success); color:#fff;}
-  .filter-modal-body .filter-actions .btn-sm.btn-clear-all{background:var(--danger); color:#fff;}
-  .filter-modal-body .transp-filter-container{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    max-height:320px;
-    overflow-y:auto;
-    padding:6px 0;
-  }
-  .filter-modal-body .transp-filter-item{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    background: var(--bg-secondary);
-    padding:6px 14px 6px 10px;
-    border:1px solid var(--border-color);
-    border-radius:4px;
-  }
-  .filter-modal-body .transp-filter-item .transp-nome{
-    font-family:'Inter', sans-serif;
-    font-size:13px;
-    color: var(--text-primary);
-    min-width:120px;
-    white-space:nowrap;
-  }
-  .filter-modal-body .transp-filter-item .transp-check-label{
-    display:flex;
-    align-items:center;
-    gap:4px;
-    font-size:12px;
-    color: var(--text-primary);
-    cursor:pointer;
-  }
-  .filter-modal-body .transp-filter-item .transp-check-label input[type="checkbox"]{width:16px; height:16px; cursor:pointer; accent-color: var(--accent);}
-  .filter-modal-body .transp-filter-item .transp-count{
-    color: var(--text-muted);
-    font-size:11px;
-    font-family:'IBM Plex Mono', monospace;
-    margin-left:4px;
-  }
-  .filter-modal-footer{
-    padding:16px 28px;
-    border-top:1px solid var(--border-color);
-    display:flex;
-    justify-content:flex-end;
-    gap:12px;
-    flex-wrap:wrap;
-    background: var(--bg-secondary);
-    border-radius:0 0 10px 10px;
-  }
-  .filter-modal-footer .btn-apply{
-    background: var(--accent);
-    color:#fff;
-    border:none;
-    padding:10px 28px;
-    font-family:'Oswald', sans-serif;
-    font-size:15px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    cursor:pointer;
-    border-radius:4px;
-    font-weight:600;
-    transition:opacity .2s;
-  }
-  .filter-modal-footer .btn-apply:hover{opacity:.8; background: var(--accent-hover);}
-  .modal-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(18,58,107,0.92);
-    z-index:1000;
-    justify-content:center;
-    align-items:center;
-    padding:24px;
-  }
-  .modal-overlay.active{display:flex;}
-  .modal{
-    background: var(--bg-white);
-    border:1px solid var(--border-color);
-    max-width:1200px;
-    width:100%;
-    max-height:92vh;
-    display:flex;
-    flex-direction:column;
-    border-radius:6px;
-    box-shadow:0 8px 48px rgba(0,0,0,0.2);
-  }
-  .modal-header{
-    padding:20px 28px;
-    border-bottom:1px solid var(--border-color);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
-    background: var(--bg-secondary);
-  }
-  .modal-header h2{font-family:'Oswald', sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);}
-  .modal-header .close-btn{
-    background:transparent;
-    border:1px solid var(--border-color);
-    color:var(--text-primary);
-    width:36px;
-    height:36px;
-    font-size:20px;
-    cursor:pointer;
-    transition:all .2s;
-    border-radius:4px;
-  }
-  .modal-header .close-btn:hover{border-color:var(--danger); color:var(--danger);}
-  .filter-container{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    flex-wrap:wrap;
-  }
-  .filter-container label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-primary);
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  .filter-container select{
-    padding:8px 14px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border:1px solid var(--border-color);
-    border-radius:4px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    cursor:pointer;
-    outline:none;
-    min-width:220px;
-    max-width:400px;
-  }
-  .filter-container select:hover{border-color:var(--text-primary);}
-  .filter-container select:focus{border-color:var(--accent);}
-  .filter-container select option{background:var(--bg-white); color:var(--text-primary);}
-  .filter-badge{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-primary);
-    background: var(--bg-white);
-    padding:4px 14px;
-    border:1px solid var(--border-color);
-    border-radius:4px;
-  }
-  .modal-body{
-    padding:24px 28px;
-    overflow-y:auto;
-    flex:1;
-  }
-  .modal-body .stats{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:14px;
-    margin-bottom:18px;
-  }
-  .modal-body .stats .stat{
-    background: var(--bg-secondary);
-    padding:14px 18px;
-    text-align:center;
-    border:1px solid var(--border-color);
-    border-radius:4px;
-  }
-  .modal-body .stats .stat .num{
-    font-family:'Oswald', sans-serif;
-    font-size:24px;
-    font-weight:600;
-    color: var(--text-primary);
-  }
-  .modal-body .stats .stat .lbl{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color: var(--text-muted);
-    text-transform:uppercase;
-    letter-spacing:.06em;
-  }
-  .modal-body .ids-list{
-    background: var(--bg-secondary);
-    border:1px solid var(--border-color);
-    padding:14px 18px;
-    max-height:420px;
-    overflow-y:auto;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:14px;
-    color: var(--text-primary);
-  }
-  .modal-body .ids-list .id-item{
-    padding:8px 10px;
-    border-bottom:1px solid var(--border-color);
-    display:grid;
-    grid-template-columns:36px 36px 1fr 120px 180px 36px;
-    gap:8px;
-    align-items:center;
-    font-size:14px;
-  }
-  .modal-body .ids-list .id-item:last-child{border-bottom:none;}
-  .modal-body .ids-list .id-item .id-checkbox{display:flex; align-items:center; justify-content:center;}
-  .modal-body .ids-list .id-item .id-checkbox input[type="checkbox"]{width:18px; height:18px; accent-color:var(--accent); cursor:pointer;}
-  .modal-body .ids-list .id-item .id-index{color:var(--text-muted); font-size:12px; text-align:right;}
-  .modal-body .ids-list .id-item .id-num{color:var(--text-primary); font-weight:500; letter-spacing:.5px; font-size:15px;}
-  .modal-body .ids-list .id-item .id-valor{color:var(--success); font-size:13px; font-weight:600; text-align:right;}
-  .modal-body .ids-list .id-item .id-motorista{color:var(--text-muted); font-size:12px; font-family:'Inter', sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .modal-body .ids-count{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-muted);
-    margin-bottom:10px;
-    display:block;
-  }
-  .selecao-bar{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:10px 14px;
-    background: var(--bg-secondary);
-    border:1px solid var(--border-color);
-    border-radius:6px;
-    margin-bottom:14px;
-    flex-wrap:wrap;
-  }
-  .selecao-bar .info{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-primary);
-  }
-  .selecao-bar .info span{color:var(--text-primary); font-weight:600;}
-  .selecao-bar .btn-resposta{
-    background: var(--cruzamento);
-    color:#fff;
-    border:none;
-    padding:8px 20px;
-    font-family:'Oswald', sans-serif;
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    cursor:pointer;
-    border-radius:4px;
-    font-weight:600;
-    transition:opacity .2s;
-  }
-  .selecao-bar .btn-resposta:hover{opacity:.8;}
-  .selecao-bar .btn-resposta:disabled{opacity:.4; cursor:not-allowed;}
-  .selecao-bar .btn-selecionar{
-    padding:6px 16px;
-    font-size:12px;
-    background:transparent;
-    color:var(--text-primary);
-    border:1px solid var(--border-color);
-    cursor:pointer;
-    border-radius:4px;
-    font-family:'Inter', sans-serif;
-    transition:all .2s;
-  }
-  .selecao-bar .btn-selecionar:hover{border-color:var(--text-primary); color:var(--text-primary);}
-  .btn-carregar-mais{
-    display:block;
-    width:100%;
-    padding:14px;
-    text-align:center;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border:1px solid var(--border-color);
-    border-radius:6px;
-    cursor:pointer;
-    font-family:'Oswald', sans-serif;
-    font-size:15px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    transition:all .2s;
-    margin-top:10px;
-  }
-  .btn-carregar-mais:hover{background: var(--bg-white); border-color: var(--text-primary);}
-  .modal-footer{
-    padding:16px 28px;
-    border-top:1px solid var(--border-color);
-    display:flex;
-    gap:12px;
-    justify-content:flex-end;
-    flex-wrap:wrap;
-    background: var(--bg-secondary);
-  }
-  .modal-footer .btn-copy{
-    background: var(--info);
-    color:#fff;
-    border:none;
-    padding:10px 24px;
-    font-family:'Oswald', sans-serif;
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    cursor:pointer;
-    transition:opacity .2s;
-    font-weight:600;
-    border-radius:4px;
-  }
-  .modal-footer .btn-copy:hover{opacity:.8;}
-  .modal-footer .btn-copy.copied{background:var(--success);}
-  .modal-footer .btn-copy-all{
-    background:var(--warning);
-    color:#fff;
-    border:none;
-    padding:10px 24px;
-    font-family:'Oswald', sans-serif;
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    cursor:pointer;
-    transition:opacity .2s;
-    font-weight:600;
-    border-radius:4px;
-  }
-  .modal-footer .btn-copy-all:hover{opacity:.8;}
-  .resposta-modal .modal{max-width:680px;}
-  .resposta-modal .modal-body .campo{margin-bottom:16px;}
-  .resposta-modal .modal-body .campo label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-primary);
-    display:block;
-    margin-bottom:6px;
-  }
-  .resposta-modal .modal-body .campo input,
-  .resposta-modal .modal-body .campo textarea{
-    width:100%;
-    padding:12px 16px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border:1px solid var(--border-color);
-    border-radius:6px;
-    font-family:'Inter', sans-serif;
-    font-size:15px;
-    outline:none;
-    transition:border-color .2s;
-  }
-  .resposta-modal .modal-body .campo input:focus,
-  .resposta-modal .modal-body .campo textarea:focus{border-color: var(--accent);}
-  .resposta-modal .modal-body .campo textarea{resize:vertical; min-height:100px;}
-  .resposta-modal .modal-body .resumo-selecao{
-    background: var(--bg-secondary);
-    padding:16px;
-    border-radius:6px;
-    border:1px solid var(--border-color);
-    margin-bottom:18px;
-  }
-  .resposta-modal .modal-body .resumo-selecao .label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-primary);
-  }
-  .resposta-modal .modal-body .resumo-selecao .label span{color:var(--text-primary); font-weight:600;}
-  .resposta-modal .modal-body .resumo-selecao .ids-list{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-muted);
-    max-height:70px;
-    overflow-y:auto;
-    margin-top:6px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-  }
-  .resposta-modal .modal-body .resumo-selecao .ids-list span{
-    background: var(--bg-white);
-    padding:4px 10px;
-    border-radius:4px;
-    border:1px solid var(--border-color);
-  }
-  .resposta-modal .modal-body .status-msg{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    margin-top:14px;
-    min-height:24px;
-  }
-  .resposta-modal .modal-body .status-msg.success{color:var(--success);}
-  .resposta-modal .modal-body .status-msg.error{color:var(--danger);}
-  .resposta-modal .modal-body .status-msg.loading{color:var(--warning);}
-  .no-data{color:var(--text-muted); font-family:'IBM Plex Mono', monospace; font-size:13px; text-align:center; padding:24px 0;}
-  .loading-spinner{display:flex; align-items:center; justify-content:center; gap:14px; padding:14px;}
-  .spinner{width:24px; height:24px; border:3px solid var(--border-color); border-top:3px solid var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
-  @keyframes spin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
-  .debug-box{
-    background: var(--bg-white);
-    border:1px solid var(--border-color);
-    padding:14px 18px;
-    margin-top:14px;
-    border-radius:6px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-primary);
-    max-height:220px;
-    overflow-y:auto;
-  }
-  .debug-box .debug-item{padding:4px 0; border-bottom:1px solid var(--border-color);}
-  .debug-box .debug-item .key{color:var(--text-primary); font-weight:600;}
-  .debug-box .debug-item .value{color:var(--text-muted);}
-  footer{
-    margin-top:60px;
-    padding-top:20px;
-    border-top:2px solid var(--border-color);
-    display:flex;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color: var(--text-on-blue);
-    opacity:1;
-    letter-spacing:.04em;
-  }
-  .role-badge{
-    margin-left:12px;
-    padding:4px 16px;
-    border-radius:16px;
-    font-size:12px;
-    font-weight:bold;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    display:inline-block;
-  }
-  .role-badge.admin{background:var(--success); color:#fff;}
-  .role-badge.assist-adm{background:var(--cruzamento); color:#fff;}
-  .role-badge.editor{background:var(--warning); color:#fff;}
-  .role-badge.viewer{background:var(--text-muted); color:#fff;}
-  .filter-info-transp{
-    background: var(--bg-secondary);
-    border-left:4px solid var(--cruzamento);
-    padding:8px 16px;
-    border-radius:4px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    color: var(--text-primary);
-    display:inline-block;
-    margin-left:10px;
-  }
-  .filter-info-transp strong{color:var(--text-primary);}
-  /* Correções de contraste */
-  .record-count{
-    color: var(--text-primary);
-  }
-  .status-bar .info #recordCountPacotes,
-  .status-bar .info #recordCountInventario,
-  .status-bar .info #recordCountCruzamento,
-  .status-bar .info #recordCountRespostas{
-    color: var(--text-primary);
-  }
-  .preview-box .empty-message .loading-spinner span{
-    color: var(--text-primary);
-  }
-  .cruzamento-stat .sub-label{
-    color: var(--text-primary);
-  }
-  @media (max-width:860px){
-    .kpi-strip{grid-template-columns:repeat(3,1fr);}
-    .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
-    .cruzamento-stats{grid-template-columns:1fr 1fr;}
-    .cruzamento-transp-grid{grid-template-columns:1fr 1fr;}
-    .charts-grid{grid-template-columns:1fr;}
-    .transportadoras-grid{grid-template-columns:1fr 1fr;}
-    .zona-grid{grid-template-columns:1fr 1fr;}
-    .modal-body .stats{grid-template-columns:1fr;}
-    .modal{max-width:95%;}
-    .filter-container select{min-width:160px; max-width:260px;}
-    .modal-body .ids-list .id-item{
-      grid-template-columns:28px 28px 1fr 90px 120px 28px;
-      gap:6px;
-      font-size:12px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - WMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    /* ===== NOVA PALETA DE CORES ===== */
+    :root{
+      --bg-primary: #123A6B;
+      --bg-secondary: #E6F0FA;
+      --bg-white: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-panel: #F5F9FF;
+      --text-primary: #123A6B;
+      --text-on-blue: #FFFFFF;
+      --text-muted: #4A6A8A;
+      --text-faint: #7A9AB5;
+      --border-color: #B0C4DE;
+      --accent: #D32F2F;
+      --accent-hover: #B71C1C;
+      --success: #2E7D32;
+      --danger: #C62828;
+      --warning: #F57F17;
+      --info: #1565C0;
+      --purple: #6A1B9A;
+      --cruzamento: #E65100;
+      --faltante: var(--danger);
+      --intruso: var(--info);
+      --naoplan: var(--warning);
+      --plan: var(--success);
     }
-    .filter-modal-body .transp-filter-item .transp-nome{min-width:90px; font-size:12px;}
-    .filter-float-btn{padding:14px 22px; font-size:14px; bottom:24px; right:24px;}
-  }
-  @media (max-width:480px){
-    .kpi-strip{grid-template-columns:1fr 1fr;}
-    .kpi-strip.kpi-5{grid-template-columns:1fr;}
-    .cruzamento-stats{grid-template-columns:1fr;}
-    .cruzamento-transp-grid{grid-template-columns:1fr;}
-    .transportadoras-grid{grid-template-columns:1fr;}
-    .zona-grid{grid-template-columns:1fr;}
-    .tab-btn{font-size:14px; padding:12px 14px;}
-    .filter-container select{min-width:130px; max-width:200px;}
-    .modal-body .ids-list .id-item{
-      grid-template-columns:22px 22px 1fr 70px 1fr 22px;
+    *{box-sizing:border-box; margin:0; padding:0;}
+    body{
+      background: var(--bg-primary);
+      color: var(--text-on-blue);
+      font-family:'Inter', sans-serif;
+      font-size:16px;
+      padding:0 0 80px 0;
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1400px;
+      margin:0 auto;
+      padding:0 32px;
+    }
+    .masthead{
+      background: var(--bg-primary);
+      border-bottom:2px solid var(--border-color);
+      padding:48px 0 30px 0;
+      position:relative;
+      overflow:hidden;
+      border-radius:0 0 12px 12px;
+      margin-bottom:8px;
+    }
+    .masthead::before{
+      content:"";
+      position:absolute; top:0; left:0; right:0; height:4px;
+      background: repeating-linear-gradient(90deg, var(--accent) 0 40px, var(--bg-primary) 40px 80px, #FFFFFF 80px 120px, var(--bg-secondary) 120px 160px);
+      opacity:1;
+    }
+    .eyebrow{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      letter-spacing:.16em;
+      color: var(--text-on-blue);
+      opacity:1;
+      text-transform:uppercase;
+      display:flex; gap:12px; align-items:center;
+    }
+    .eyebrow .dot{width:8px; height:8px; background:var(--accent); border-radius:50%; display:inline-block;}
+    h1{
+      font-family:'Oswald', sans-serif;
+      font-weight:700;
+      font-size:clamp(40px, 5.5vw, 62px);
+      letter-spacing:.01em;
+      text-transform:uppercase;
+      line-height:1.02;
+      margin-top:12px;
+      color: var(--text-on-blue);
+    }
+    .masthead p{
+      color: var(--text-on-blue);
+      opacity:1;
+      max-width:780px;
+      margin-top:14px;
+      font-size:16px;
+      line-height:1.6;
+    }
+    .masthead p b{color: var(--text-on-blue); font-weight:600;}
+    .login-btn{
+      position:fixed;
+      top:20px;
+      right:20px;
+      z-index:9999;
+      padding:14px 28px;
+      background: var(--accent);
+      color: #fff;
+      border:none;
+      border-radius:4px;
+      cursor:pointer;
+      font-family:'Oswald', sans-serif;
+      font-size:16px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      box-shadow:0 4px 16px rgba(211,47,47,0.4);
+      transition:all .3s;
+    }
+    .login-btn:hover{background: var(--accent-hover); transform:scale(1.03);}
+    .login-btn.logged{background: var(--success); cursor:default; opacity:1; box-shadow:0 4px 16px rgba(46,125,50,0.4);}
+    .login-btn.error{background: var(--danger); cursor:default; opacity:1;}
+    .tabs{
+      display:flex;
       gap:4px;
-      font-size:10px;
-      padding:6px 4px;
+      background: var(--bg-white);
+      padding:4px;
+      margin-top:30px;
+      border-radius:6px;
+      flex-wrap:wrap;
+      border:1px solid var(--border-color);
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
     }
-    .modal-body .ids-list .id-item .id-num{font-size:11px;}
-    .modal-body .ids-list .id-item .id-valor{font-size:10px;}
-    .modal-body .ids-list .id-item .id-motorista{font-size:9px;}
-    .filter-modal-body .transp-filter-item{flex-wrap:wrap; padding:6px 8px;}
-    .filter-modal-body .transp-filter-item .transp-nome{min-width:70px; font-size:10px;}
-    .filter-float-btn{padding:12px 18px; font-size:13px; bottom:16px; right:16px; gap:8px;}
-    .filter-float-btn .badge-count{font-size:11px; padding:2px 10px;}
-    .filter-modal{max-width:100%; max-height:92vh;}
-    .selecao-bar{gap:8px; padding:8px 12px;}
-    .selecao-bar .info{font-size:11px;}
-    .selecao-bar .btn-resposta{font-size:11px; padding:6px 14px;}
-    .resposta-modal .modal{max-width:100%;}
-  }
-</style>
+    .tab-btn{
+      flex:1;
+      padding:16px 24px;
+      font-family:'Oswald', sans-serif;
+      font-size:17px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      border:none;
+      cursor:pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition:all .3s;
+      border-radius:4px;
+      min-width:140px;
+    }
+    .tab-btn:hover{color: var(--text-primary); background: var(--bg-secondary);}
+    .tab-btn.active{
+      background: var(--bg-primary);
+      color: var(--text-on-blue);
+      box-shadow:inset 0 -3px 0 var(--accent);
+    }
+    .tab-btn.tab-cruzamento.active{box-shadow:inset 0 -3px 0 var(--cruzamento);}
+    .tab-btn.tab-admin.active{box-shadow:inset 0 -3px 0 var(--purple);}
+    .tab-btn.tab-respostas.active{box-shadow:inset 0 -3px 0 var(--info);}
+    .tab-content{display:none; animation:fadeIn .4s ease;}
+    .tab-content.active{display:block;}
+    @keyframes fadeIn{0%{opacity:0; transform:translateY(8px);} 100%{opacity:1; transform:translateY(0);}}
+    .status-bar{
+      background: var(--bg-white);
+      border:1px solid var(--border-color);
+      padding:18px 28px;
+      margin-top:28px;
+      border-radius:6px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:14px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.04);
+    }
+    .status-bar .info{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:14px;
+      color: var(--text-primary);
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .status-bar .info .dot-status{width:12px; height:12px; border-radius:50%; display:inline-block;}
+    .status-bar .info .dot-status.online{background:var(--success);}
+    .status-bar .info .dot-status.offline{background:var(--danger);}
+    .status-bar .info .dot-status.loading{background:var(--warning); animation: pulse 1s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+    .btn{
+      padding:10px 24px;
+      font-family:'Oswald', sans-serif;
+      font-size:15px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      border:none;
+      cursor:pointer;
+      transition:all .2s;
+      font-weight:600;
+      border-radius:4px;
+    }
+    .btn-primary{background: var(--info); color:#fff;}
+    .btn-primary:hover{background: #0D47A1;}
+    .btn-cruzamento{background: var(--cruzamento); color:#fff;}
+    .btn-cruzamento:hover{background: #BF360C;}
+    .btn-secondary{background:transparent; color:var(--text-primary); border:1px solid var(--border-color);}
+    .btn-secondary:hover{background:var(--bg-secondary); color:var(--text-primary);}
+    .btn-success{background: var(--success); color:#fff;}
+    .btn-success:hover{background: #1B5E20;}
+    .btn-danger{background: var(--danger); color:#fff;}
+    .btn-danger:hover{background: #B71C1C;}
+    .kpi-strip{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:2px;
+      background: var(--border-color);
+      border:1px solid var(--border-color);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .kpi{
+      background: var(--bg-white);
+      padding:20px 20px 18px;
+      position:relative;
+    }
+    .kpi .tag{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color: var(--text-muted);
+      display:flex; align-items:center; gap:8px;
+    }
+    .kpi .num{
+      font-family:'Oswald', sans-serif;
+      font-size:38px;
+      font-weight:600;
+      margin-top:8px;
+      color: var(--text-primary);
+    }
+    .kpi .pct{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--text-muted); margin-top:4px;}
+    .kpi .sub{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-muted); margin-top:4px;}
+    .kpi.total{background: var(--bg-secondary);}
+    .kpi.total .num{font-size:42px;}
+    .kpi .num.success{color:var(--success);}
+    .kpi .num.danger{color:var(--danger);}
+    .kpi .num.warning{color:var(--warning);}
+    .kpi .num.info{color:var(--info);}
+    .kpi .num.purple{color:var(--purple);}
+    .kpi .num.cruzamento{color:var(--cruzamento);}
+    .kpi .num.svc{color:var(--danger);}
+    .kpi .num.transp{color:var(--success);}
+    @media (max-width:860px){
+      .kpi-strip{grid-template-columns:repeat(3,1fr);}
+    }
+    @media (max-width:480px){
+      .kpi-strip{grid-template-columns:1fr 1fr;}
+    }
+    .charts-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:2px;
+      background: var(--border-color);
+      border:1px solid var(--border-color);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .chart-card{
+      background: var(--bg-white);
+      padding:24px;
+    }
+    .chart-card h3{
+      font-family:'Oswald', sans-serif;
+      font-size:16px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color: var(--text-muted);
+      font-weight:500;
+      margin-bottom:18px;
+    }
+    .chart-card .chart-container{height:240px; position:relative;}
+    .transportadoras-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:2px;
+      background: var(--border-color);
+      border:1px solid var(--border-color);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .transportadora-card{
+      background: var(--bg-white);
+      padding:20px 18px;
+      transition:background .2s;
+      cursor:pointer;
+    }
+    .transportadora-card:hover{background: var(--bg-secondary);}
+    .transportadora-card.blocked{cursor:not-allowed; opacity:0.7;}
+    .transportadora-card.blocked:hover{background: var(--bg-white);}
+    .transportadora-card .nome{
+      font-family:'Oswald', sans-serif;
+      font-size:18px;
+      font-weight:500;
+      color: var(--text-primary);
+    }
+    .transportadora-card .detalhes{
+      display:flex;
+      justify-content:space-between;
+      margin-top:10px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:14px;
+      color: var(--text-muted);
+    }
+    .transportadora-card .detalhes .qtd{color:var(--warning); font-weight:600;}
+    .transportadora-card .detalhes .valor{color:var(--success); font-weight:600;}
+    .ids-tabela-wrap{
+      border:1px solid var(--border-color);
+      background: var(--bg-white);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+      width:100%;
+    }
+    .ids-tabela-wrap .header{
+      padding:18px 24px;
+      background: var(--bg-secondary);
+      border-bottom:1px solid var(--border-color);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .ids-tabela-wrap .header h3{
+      font-family:'Oswald', sans-serif;
+      font-size:18px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      color: var(--text-primary);
+    }
+    .ids-tabela-wrap .header .badge{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-primary);
+      background: var(--bg-white);
+      padding:6px 16px;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+    }
+    .ids-tabela{overflow-x:auto; width:100%;}
+    .ids-tabela table{
+      width:100%;
+      font-size:15px;
+      border-collapse:collapse;
+      font-family:'IBM Plex Mono', monospace;
+    }
+    .ids-tabela table th{
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding:14px 18px;
+      text-align:left;
+      position:sticky;
+      top:0;
+      border-bottom:2px solid var(--border-color);
+      font-weight:600;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .ids-tabela table td{
+      padding:12px 18px;
+      border-bottom:1px solid var(--border-color);
+      color: var(--text-primary);
+      vertical-align:middle;
+    }
+    .ids-tabela table tr:hover td{background: var(--bg-secondary);}
+    .ids-tabela .status-badge{
+      display:inline-block;
+      padding:4px 14px;
+      border-radius:4px;
+      font-size:11px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .ids-tabela .status-badge.justificado{background:var(--success); color:#fff;}
+    .ids-tabela .status-badge.pendente{background:var(--danger); color:#fff;}
+    .ids-tabela .status-badge.svc{background:var(--danger); color:#fff;}
+    .ids-tabela .status-badge.transp{background:var(--success); color:#fff;}
+    .zona-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:2px;
+      background: var(--border-color);
+      border:1px solid var(--border-color);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .zona-card{
+      background: var(--bg-white);
+      padding:20px 22px;
+      transition:background .2s;
+    }
+    .zona-card:hover{background: var(--bg-secondary);}
+    .zona-card .nome{
+      font-family:'Oswald', sans-serif;
+      font-size:20px;
+      font-weight:500;
+      color: var(--text-primary);
+    }
+    .zona-card .detalhes{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px 16px;
+      margin-top:10px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:14px;
+      color: var(--text-muted);
+    }
+    .zona-card .detalhes .total{color:var(--text-primary); font-weight:600;}
+    .zona-card .detalhes .inventariado{color:var(--success); font-weight:600;}
+    .zona-card .detalhes .faltante{color:var(--danger); font-weight:600;}
+    .zona-card .detalhes .intruso{color:var(--purple); font-weight:600;}
+    .zona-card .detalhes .svc{color:var(--danger); font-weight:600;}
+    .zona-card .detalhes .transp{color:var(--success); font-weight:600;}
+    .zona-card .barra{
+      margin-top:12px;
+      height:10px;
+      background: var(--bg-secondary);
+      border-radius:4px;
+      overflow:hidden;
+      display:flex;
+    }
+    .zona-card .barra .fill-success{background:var(--success); height:100%; transition:width .8s ease;}
+    .zona-card .barra .fill-danger{background:var(--danger); height:100%; transition:width .8s ease;}
+    .zona-card .barra .fill-intruso{background:var(--purple); height:100%; transition:width .8s ease;}
+    .zona-card .status-labels{
+      display:flex;
+      justify-content:space-between;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-muted);
+      margin-top:6px;
+    }
+    .cruzamento-stats{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:2px;
+      background: var(--border-color);
+      border:1px solid var(--border-color);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .cruzamento-stat{
+      background: var(--bg-white);
+      padding:24px;
+      text-align:center;
+    }
+    .cruzamento-stat .num{
+      font-family:'Oswald', sans-serif;
+      font-size:40px;
+      font-weight:600;
+      color: var(--text-primary);
+    }
+    .cruzamento-stat .label{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-muted);
+      margin-top:6px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .cruzamento-stat .sub-label{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:11px;
+      color: var(--text-muted);
+      margin-top:4px;
+    }
+    .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
+    .cruzamento-stat .num.success{color:var(--success);}
+    .cruzamento-stat .num.responsabilidade{color:var(--info);}
+    .cruzamento-transp-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:2px;
+      background: var(--border-color);
+      border:1px solid var(--border-color);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .cruzamento-transp-card{
+      background: var(--bg-white);
+      padding:18px 20px;
+      transition:background .2s;
+    }
+    .cruzamento-transp-card:hover{background: var(--bg-secondary);}
+    .cruzamento-transp-card .nome{
+      font-family:'Oswald', sans-serif;
+      font-size:17px;
+      font-weight:500;
+      color: var(--text-primary);
+    }
+    .cruzamento-transp-card .detalhes{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px 16px;
+      margin-top:8px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:14px;
+      color: var(--text-muted);
+    }
+    .cruzamento-transp-card .detalhes .qtd{color:var(--cruzamento); font-weight:600;}
+    .cruzamento-transp-card .detalhes .pct{color:var(--text-muted);}
+    .cruzamento-transp-card .detalhes .svc{color:var(--danger); font-weight:600;}
+    .cruzamento-transp-card .detalhes .transp{color:var(--success); font-weight:600;}
+    .cruzamento-tabela-wrap{
+      border:1px solid var(--border-color);
+      background: var(--bg-white);
+      margin-top:28px;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    .cruzamento-tabela-wrap .header{
+      padding:18px 24px;
+      background: var(--bg-secondary);
+      border-bottom:1px solid var(--border-color);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .cruzamento-tabela-wrap .header h3{
+      font-family:'Oswald', sans-serif;
+      font-size:18px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      color: var(--text-primary);
+    }
+    .cruzamento-tabela-wrap .header .badge{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-primary);
+      background: var(--bg-white);
+      padding:6px 16px;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+    }
+    .cruzamento-tabela{overflow-x:auto; max-height:500px; overflow-y:auto;}
+    .cruzamento-tabela table{
+      width:100%;
+      font-size:15px;
+      border-collapse:collapse;
+      font-family:'IBM Plex Mono', monospace;
+    }
+    .cruzamento-tabela table th{
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding:14px 18px;
+      text-align:left;
+      position:sticky;
+      top:0;
+      border-bottom:2px solid var(--border-color);
+      font-weight:600;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .cruzamento-tabela table td{
+      padding:12px 18px;
+      border-bottom:1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+    .cruzamento-tabela table tr:hover td{background: var(--bg-secondary);}
+    .cruzamento-tabela .status-badge{
+      display:inline-block;
+      padding:4px 14px;
+      border-radius:4px;
+      font-size:11px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .cruzamento-tabela .status-badge.svc{background:var(--danger); color:#fff;}
+    .cruzamento-tabela .status-badge.transp{background:var(--success); color:#fff;}
+    .preview-box{
+      border:1px solid var(--border-color);
+      background: var(--bg-white);
+      padding:16px;
+      min-height:100px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      max-height:220px;
+      overflow:auto;
+      margin-top:18px;
+      border-radius:6px;
+    }
+    .preview-box .empty-message{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-muted);
+      text-align:center;
+    }
+    .preview-box table{width:100%; font-size:12px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;}
+    .preview-box table th{background:var(--bg-secondary); color:var(--text-primary); padding:6px 8px; text-align:left; position:sticky; top:0; border-bottom:1px solid var(--border-color);}
+    .preview-box table td{padding:4px 8px; border-bottom:1px solid var(--border-color); color:var(--text-primary); white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;}
+    .preview-box table tr:hover td{background:var(--bg-secondary);}
+    .preview-box .col-destaque{background:var(--warning); color:var(--text-primary); font-weight:600;}
+    .badge{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-primary);
+      background: var(--bg-white);
+      padding:6px 16px;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+    }
+    .filter-float-btn{
+      position:fixed;
+      bottom:30px;
+      right:30px;
+      z-index:900;
+      padding:16px 28px;
+      background: var(--accent);
+      color:#fff;
+      border:none;
+      border-radius:50px;
+      font-family:'Oswald', sans-serif;
+      font-size:16px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      cursor:pointer;
+      box-shadow:0 4px 24px rgba(211,47,47,0.4);
+      transition:all .3s;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .filter-float-btn:hover{transform:scale(1.05); background: var(--accent-hover); box-shadow:0 6px 36px rgba(211,47,47,0.6);}
+    .filter-float-btn .badge-count{
+      background:rgba(255,255,255,0.25);
+      padding:4px 14px;
+      border-radius:20px;
+      font-size:14px;
+    }
+    .filter-float-btn.hidden{display:none;}
+    .filter-modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(18,58,107,0.92);
+      z-index:1001;
+      justify-content:center;
+      align-items:center;
+      padding:24px;
+      backdrop-filter:blur(4px);
+    }
+    .filter-modal-overlay.active{display:flex;}
+    .filter-modal{
+      background: var(--bg-white);
+      border:1px solid var(--border-color);
+      max-width:800px;
+      width:100%;
+      max-height:85vh;
+      display:flex;
+      flex-direction:column;
+      border-radius:10px;
+      box-shadow:0 8px 48px rgba(0,0,0,0.2);
+    }
+    .filter-modal-header{
+      padding:20px 28px;
+      border-bottom:1px solid var(--border-color);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+      background: var(--bg-secondary);
+      border-radius:10px 10px 0 0;
+    }
+    .filter-modal-header h2{font-family:'Oswald', sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);}
+    .filter-modal-header .close-btn{
+      background:transparent;
+      border:1px solid var(--border-color);
+      color:var(--text-primary);
+      width:36px;
+      height:36px;
+      font-size:20px;
+      cursor:pointer;
+      transition:all .2s;
+      border-radius:4px;
+    }
+    .filter-modal-header .close-btn:hover{border-color:var(--danger); color:var(--danger);}
+    .filter-modal-body{
+      padding:24px 28px;
+      overflow-y:auto;
+      flex:1;
+    }
+    .filter-modal-body .filter-info{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-bottom:18px;
+      padding-bottom:14px;
+      border-bottom:1px solid var(--border-color);
+    }
+    .filter-modal-body .filter-info .counts{
+      display:flex;
+      gap:20px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:14px;
+      color: var(--text-primary);
+    }
+    .filter-modal-body .filter-info .counts span{color:var(--text-primary); font-weight:600;}
+    .filter-modal-body .filter-actions{display:flex; gap:10px; flex-wrap:wrap;}
+    .filter-modal-body .filter-actions .btn-sm{
+      padding:6px 18px;
+      font-size:13px;
+      font-family:'Oswald', sans-serif;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      border:none;
+      cursor:pointer;
+      border-radius:4px;
+      font-weight:600;
+      transition:all .2s;
+    }
+    .filter-modal-body .filter-actions .btn-sm:hover{opacity:.8;}
+    .filter-modal-body .filter-actions .btn-sm.btn-select-all{background:var(--success); color:#fff;}
+    .filter-modal-body .filter-actions .btn-sm.btn-clear-all{background:var(--danger); color:#fff;}
+    .filter-modal-body .transp-filter-container{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      max-height:320px;
+      overflow-y:auto;
+      padding:6px 0;
+    }
+    .filter-modal-body .transp-filter-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      background: var(--bg-secondary);
+      padding:6px 14px 6px 10px;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+      flex-wrap:wrap;
+    }
+    .filter-modal-body .transp-filter-item .transp-nome{
+      font-family:'Inter', sans-serif;
+      font-size:13px;
+      color: var(--text-primary);
+      min-width:100px;
+      white-space:nowrap;
+    }
+    .filter-modal-body .transp-filter-item .filter-check-label{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      font-size:12px;
+      color: var(--text-primary);
+      cursor:pointer;
+    }
+    .filter-modal-body .transp-filter-item .filter-check-label input[type="checkbox"]{
+      width:16px;
+      height:16px;
+      cursor:pointer;
+      accent-color: var(--accent);
+    }
+    .filter-modal-body .transp-filter-item .filter-check-label.svc-label input[type="checkbox"]{accent-color: var(--danger);}
+    .filter-modal-body .transp-filter-item .filter-check-label.transp-label input[type="checkbox"]{accent-color: var(--success);}
+    .filter-modal-body .transp-filter-item .transp-count{
+      color: var(--text-muted);
+      font-size:11px;
+      font-family:'IBM Plex Mono', monospace;
+      margin-left:4px;
+    }
+    .filter-modal-footer{
+      padding:16px 28px;
+      border-top:1px solid var(--border-color);
+      display:flex;
+      justify-content:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+      background: var(--bg-secondary);
+      border-radius:0 0 10px 10px;
+    }
+    .filter-modal-footer .btn-apply{
+      background: var(--accent);
+      color:#fff;
+      border:none;
+      padding:10px 28px;
+      font-family:'Oswald', sans-serif;
+      font-size:15px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      cursor:pointer;
+      border-radius:4px;
+      font-weight:600;
+      transition:opacity .2s;
+    }
+    .filter-modal-footer .btn-apply:hover{opacity:.8; background: var(--accent-hover);}
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(18,58,107,0.92);
+      z-index:1000;
+      justify-content:center;
+      align-items:center;
+      padding:24px;
+    }
+    .modal-overlay.active{display:flex;}
+    .modal{
+      background: var(--bg-white);
+      border:1px solid var(--border-color);
+      max-width:1200px;
+      width:100%;
+      max-height:92vh;
+      display:flex;
+      flex-direction:column;
+      border-radius:6px;
+      box-shadow:0 8px 48px rgba(0,0,0,0.2);
+    }
+    .modal-header{
+      padding:20px 28px;
+      border-bottom:1px solid var(--border-color);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+      background: var(--bg-secondary);
+    }
+    .modal-header h2{font-family:'Oswald', sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);}
+    .modal-header .close-btn{
+      background:transparent;
+      border:1px solid var(--border-color);
+      color:var(--text-primary);
+      width:36px;
+      height:36px;
+      font-size:20px;
+      cursor:pointer;
+      transition:all .2s;
+      border-radius:4px;
+    }
+    .modal-header .close-btn:hover{border-color:var(--danger); color:var(--danger);}
+    .filter-container{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .filter-container label{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-primary);
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .filter-container select{
+      padding:8px 14px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border:1px solid var(--border-color);
+      border-radius:4px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      cursor:pointer;
+      outline:none;
+      min-width:220px;
+      max-width:400px;
+    }
+    .filter-container select:hover{border-color:var(--text-primary);}
+    .filter-container select:focus{border-color:var(--accent);}
+    .filter-container select option{background:var(--bg-white); color:var(--text-primary);}
+    .filter-badge{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-primary);
+      background: var(--bg-white);
+      padding:4px 14px;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+    }
+    .modal-body{
+      padding:24px 28px;
+      overflow-y:auto;
+      flex:1;
+    }
+    .modal-body .stats{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .modal-body .stats .stat{
+      background: var(--bg-secondary);
+      padding:14px 18px;
+      text-align:center;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+    }
+    .modal-body .stats .stat .num{
+      font-family:'Oswald', sans-serif;
+      font-size:24px;
+      font-weight:600;
+      color: var(--text-primary);
+    }
+    .modal-body .stats .stat .lbl{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:11px;
+      color: var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .modal-body .ids-list{
+      background: var(--bg-secondary);
+      border:1px solid var(--border-color);
+      padding:14px 18px;
+      max-height:420px;
+      overflow-y:auto;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:14px;
+      color: var(--text-primary);
+    }
+    .modal-body .ids-list .id-item{
+      padding:8px 10px;
+      border-bottom:1px solid var(--border-color);
+      display:grid;
+      grid-template-columns:36px 36px 1fr 120px 180px 36px;
+      gap:8px;
+      align-items:center;
+      font-size:14px;
+    }
+    .modal-body .ids-list .id-item:last-child{border-bottom:none;}
+    .modal-body .ids-list .id-item .id-checkbox{display:flex; align-items:center; justify-content:center;}
+    .modal-body .ids-list .id-item .id-checkbox input[type="checkbox"]{width:18px; height:18px; accent-color:var(--accent); cursor:pointer;}
+    .modal-body .ids-list .id-item .id-index{color:var(--text-muted); font-size:12px; text-align:right;}
+    .modal-body .ids-list .id-item .id-num{color:var(--text-primary); font-weight:500; letter-spacing:.5px; font-size:15px;}
+    .modal-body .ids-list .id-item .id-valor{color:var(--success); font-size:13px; font-weight:600; text-align:right;}
+    .modal-body .ids-list .id-item .id-motorista{color:var(--text-muted); font-size:12px; font-family:'Inter', sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .modal-body .ids-count{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-muted);
+      margin-bottom:10px;
+      display:block;
+    }
+    .selecao-bar{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:10px 14px;
+      background: var(--bg-secondary);
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .selecao-bar .info{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-primary);
+    }
+    .selecao-bar .info span{color:var(--text-primary); font-weight:600;}
+    .selecao-bar .btn-resposta{
+      background: var(--cruzamento);
+      color:#fff;
+      border:none;
+      padding:8px 20px;
+      font-family:'Oswald', sans-serif;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      cursor:pointer;
+      border-radius:4px;
+      font-weight:600;
+      transition:opacity .2s;
+    }
+    .selecao-bar .btn-resposta:hover{opacity:.8;}
+    .selecao-bar .btn-resposta:disabled{opacity:.4; cursor:not-allowed;}
+    .selecao-bar .btn-selecionar{
+      padding:6px 16px;
+      font-size:12px;
+      background:transparent;
+      color:var(--text-primary);
+      border:1px solid var(--border-color);
+      cursor:pointer;
+      border-radius:4px;
+      font-family:'Inter', sans-serif;
+      transition:all .2s;
+    }
+    .selecao-bar .btn-selecionar:hover{border-color:var(--text-primary); color:var(--text-primary);}
+    .btn-carregar-mais{
+      display:block;
+      width:100%;
+      padding:14px;
+      text-align:center;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      cursor:pointer;
+      font-family:'Oswald', sans-serif;
+      font-size:15px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      transition:all .2s;
+      margin-top:10px;
+    }
+    .btn-carregar-mais:hover{background: var(--bg-white); border-color: var(--text-primary);}
+    .modal-footer{
+      padding:16px 28px;
+      border-top:1px solid var(--border-color);
+      display:flex;
+      gap:12px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      background: var(--bg-secondary);
+    }
+    .modal-footer .btn-copy{
+      background: var(--info);
+      color:#fff;
+      border:none;
+      padding:10px 24px;
+      font-family:'Oswald', sans-serif;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      cursor:pointer;
+      transition:opacity .2s;
+      font-weight:600;
+      border-radius:4px;
+    }
+    .modal-footer .btn-copy:hover{opacity:.8;}
+    .modal-footer .btn-copy.copied{background:var(--success);}
+    .modal-footer .btn-copy-all{
+      background:var(--warning);
+      color:#fff;
+      border:none;
+      padding:10px 24px;
+      font-family:'Oswald', sans-serif;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      cursor:pointer;
+      transition:opacity .2s;
+      font-weight:600;
+      border-radius:4px;
+    }
+    .modal-footer .btn-copy-all:hover{opacity:.8;}
+    .resposta-modal .modal{max-width:680px;}
+    .resposta-modal .modal-body .campo{margin-bottom:16px;}
+    .resposta-modal .modal-body .campo label{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-primary);
+      display:block;
+      margin-bottom:6px;
+    }
+    .resposta-modal .modal-body .campo input,
+    .resposta-modal .modal-body .campo textarea{
+      width:100%;
+      padding:12px 16px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      font-family:'Inter', sans-serif;
+      font-size:15px;
+      outline:none;
+      transition:border-color .2s;
+    }
+    .resposta-modal .modal-body .campo input:focus,
+    .resposta-modal .modal-body .campo textarea:focus{border-color: var(--accent);}
+    .resposta-modal .modal-body .campo textarea{resize:vertical; min-height:100px;}
+    .resposta-modal .modal-body .resumo-selecao{
+      background: var(--bg-secondary);
+      padding:16px;
+      border-radius:6px;
+      border:1px solid var(--border-color);
+      margin-bottom:18px;
+    }
+    .resposta-modal .modal-body .resumo-selecao .label{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-primary);
+    }
+    .resposta-modal .modal-body .resumo-selecao .label span{color:var(--text-primary); font-weight:600;}
+    .resposta-modal .modal-body .resumo-selecao .ids-list{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-muted);
+      max-height:70px;
+      overflow-y:auto;
+      margin-top:6px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .resposta-modal .modal-body .resumo-selecao .ids-list span{
+      background: var(--bg-white);
+      padding:4px 10px;
+      border-radius:4px;
+      border:1px solid var(--border-color);
+    }
+    .resposta-modal .modal-body .status-msg{
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      margin-top:14px;
+      min-height:24px;
+    }
+    .resposta-modal .modal-body .status-msg.success{color:var(--success);}
+    .resposta-modal .modal-body .status-msg.error{color:var(--danger);}
+    .resposta-modal .modal-body .status-msg.loading{color:var(--warning);}
+    .no-data{color:var(--text-muted); font-family:'IBM Plex Mono', monospace; font-size:13px; text-align:center; padding:24px 0;}
+    .loading-spinner{display:flex; align-items:center; justify-content:center; gap:14px; padding:14px;}
+    .spinner{width:24px; height:24px; border:3px solid var(--border-color); border-top:3px solid var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
+    @keyframes spin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
+    .debug-box{
+      background: var(--bg-white);
+      border:1px solid var(--border-color);
+      padding:14px 18px;
+      margin-top:14px;
+      border-radius:6px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-primary);
+      max-height:220px;
+      overflow-y:auto;
+    }
+    .debug-box .debug-item{padding:4px 0; border-bottom:1px solid var(--border-color);}
+    .debug-box .debug-item .key{color:var(--text-primary); font-weight:600;}
+    .debug-box .debug-item .value{color:var(--text-muted);}
+    footer{
+      margin-top:60px;
+      padding-top:20px;
+      border-top:2px solid var(--border-color);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:10px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:12px;
+      color: var(--text-on-blue);
+      opacity:1;
+      letter-spacing:.04em;
+    }
+    .role-badge{
+      margin-left:12px;
+      padding:4px 16px;
+      border-radius:16px;
+      font-size:12px;
+      font-weight:bold;
+      text-transform:uppercase;
+      letter-spacing:0.04em;
+      display:inline-block;
+    }
+    .role-badge.admin{background:var(--success); color:#fff;}
+    .role-badge.assist-adm{background:var(--cruzamento); color:#fff;}
+    .role-badge.editor{background:var(--warning); color:#fff;}
+    .role-badge.viewer{background:var(--text-muted); color:#fff;}
+    .filter-info-transp{
+      background: var(--bg-secondary);
+      border-left:4px solid var(--cruzamento);
+      padding:8px 16px;
+      border-radius:4px;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:13px;
+      color: var(--text-primary);
+      display:inline-block;
+      margin-left:10px;
+    }
+    .filter-info-transp strong{color:var(--text-primary);}
+    .record-count{
+      color: var(--text-primary);
+    }
+    .status-bar .info #recordCountPacotes,
+    .status-bar .info #recordCountInventario,
+    .status-bar .info #recordCountCruzamento,
+    .status-bar .info #recordCountRespostas{
+      color: var(--text-primary);
+    }
+    .preview-box .empty-message .loading-spinner span{
+      color: var(--text-primary);
+    }
+    .cruzamento-stat .sub-label{
+      color: var(--text-primary);
+    }
+    @media (max-width:860px){
+      .kpi-strip{grid-template-columns:repeat(3,1fr);}
+      .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
+      .cruzamento-stats{grid-template-columns:1fr 1fr;}
+      .cruzamento-transp-grid{grid-template-columns:1fr 1fr;}
+      .charts-grid{grid-template-columns:1fr;}
+      .transportadoras-grid{grid-template-columns:1fr 1fr;}
+      .zona-grid{grid-template-columns:1fr 1fr;}
+      .modal-body .stats{grid-template-columns:1fr;}
+      .modal{max-width:95%;}
+      .filter-container select{min-width:160px; max-width:260px;}
+      .modal-body .ids-list .id-item{
+        grid-template-columns:28px 28px 1fr 90px 120px 28px;
+        gap:6px;
+        font-size:12px;
+      }
+      .filter-modal-body .transp-filter-item .transp-nome{min-width:90px; font-size:12px;}
+      .filter-float-btn{padding:14px 22px; font-size:14px; bottom:24px; right:24px;}
+    }
+    @media (max-width:480px){
+      .kpi-strip{grid-template-columns:1fr 1fr;}
+      .kpi-strip.kpi-5{grid-template-columns:1fr;}
+      .cruzamento-stats{grid-template-columns:1fr;}
+      .cruzamento-transp-grid{grid-template-columns:1fr;}
+      .transportadoras-grid{grid-template-columns:1fr;}
+      .zona-grid{grid-template-columns:1fr;}
+      .tab-btn{font-size:14px; padding:12px 14px;}
+      .filter-container select{min-width:130px; max-width:200px;}
+      .modal-body .ids-list .id-item{
+        grid-template-columns:22px 22px 1fr 70px 1fr 22px;
+        gap:4px;
+        font-size:10px;
+        padding:6px 4px;
+      }
+      .modal-body .ids-list .id-item .id-num{font-size:11px;}
+      .modal-body .ids-list .id-item .id-valor{font-size:10px;}
+      .modal-body .ids-list .id-item .id-motorista{font-size:9px;}
+      .filter-modal-body .transp-filter-item{flex-wrap:wrap; padding:6px 8px;}
+      .filter-modal-body .transp-filter-item .transp-nome{min-width:70px; font-size:10px;}
+      .filter-float-btn{padding:12px 18px; font-size:13px; bottom:16px; right:16px; gap:8px;}
+      .filter-float-btn .badge-count{font-size:11px; padding:2px 10px;}
+      .filter-modal{max-width:100%; max-height:92vh;}
+      .selecao-bar{gap:8px; padding:8px 12px;}
+      .selecao-bar .info{font-size:11px;}
+      .selecao-bar .btn-resposta{font-size:11px; padding:6px 14px;}
+      .resposta-modal .modal{max-width:100%;}
+    }
+  </style>
 </head>
 <body>
 <div class="wrap">
@@ -1301,10 +1308,10 @@
       <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
     </div>
     <div class="cruzamento-stats" id="cruzamentoStats">
-      <div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 faltantes no inventário</div></div>
-      <div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 em ambos</div></div>
-      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">0</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
-      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">0</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">0 transportadoras selecionadas</div></div>
+      <div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 pacotes</div></div>
+      <div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 pacotes</div></div>
+      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">0</div><div class="label">🔴 SVC (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
+      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">0</div><div class="label">🟢 Transportadora (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
     </div>
     <div style="margin-top:28px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
@@ -1314,8 +1321,8 @@
       <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid"><div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Aguardando autenticação...</div></div>
     </div>
     <div class="cruzamento-tabela-wrap">
-      <div class="header"><h3>🔗 Detalhamento dos Pacotes em Ambos</h3><span class="badge" id="cruzamentoCount">0 registros</span></div>
-      <div class="cruzamento-tabela"><table><thead><tr><th>ID do Envio</th><th>Transportadora</th><th>Status Inventário</th><th>Zona</th><th>Classificação</th><th>Situação</th></tr></thead><tbody id="cruzamentoTbody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:36px;">Aguardando autenticação...</td></tr></tbody></table></div>
+      <div class="header"><h3 id="cruzamentoTitulo">🔗 Detalhamento dos Pacotes</h3><span class="badge" id="cruzamentoCount">0 registros</span></div>
+      <div class="cruzamento-tabela"><table><thead><tr><th>ID do Envio</th><th>Transportadora</th><th>Status Inventário</th><th>Zona</th><th>Classificação</th></tr></thead><tbody id="cruzamentoTbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Aguardando autenticação...</td></tr></tbody></table></div>
     </div>
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
@@ -1407,7 +1414,16 @@
     <div class="filter-modal">
       <div class="filter-modal-header"><h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">✕</button></div>
       <div class="filter-modal-body">
-        <div class="filter-info"><div class="counts"><span>🔗 <span id="filterCountAmbos">0</span> selecionadas</span><span>📦 <span id="filterCountResp">0</span> selecionadas</span></div><div class="filter-actions"><button class="btn-sm btn-select-all" id="filterSelectAll">✅ Selecionar todas</button><button class="btn-sm btn-clear-all" id="filterClearAll">❌ Limpar todas</button></div></div>
+        <div class="filter-info">
+          <div class="counts">
+            <span>🔴 SVC: <span id="filterCountSVC">0</span> transportadoras</span>
+            <span>🟢 Transportadora: <span id="filterCountTransp">0</span> transportadoras</span>
+          </div>
+          <div class="filter-actions">
+            <button class="btn-sm btn-select-all" id="filterSelectAll">✅ Selecionar todas</button>
+            <button class="btn-sm btn-clear-all" id="filterClearAll">❌ Limpar todas</button>
+          </div>
+        </div>
         <div class="transp-filter-container" id="transpFilterContainer"><span style="color:var(--text-primary);">Aguardando autenticação...</span></div>
       </div>
       <div class="filter-modal-footer"><button class="btn-apply" id="filterApplyBtn">✅ Aplicar Filtros</button></div>
@@ -1467,10 +1483,14 @@ let motoristasSelecionados = {};
 let modalCurrentPage = 1;
 const ITEMS_PER_PAGE = 50;
 let modalTotalIds = [], modalTotalValores = [], modalTotalMotoristas = [];
-let filtroTransportadoras = new Set();
-let filtroTransportadorasResp = new Set();
 let descricaoMap = {};
 let respostasSet = new Set();
+
+// ================================================================
+//  FILTROS DO CRUZAMENTO (NOVOS)
+// ================================================================
+let filtroSVC = new Set();        // transportadoras marcadas para SVC
+let filtroTransportadora = new Set(); // transportadoras marcadas para Transportadora
 
 // ================================================================
 //  DADOS DE EXEMPLO (FALLBACK)
@@ -1800,8 +1820,8 @@ function realizarCruzamento(dadosPacotes, dadosInventario) {
     const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
     if (id && faltantesSet.has(id)) {
       const info = invMap[id] || { status: 'FALTANTE EN INVENTARIO', zona: 'Não especificado', isFaltante: true, isSVC: true };
-      const classificacao = info.isSVC ? 'Responsabilidade SVC' : 'Transportadora';
-      resultado.push({ id, transportadora: transp, status: info.status, zona: info.zona, classificacao, situacao: '🔗 Em ambos' });
+      const classificacao = info.isSVC ? 'SVC' : 'Transportadora';
+      resultado.push({ id, transportadora: transp, status: info.status, zona: info.zona, classificacao });
       if (!transportadoraCount[transp]) transportadoraCount[transp] = { total: 0, svc: 0, transp: 0 };
       transportadoraCount[transp].total++;
       if (info.isSVC) transportadoraCount[transp].svc++;
@@ -2508,7 +2528,7 @@ async function carregarCruzamento() {
   try {
     if (statusDot) statusDot.className = 'dot-status loading';
     if (statusText) { statusText.textContent = 'Carregando dados para cruzamento...'; statusText.style.color = 'var(--text-muted)'; }
-    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:36px;">Carregando...</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Carregando...</td></tr>`;
     const [pacotes, inventario] = await Promise.all([ lerDados('pacotes'), lerDados('inventario') ]);
     rawDataPacotes = pacotes; rawDataInventario = inventario;
     processarPacotesComFiltro();
@@ -2533,7 +2553,7 @@ async function carregarCruzamento() {
   } catch (error) {
     if (statusDot) statusDot.className = 'dot-status offline';
     if (statusText) { statusText.textContent = `❌ Erro no cruzamento: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:36px;">Erro: ${error.message}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:36px;">Erro: ${error.message}</td></tr>`;
     console.error('Erro no cruzamento:', error);
   }
 }
@@ -2768,230 +2788,197 @@ document.getElementById('btnAdicionarUsuario')?.addEventListener('click', async 
 document.getElementById('refreshAdmin')?.addEventListener('click', carregarUsuarios);
 
 // ================================================================
-//  FILTROS E CRUZAMENTO (CORRIGIDO)
+//  FILTROS E CRUZAMENTO (NOVA VERSÃO)
 // ================================================================
+// Renderiza os checkboxes de filtro no modal
 function renderFiltroTransportadoras(data) {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
-  if (!data || data.transportadoraList.length === 0) { container.innerHTML = `<span style="color:var(--text-primary); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`; return; }
+  if (!data || data.transportadoraList.length === 0) {
+    container.innerHTML = `<span style="color:var(--text-primary); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`;
+    return;
+  }
 
-  if (filtroTransportadoras.size === 0) { data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome)); }
-  if (filtroTransportadorasResp.size === 0) { data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome)); }
+  // Inicializar filtros se estiverem vazios (selecionar todos por padrão)
+  if (filtroSVC.size === 0 && filtroTransportadora.size === 0) {
+    data.transportadoraList.forEach(t => {
+      filtroSVC.add(t.nome);
+      filtroTransportadora.add(t.nome);
+    });
+  }
 
   container.innerHTML = data.transportadoraList.map(t => {
-    const checkedAmbos = filtroTransportadoras.has(t.nome) ? 'checked' : '';
-    const checkedResp = filtroTransportadorasResp.has(t.nome) ? 'checked' : '';
+    const checkedSVC = filtroSVC.has(t.nome) ? 'checked' : '';
+    const checkedTransp = filtroTransportadora.has(t.nome) ? 'checked' : '';
     return `<div class="transp-filter-item">
       <span class="transp-nome">${t.nome}</span>
-      <label class="transp-check-label">
-        <input type="checkbox" class="cb-ambos" ${checkedAmbos} onclick="window.toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','ambos')"> 🔗
+      <label class="filter-check-label svc-label">
+        <input type="checkbox" class="cb-svc" ${checkedSVC} onclick="window.toggleFiltro('${t.nome.replace(/'/g,"\\'")}','svc')"> 🔴 SVC
       </label>
-      <label class="transp-check-label">
-        <input type="checkbox" class="cb-responsabilidade" ${checkedResp} onclick="window.toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','responsabilidade')"> 📦
+      <label class="filter-check-label transp-label">
+        <input type="checkbox" class="cb-transp" ${checkedTransp} onclick="window.toggleFiltro('${t.nome.replace(/'/g,"\\'")}','transp')"> 🟢 Transportadora
       </label>
       <span class="transp-count">(${t.quantidade})</span>
     </div>`;
   }).join('');
 
-  const filterCountAmbos = document.getElementById('filterCountAmbos');
-  const filterCountResp = document.getElementById('filterCountResp');
-  const filterFloatBadge = document.getElementById('filterFloatBadge');
-  if (filterCountAmbos) filterCountAmbos.textContent = filtroTransportadoras.size;
-  if (filterCountResp) filterCountResp.textContent = filtroTransportadorasResp.size;
-  const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-  if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
+  atualizarContadoresFiltro();
 }
 
-window.toggleTransportadora = function(nome, tipo) {
-  if (tipo === 'ambos') {
-    if (filtroTransportadoras.has(nome)) {
-      filtroTransportadoras.delete(nome);
-    } else {
-      filtroTransportadoras.add(nome);
-      filtroTransportadorasResp.delete(nome);
-    }
-  } else if (tipo === 'responsabilidade') {
-    if (filtroTransportadorasResp.has(nome)) {
-      filtroTransportadorasResp.delete(nome);
-    } else {
-      filtroTransportadorasResp.add(nome);
-      filtroTransportadoras.delete(nome);
-    }
+// Atualiza os contadores do modal
+function atualizarContadoresFiltro() {
+  document.getElementById('filterCountSVC').textContent = filtroSVC.size;
+  document.getElementById('filterCountTransp').textContent = filtroTransportadora.size;
+  document.getElementById('filterFloatBadge').textContent = filtroSVC.size + filtroTransportadora.size;
+}
+
+// Toggle de filtro para uma transportadora e categoria
+window.toggleFiltro = function(nome, categoria) {
+  if (categoria === 'svc') {
+    if (filtroSVC.has(nome)) filtroSVC.delete(nome);
+    else filtroSVC.add(nome);
+  } else if (categoria === 'transp') {
+    if (filtroTransportadora.has(nome)) filtroTransportadora.delete(nome);
+    else filtroTransportadora.add(nome);
   }
 
-  const filterCountAmbos = document.getElementById('filterCountAmbos');
-  const filterCountResp = document.getElementById('filterCountResp');
-  const filterFloatBadge = document.getElementById('filterFloatBadge');
-  if (filterCountAmbos) filterCountAmbos.textContent = filtroTransportadoras.size;
-  if (filterCountResp) filterCountResp.textContent = filtroTransportadorasResp.size;
-  const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-  if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
-
+  // Atualizar UI dos checkboxes
   const container = document.getElementById('transpFilterContainer');
   if (container) {
     container.querySelectorAll('.transp-filter-item').forEach(item => {
-      const nome = item.querySelector('.transp-nome')?.textContent?.trim() || '';
-      const cbAmbos = item.querySelector('.cb-ambos');
-      const cbResp = item.querySelector('.cb-responsabilidade');
-      if (cbAmbos) cbAmbos.checked = filtroTransportadoras.has(nome);
-      if (cbResp) cbResp.checked = filtroTransportadorasResp.has(nome);
+      const nomeItem = item.querySelector('.transp-nome')?.textContent?.trim() || '';
+      const cbSVC = item.querySelector('.cb-svc');
+      const cbTransp = item.querySelector('.cb-transp');
+      if (cbSVC) cbSVC.checked = filtroSVC.has(nomeItem);
+      if (cbTransp) cbTransp.checked = filtroTransportadora.has(nomeItem);
     });
   }
 
-  if (dadosCruzamento) {
-    renderCruzamento(dadosCruzamento);
-  }
+  atualizarContadoresFiltro();
+  // Re-renderizar cruzamento se já houver dados
+  if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 };
 
-window.selecionarTodasTransportadoras = function() {
+// Selecionar todas as transportadoras para ambas categorias
+window.selecionarTodas = function() {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
   container.querySelectorAll('.transp-filter-item').forEach(item => {
     const nome = item.querySelector('.transp-nome')?.textContent?.trim() || '';
-    const cbAmbos = item.querySelector('.cb-ambos');
-    const cbResp = item.querySelector('.cb-responsabilidade');
-    if (cbAmbos) { cbAmbos.checked = true; filtroTransportadoras.add(nome); filtroTransportadorasResp.delete(nome); }
-    if (cbResp) cbResp.checked = false;
+    const cbSVC = item.querySelector('.cb-svc');
+    const cbTransp = item.querySelector('.cb-transp');
+    if (cbSVC) { cbSVC.checked = true; filtroSVC.add(nome); }
+    if (cbTransp) { cbTransp.checked = true; filtroTransportadora.add(nome); }
   });
-  const filterCountAmbos = document.getElementById('filterCountAmbos');
-  const filterCountResp = document.getElementById('filterCountResp');
-  const filterFloatBadge = document.getElementById('filterFloatBadge');
-  if (filterCountAmbos) filterCountAmbos.textContent = filtroTransportadoras.size;
-  if (filterCountResp) filterCountResp.textContent = filtroTransportadorasResp.size;
-  const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
-  if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
+  atualizarContadoresFiltro();
   if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 };
 
-window.limparTodasTransportadoras = function() {
+// Limpar todas as seleções
+window.limparTodas = function() {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
   container.querySelectorAll('.transp-filter-item').forEach(item => {
-    const cbAmbos = item.querySelector('.cb-ambos');
-    const cbResp = item.querySelector('.cb-responsabilidade');
-    if (cbAmbos) cbAmbos.checked = false;
-    if (cbResp) cbResp.checked = false;
+    const cbSVC = item.querySelector('.cb-svc');
+    const cbTransp = item.querySelector('.cb-transp');
+    if (cbSVC) cbSVC.checked = false;
+    if (cbTransp) cbTransp.checked = false;
   });
-  filtroTransportadoras.clear();
-  filtroTransportadorasResp.clear();
-  const filterCountAmbos = document.getElementById('filterCountAmbos');
-  const filterCountResp = document.getElementById('filterCountResp');
-  const filterFloatBadge = document.getElementById('filterFloatBadge');
-  if (filterCountAmbos) filterCountAmbos.textContent = '0';
-  if (filterCountResp) filterCountResp.textContent = '0';
-  if (filterFloatBadge) filterFloatBadge.textContent = '0';
+  filtroSVC.clear();
+  filtroTransportadora.clear();
+  atualizarContadoresFiltro();
   if (dadosCruzamento) renderCruzamento(dadosCruzamento);
 };
 
-function aplicarFiltroTransportadoras(data, tipo) {
-  if (!data) return data;
-  let filtroAtivo = tipo === 'ambos' ? filtroTransportadoras : filtroTransportadorasResp;
-  if (filtroAtivo.size === 0) return { ...data, dados:[], emAmbos:0, transportadoraList:[] };
-  const dadosFiltrados = data.dados.filter(row => filtroAtivo.has(row.transportadora));
-  const transportadoraCount = {};
-  dadosFiltrados.forEach(row => { if (!transportadoraCount[row.transportadora]) transportadoraCount[row.transportadora] = 0; transportadoraCount[row.transportadora]++; });
-  const transportadoraList = Object.entries(transportadoraCount).map(([nome, quantidade]) => ({ nome, quantidade })).sort((a,b) => b.quantidade - a.quantidade);
-  return { ...data, dados:dadosFiltrados, emAmbos:dadosFiltrados.length, transportadoraList };
-}
-
+// Função principal de renderização do cruzamento com os novos filtros
 function renderCruzamento(data) {
   const statsDiv = document.getElementById('cruzamentoStats');
   const transpGrid = document.getElementById('cruzamentoTranspGrid');
   const tbody = document.getElementById('cruzamentoTbody');
   const countSpan = document.getElementById('cruzamentoCount');
   const footerSpan = document.getElementById('footerTotalCruzamento');
+  const titulo = document.getElementById('cruzamentoTitulo');
 
+  // Renderizar filtros (checkboxes) no modal
   renderFiltroTransportadoras(data);
 
-  // Dados para "Em Ambos" (filtro 🔗)
-  const dadosFiltradosEmAmbos = aplicarFiltroTransportadoras(data, 'ambos');
+  // Filtrar dados com base nos filtros ativos
+  let dadosSVC = [];
+  let dadosTransp = [];
+  let totalSVC = 0, totalTransp = 0;
 
-  // Dados para "Responsabilidade ID" (filtro 📦) - pacotes que NÃO estão faltantes
-  let dadosFiltradosResponsabilidade = [];
-  let totalPacotesResp = 0;
-  if (filtroTransportadorasResp.size > 0) {
-    const faltantesSet = new Set(data.dados.map(row => row.id));
-    const todosPacotesComTransp = rawDataPacotes.filter(row => {
-      let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
-      if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
-      const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-      return id && filtroTransportadorasResp.has(transp);
-    });
-    dadosFiltradosResponsabilidade = todosPacotesComTransp
-      .filter(row => {
-        const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-        return !faltantesSet.has(id);
-      })
-      .map(row => {
-        const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-        let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
-        if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
-        // Para responsabilidade ID, não temos info de inventário, então são Transportadora
-        return { id, transportadora: transp, status: '—', zona: '—', classificacao: 'Transportadora', situacao: '📦 Responsabilidade ID' };
-      });
-    totalPacotesResp = dadosFiltradosResponsabilidade.length;
+  if (filtroSVC.size > 0) {
+    dadosSVC = data.dados.filter(row => filtroSVC.has(row.transportadora) && row.classificacao === 'SVC');
+    totalSVC = dadosSVC.length;
+  }
+  if (filtroTransportadora.size > 0) {
+    dadosTransp = data.dados.filter(row => filtroTransportadora.has(row.transportadora) && row.classificacao === 'Transportadora');
+    totalTransp = dadosTransp.length;
   }
 
+  // Atualizar cards
   if (statsDiv) {
     statsDiv.innerHTML = `
       <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div>
       <div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">${data.emAmbos} em ambos</div></div>
-      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">${dadosFiltradosEmAmbos.emAmbos}</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">${filtroTransportadoras.size} transportadoras selecionadas</div></div>
-      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">${totalPacotesResp}</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">${filtroTransportadorasResp.size} transportadoras selecionadas</div></div>
+      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">${totalSVC}</div><div class="label">🔴 SVC (Filtrado)</div><div class="sub-label">${filtroSVC.size} transportadoras selecionadas</div></div>
+      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">${totalTransp}</div><div class="label">🟢 Transportadora (Filtrado)</div><div class="sub-label">${filtroTransportadora.size} transportadoras selecionadas</div></div>
     `;
   }
 
-  // Grid de transportadoras (Em Ambos) com SVC e Transportadora
-  if (dadosFiltradosEmAmbos.transportadoraList.length === 0) {
-    if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Nenhum pacote em ambos para as transportadoras selecionadas</div>`;
+  // Grid de transportadoras (agrupado por transportadora)
+  if (data.transportadoraList.length === 0) {
+    if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Nenhum pacote em ambos</div>`;
   } else {
-    const totalEmAmbos = dadosFiltradosEmAmbos.emAmbos;
+    const totalEmAmbos = data.emAmbos;
     if (transpGrid) {
-      transpGrid.innerHTML = dadosFiltradosEmAmbos.transportadoraList.map(t => {
+      transpGrid.innerHTML = data.transportadoraList.map(t => {
         const pct = totalEmAmbos > 0 ? (t.quantidade / totalEmAmbos * 100) : 0;
-        // Buscar as contagens de SVC e Transportadora para esta transportadora a partir dos dados originais
-        const transpData = data.transportadoraList.find(item => item.nome === t.nome);
-        const svc = transpData ? transpData.svc : 0;
-        const transp = transpData ? transpData.transp : 0;
+        // Mostrar também SVC e Transportadora dentro da transportadora
+        const svcCount = data.dados.filter(row => row.transportadora === t.nome && row.classificacao === 'SVC').length;
+        const transpCount = data.dados.filter(row => row.transportadora === t.nome && row.classificacao === 'Transportadora').length;
         return `<div class="cruzamento-transp-card"><div class="nome">${t.nome}</div><div class="detalhes">
           <span class="qtd">🔗 ${t.quantidade}</span>
           <span class="pct">${pct.toFixed(1)}%</span>
-          <span class="svc">🔴 SVC ${svc}</span>
-          <span class="transp">🟢 Transp ${transp}</span>
+          <span class="svc">🔴 SVC ${svcCount}</span>
+          <span class="transp">🟢 Transp ${transpCount}</span>
         </div></div>`;
       }).join('');
     }
   }
 
-  // Tabela de detalhamento - mostra o que estiver selecionado (prioridade: responsabilidade se houver, senão em ambos)
+  // Tabela de detalhamento: mostra SVC ou Transportadora conforme os filtros ativos
   let dadosParaTabela = [];
-  let tituloTabela = '🔗 Detalhamento dos Pacotes em Ambos';
-  if (filtroTransportadorasResp.size > 0 && dadosFiltradosResponsabilidade.length > 0) {
-    dadosParaTabela = dadosFiltradosResponsabilidade;
-    tituloTabela = '📦 Pacotes de Responsabilidade ID (não faltantes no inventário)';
-  } else if (filtroTransportadoras.size > 0 && dadosFiltradosEmAmbos.dados.length > 0) {
-    dadosParaTabela = dadosFiltradosEmAmbos.dados;
-    tituloTabela = '🔗 Detalhamento dos Pacotes em Ambos';
+  let tituloTabela = '📦 Detalhamento dos Pacotes';
+
+  if (filtroSVC.size > 0 && totalSVC > 0) {
+    dadosParaTabela = dadosSVC;
+    tituloTabela = '🔴 Pacotes de Responsabilidade SVC (Filtrados)';
+  } else if (filtroTransportadora.size > 0 && totalTransp > 0) {
+    dadosParaTabela = dadosTransp;
+    tituloTabela = '🟢 Pacotes de Responsabilidade Transportadora (Filtrados)';
   } else {
     dadosParaTabela = [];
+    tituloTabela = '📦 Nenhum pacote encontrado para os filtros selecionados';
   }
 
-  const headerTitulo = document.querySelector('.cruzamento-tabela-wrap .header h3');
-  if (headerTitulo) headerTitulo.textContent = tituloTabela;
-
+  if (titulo) titulo.textContent = tituloTabela;
   if (countSpan) countSpan.textContent = `${dadosParaTabela.length} registros`;
   if (footerSpan) footerSpan.textContent = `${dadosParaTabela.length} registros`;
 
   if (dadosParaTabela.length === 0) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:36px;">Nenhum registro encontrado para os filtros selecionados</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Nenhum registro encontrado</td></tr>`;
   } else {
     if (tbody) {
       tbody.innerHTML = dadosParaTabela.map(row => {
-        const classificacao = row.classificacao || 'Transportadora';
-        const badgeClass = classificacao === 'Responsabilidade SVC' ? 'svc' : 'transp';
-        const statusDisplay = row.status || '—';
-        const zonaDisplay = row.zona || '—';
-        return `<tr><td style="font-weight:500;">${row.id}</td><td>${row.transportadora}</td><td style="color:${statusDisplay !== '—' && statusDisplay.includes('FALTANTE') ? 'var(--danger)' : 'var(--text-muted)'};">${statusDisplay}</td><td>${zonaDisplay}</td><td><span class="status-badge ${badgeClass}">${classificacao}</span></td><td>${row.situacao}</td></tr>`;
+        const badgeClass = row.classificacao === 'SVC' ? 'svc' : 'transp';
+        return `<tr>
+          <td style="font-weight:500;">${row.id}</td>
+          <td>${row.transportadora}</td>
+          <td style="color:${row.status.includes('FALTANTE') ? 'var(--danger)' : 'var(--text-muted)'};">${row.status}</td>
+          <td>${row.zona}</td>
+          <td><span class="status-badge ${badgeClass}">${row.classificacao}</span></td>
+        </tr>`;
       }).join('');
     }
   }
@@ -3282,9 +3269,9 @@ window.selecionarTodosPagina = selecionarTodosPagina;
 window.limparSelecaoPagina = limparSelecaoPagina;
 window.carregarMaisPagina = carregarMaisPagina;
 window.toggleSelecao = toggleSelecao;
-window.toggleTransportadora = toggleTransportadora;
-window.selecionarTodasTransportadoras = selecionarTodasTransportadoras;
-window.limparTodasTransportadoras = limparTodasTransportadoras;
+window.toggleFiltro = toggleFiltro;
+window.selecionarTodas = selecionarTodas;
+window.limparTodas = limparTodas;
 </script>
 </body>
 </html>
