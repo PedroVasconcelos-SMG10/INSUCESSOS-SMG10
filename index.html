@@ -1267,7 +1267,7 @@
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
 
-  <!-- TAB RESPOSTAS -->
+  <!-- TAB RESPOSTAS (SEM PAGINAÇÃO) -->
   <div class="tab-content" id="tabRespostas">
     <div class="status-bar">
       <div class="info"><span class="dot-status loading" id="statusDotRespostas"></span><span id="statusTextRespostas">📥 Carregando respostas...</span><span id="recordCountRespostas" style="color:var(--text-faint);"></span><span id="roleBadgeContainerRespostas"></span></div>
@@ -1289,14 +1289,6 @@
           <thead><tr><th>#</th><th>ID do Envio</th><th>Transportadora</th><th>Motorista</th><th>Responsável</th><th>Justificativa</th><th>Data/Hora</th></tr></thead>
           <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Carregando respostas...</td></tr></tbody>
         </table>
-      </div>
-      <!-- PAGINAÇÃO -->
-      <div id="respostasPaginacao" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:10px;">
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);" id="respostasInfoPagina">Mostrando 0 a 0 de 0</span>
-        <div style="display:flex; gap:10px;">
-          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>◀ Anterior</button>
-          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>Próximo ▶</button>
-        </div>
       </div>
     </div>
     <footer><span>FONTE — PLANILHA GOOGLE SHEETS (RESPOSTAS)</span><span id="footerTotalRespostas">0 registros</span></footer>
@@ -1765,7 +1757,7 @@ function renderKPI_Inventario(data) {
   if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
 }
 
-// GRÁFICOS
+// GRÁFICOS (com stepSize dinâmico)
 function renderGraficosPacotes(data, dadosFiltrados) {
   try { if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; } if (chartValor) { chartValor.destroy(); chartValor = null; } } catch(e) {}
   const chartQuant = document.getElementById('chartQuantidade');
@@ -2095,12 +2087,10 @@ function renderTransportadoras(data) {
 }
 
 // ================================================================
-//  TAB RESPOSTAS (APENAS ADMIN E ASSIST-ADM)
+//  TAB RESPOSTAS - SEM PAGINAÇÃO (EXIBE TODOS OS REGISTROS)
 // ================================================================
 let respostasData = [];
 let respostasFiltradas = [];
-let respostasPaginaAtual = 1;
-const RESPOSTAS_POR_PAGINA = 20;
 
 async function carregarRespostas() {
   const tbody = document.getElementById('respostasTbody');
@@ -2127,7 +2117,6 @@ async function carregarRespostas() {
     const data = await lerAbaViaAPI('RESPOSTAS');
     respostasData = data || [];
     console.log('[Respostas] Dados carregados:', respostasData.length, 'registros');
-    console.log('[Respostas] Exemplo:', respostasData[0]);
 
     const transpSet = new Set();
     respostasData.forEach(row => {
@@ -2190,7 +2179,6 @@ function aplicarFiltrosRespostas() {
     return db.localeCompare(da);
   });
 
-  respostasPaginaAtual = 1;
   renderizarRespostas();
 }
 
@@ -2198,32 +2186,19 @@ function renderizarRespostas() {
   const tbody = document.getElementById('respostasTbody');
   const countSpan = document.getElementById('respostasCount');
   const footerSpan = document.getElementById('footerTotalRespostas');
-  const infoPagina = document.getElementById('respostasInfoPagina');
 
   const total = respostasFiltradas.length;
-  const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
-  const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
-  const start = (pagina - 1) * RESPOSTAS_POR_PAGINA;
-  const end = Math.min(start + RESPOSTAS_POR_PAGINA, total);
-  const paginaData = respostasFiltradas.slice(start, end);
 
   if (countSpan) countSpan.textContent = `${total} registros`;
   if (footerSpan) footerSpan.textContent = `${total} registros`;
 
-  if (infoPagina) {
-    infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro';
-  }
-
-  // Atualiza o estado dos botões ANTES de renderizar a tabela
-  atualizarPaginacaoRespostas();
-
-  if (paginaData.length === 0) {
+  if (total === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = paginaData.map((row, index) => {
-    const globalIndex = start + index + 1;
+  tbody.innerHTML = respostasFiltradas.map((row, index) => {
+    const globalIndex = index + 1;
     const id = row['ID'] || row['ID do envio'] || '';
     const transportadora = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
     const motorista = row['Motorista'] || row['motorista'] || row['MOTORISTA'] || '';
@@ -2232,35 +2207,7 @@ function renderizarRespostas() {
     const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
     return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
   }).join('');
-
-  // Reaplica o estado dos botões (por segurança)
-  atualizarPaginacaoRespostas();
 }
-
-// PAGINAÇÃO DAS RESPOSTAS - VERSÃO ONCLICK (mas com fallback para addEventListener)
-function atualizarPaginacaoRespostas() {
-  const btnAnterior = document.getElementById('respostasPaginaAnterior');
-  const btnProximo = document.getElementById('respostasPaginaProximo');
-  const total = respostasFiltradas.length;
-  const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
-  const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
-
-  if (btnAnterior) btnAnterior.disabled = pagina <= 1;
-  if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
-}
-
-window.respostasIrParaPagina = function(direcao) {
-  if (direcao === 'anterior' && respostasPaginaAtual > 1) {
-    respostasPaginaAtual--;
-    renderizarRespostas();
-  } else if (direcao === 'proximo') {
-    const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
-    if (respostasPaginaAtual < totalPaginas) {
-      respostasPaginaAtual++;
-      renderizarRespostas();
-    }
-  }
-};
 
 // Eventos da aba Respostas
 document.getElementById('btnFiltrarRespostas')?.addEventListener('click', aplicarFiltrosRespostas);
@@ -2295,32 +2242,6 @@ document.getElementById('btnExportarRespostas')?.addEventListener('click', funct
   link.href = URL.createObjectURL(blob);
   link.download = `respostas_${new Date().toISOString().slice(0,10)}.csv`;
   link.click();
-});
-
-// Garantir que os botões de paginação funcionem mesmo se o onclick falhar
-document.addEventListener('DOMContentLoaded', function() {
-  // Aguarda um pouco para garantir que os elementos existam
-  setTimeout(function() {
-    const btnAnterior = document.getElementById('respostasPaginaAnterior');
-    const btnProximo = document.getElementById('respostasPaginaProximo');
-    if (btnAnterior) {
-      btnAnterior.addEventListener('click', function() {
-        if (respostasPaginaAtual > 1) {
-          respostasPaginaAtual--;
-          renderizarRespostas();
-        }
-      });
-    }
-    if (btnProximo) {
-      btnProximo.addEventListener('click', function() {
-        const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
-        if (respostasPaginaAtual < totalPaginas) {
-          respostasPaginaAtual++;
-          renderizarRespostas();
-        }
-      });
-    }
-  }, 500);
 });
 
 // ================================================================
@@ -3198,7 +3119,6 @@ window.toggleSelecao = toggleSelecao;
 window.toggleTransportadora = toggleTransportadora;
 window.selecionarTodasTransportadoras = selecionarTodasTransportadoras;
 window.limparTodasTransportadoras = limparTodasTransportadoras;
-window.respostasIrParaPagina = respostasIrParaPagina;
 </script>
 </body>
 </html>
