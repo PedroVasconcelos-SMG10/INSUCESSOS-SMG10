@@ -3094,7 +3094,47 @@ async function toggleStatus(id, transportadora, motorista) {
     else carregarTodosOsDados();
   } catch (error) { Swal.fire({ icon:'error', title:'Erro', text:'Ocorreu um erro ao alternar status.', confirmButtonColor:'#e8593f' }); console.error(error); }
 }
+// ================================================================
+//  PAGINAÇÃO DAS RESPOSTAS - VERSÃO ROBUSTA
+// ================================================================
+function configurarBotoesRespostas() {
+    const btnAnterior = document.getElementById('respostasPaginaAnterior');
+    const btnProximo = document.getElementById('respostasPaginaProximo');
 
+    // Remove event listeners antigos (se houver)
+    const novoAnterior = btnAnterior.cloneNode(true);
+    const novoProximo = btnProximo.cloneNode(true);
+    btnAnterior.parentNode.replaceChild(novoAnterior, btnAnterior);
+    btnProximo.parentNode.replaceChild(novoProximo, btnProximo);
+
+    // Adiciona os novos listeners
+    document.getElementById('respostasPaginaAnterior').addEventListener('click', function() {
+        if (respostasPaginaAtual > 1) {
+            respostasPaginaAtual--;
+            renderizarRespostas();
+        }
+    });
+
+    document.getElementById('respostasPaginaProximo').addEventListener('click', function() {
+        const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
+        if (respostasPaginaAtual < totalPaginas) {
+            respostasPaginaAtual++;
+            renderizarRespostas();
+        }
+    });
+}
+
+// Chame esta função sempre que os dados forem filtrados ou recarregados
+function atualizarPaginacaoRespostas() {
+    const btnAnterior = document.getElementById('respostasPaginaAnterior');
+    const btnProximo = document.getElementById('respostasPaginaProximo');
+    const total = respostasFiltradas.length;
+    const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
+    const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
+
+    if (btnAnterior) btnAnterior.disabled = pagina <= 1;
+    if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
+}
 // ================================================================
 //  EVENT LISTENERS
 // ================================================================
