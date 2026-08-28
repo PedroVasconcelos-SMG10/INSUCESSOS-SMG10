@@ -9,13 +9,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    /* ===== NOVA PALETA DE CORES ===== */
+    /* ===== NOVA PALETA DE CORES — GRADIENTE ID LOGISTICS × MERCADO LIVRE ===== */
     :root{
+      --grad-blue: #0F2A5C;
+      --grad-wine: #5C1E3C;
+      --grad-red: #C62828;
+      --grad-orange: #E65100;
+      --grad-yellow: #FFD600;
+      --bg-gradient: linear-gradient(105deg, #0F2A5C 0%, #3D2050 18%, #6B1E3E 32%, #A02020 48%, #C94B12 62%, #E8890C 76%, #F5B800 90%, #FFD600 100%);
+      --bg-gradient-dark: linear-gradient(105deg, #0F2A5C 0%, #3D2050 30%, #6B1E3E 60%, #A02020 100%);
+      --btn-gradient: linear-gradient(135deg, #C62828 0%, #E65100 100%);
+      --btn-gradient-hover: linear-gradient(135deg, #A02020 0%, #BF360C 100%);
       --bg-primary: #123A6B;
-      --bg-secondary: #E6F0FA;
+      --bg-secondary: #EEF3FB;
       --bg-white: #FFFFFF;
-      --bg-card: #FFFFFF;
-      --bg-panel: #F5F9FF;
+      --bg-card: rgba(255,255,255,0.95);
+      --bg-panel: rgba(245,249,255,0.92);
       --text-primary: #123A6B;
       --text-on-blue: #FFFFFF;
       --text-muted: #4A6A8A;
@@ -36,7 +45,8 @@
     }
     *{box-sizing:border-box; margin:0; padding:0;}
     body{
-      background: var(--bg-primary);
+      background: var(--bg-gradient);
+      background-attachment: fixed;
       color: var(--text-on-blue);
       font-family:'Inter', sans-serif;
       font-size:16px;
@@ -48,19 +58,85 @@
       margin:0 auto;
       padding:0 32px;
     }
+    /* ===== BARRA DE LOGOS ===== */
+    .brand-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:34px;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .logo-id{display:flex; align-items:center; gap:12px; text-decoration:none;}
+    .logo-id .logo-id-main{
+      font-family:'Oswald', sans-serif;
+      font-size:32px;
+      font-weight:700;
+      font-style:italic;
+      color:#1F5FA8;
+      background:#FFFFFF;
+      padding:6px 16px;
+      border-radius:8px;
+      letter-spacing:.02em;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      gap:2px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    }
+    .logo-id .logo-id-main .arrow{color:#E63312; font-size:30px; font-weight:700; transform:translateY(-3px);}
+    .logo-id .logo-id-sub{
+      font-family:'Oswald', sans-serif;
+      font-size:12px;
+      font-weight:500;
+      color:#FFFFFF;
+      letter-spacing:.32em;
+      text-transform:uppercase;
+      opacity:.95;
+      text-shadow:0 1px 4px rgba(0,0,0,0.4);
+    }
+    .logo-meli{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:#FFE600;
+      padding:8px 20px 8px 10px;
+      border-radius:10px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.25);
+      text-decoration:none;
+    }
+    .logo-meli .handshake{
+      width:38px; height:38px;
+      border-radius:50%;
+      background:#2D3277;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px;
+      flex-shrink:0;
+    }
+    .logo-meli .meli-text{
+      font-family:'Inter', sans-serif;
+      font-size:18px;
+      font-weight:700;
+      color:#2D3277;
+      line-height:1.05;
+      letter-spacing:-.01em;
+    }
+    .logo-meli .meli-text small{display:block; font-size:11px; font-weight:600;}
     .masthead{
-      background: var(--bg-primary);
-      border-bottom:2px solid var(--border-color);
-      padding:48px 0 30px 0;
+      background: var(--bg-gradient-dark);
+      border-bottom:2px solid rgba(255,255,255,0.18);
+      padding:36px 32px 30px 32px;
       position:relative;
       overflow:hidden;
-      border-radius:0 0 12px 12px;
+      border-radius:12px;
       margin-bottom:8px;
+      margin-top:18px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.35);
     }
     .masthead::before{
       content:"";
       position:absolute; top:0; left:0; right:0; height:4px;
-      background: repeating-linear-gradient(90deg, var(--accent) 0 40px, var(--bg-primary) 40px 80px, #FFFFFF 80px 120px, var(--bg-secondary) 120px 160px);
+      background: linear-gradient(90deg, #FFD600 0%, #F57F17 25%, #E65100 45%, #C62828 70%, #FFD600 100%);
       opacity:1;
     }
     .eyebrow{
@@ -72,7 +148,7 @@
       text-transform:uppercase;
       display:flex; gap:12px; align-items:center;
     }
-    .eyebrow .dot{width:8px; height:8px; background:var(--accent); border-radius:50%; display:inline-block;}
+    .eyebrow .dot{width:8px; height:8px; background:var(--grad-yellow); border-radius:50%; display:inline-block; box-shadow:0 0 10px rgba(255,214,0,0.8);}
     h1{
       font-family:'Oswald', sans-serif;
       font-weight:700;
@@ -82,23 +158,24 @@
       line-height:1.02;
       margin-top:12px;
       color: var(--text-on-blue);
+      text-shadow:0 2px 12px rgba(0,0,0,0.35);
     }
     .masthead p{
       color: var(--text-on-blue);
-      opacity:1;
+      opacity:.92;
       max-width:780px;
       margin-top:14px;
       font-size:16px;
       line-height:1.6;
     }
-    .masthead p b{color: var(--text-on-blue); font-weight:600;}
+    .masthead p b{color: var(--grad-yellow); font-weight:600;}
     .login-btn{
       position:fixed;
       top:20px;
       right:20px;
       z-index:9999;
       padding:14px 28px;
-      background: var(--accent);
+      background: var(--btn-gradient);
       color: #fff;
       border:none;
       border-radius:4px;
@@ -107,22 +184,24 @@
       font-size:16px;
       text-transform:uppercase;
       letter-spacing:.06em;
-      box-shadow:0 4px 16px rgba(211,47,47,0.4);
+      box-shadow:0 4px 16px rgba(198,40,40,0.45);
       transition:all .3s;
     }
-    .login-btn:hover{background: var(--accent-hover); transform:scale(1.03);}
+    .login-btn:hover{background: var(--btn-gradient-hover); transform:scale(1.03);}
     .login-btn.logged{background: var(--success); cursor:default; opacity:1; box-shadow:0 4px 16px rgba(46,125,50,0.4);}
     .login-btn.error{background: var(--danger); cursor:default; opacity:1;}
     .tabs{
       display:flex;
       gap:4px;
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:4px;
       margin-top:30px;
       border-radius:6px;
       flex-wrap:wrap;
-      border:1px solid var(--border-color);
-      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+      border:1px solid rgba(255,255,255,0.35);
+      box-shadow:0 4px 18px rgba(0,0,0,0.18);
     }
     .tab-btn{
       flex:1;
@@ -142,9 +221,9 @@
     }
     .tab-btn:hover{color: var(--text-primary); background: var(--bg-secondary);}
     .tab-btn.active{
-      background: var(--bg-primary);
+      background: var(--bg-gradient-dark);
       color: var(--text-on-blue);
-      box-shadow:inset 0 -3px 0 var(--accent);
+      box-shadow:inset 0 -3px 0 var(--grad-yellow);
     }
     .tab-btn.tab-cruzamento.active{box-shadow:inset 0 -3px 0 var(--cruzamento);}
     .tab-btn.tab-admin.active{box-shadow:inset 0 -3px 0 var(--purple);}
@@ -153,8 +232,10 @@
     .tab-content.active{display:block;}
     @keyframes fadeIn{0%{opacity:0; transform:translateY(8px);} 100%{opacity:1; transform:translateY(0);}}
     .status-bar{
-      background: var(--bg-white);
-      border:1px solid var(--border-color);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border:1px solid rgba(255,255,255,0.35);
       padding:18px 28px;
       margin-top:28px;
       border-radius:6px;
@@ -163,7 +244,7 @@
       align-items:center;
       flex-wrap:wrap;
       gap:14px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.04);
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .status-bar .info{
       font-family:'IBM Plex Mono', monospace;
@@ -205,14 +286,17 @@
       display:grid;
       grid-template-columns:repeat(7,1fr);
       gap:2px;
-      background: var(--border-color);
-      border:1px solid var(--border-color);
+      background: rgba(255,255,255,0.35);
+      border:1px solid rgba(255,255,255,0.35);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .kpi{
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:20px 20px 18px;
       position:relative;
     }
@@ -233,7 +317,7 @@
     }
     .kpi .pct{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--text-muted); margin-top:4px;}
     .kpi .sub{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-muted); margin-top:4px;}
-    .kpi.total{background: var(--bg-secondary);}
+    .kpi.total{background: var(--bg-panel);}
     .kpi.total .num{font-size:42px;}
     .kpi .num.success{color:var(--success);}
     .kpi .num.danger{color:var(--danger);}
@@ -253,14 +337,17 @@
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:2px;
-      background: var(--border-color);
-      border:1px solid var(--border-color);
+      background: rgba(255,255,255,0.35);
+      border:1px solid rgba(255,255,255,0.35);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .chart-card{
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:24px;
     }
     .chart-card h3{
@@ -277,21 +364,24 @@
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
       gap:2px;
-      background: var(--border-color);
-      border:1px solid var(--border-color);
+      background: rgba(255,255,255,0.35);
+      border:1px solid rgba(255,255,255,0.35);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .transportadora-card{
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:20px 18px;
       transition:background .2s;
       cursor:pointer;
     }
     .transportadora-card:hover{background: var(--bg-secondary);}
     .transportadora-card.blocked{cursor:not-allowed; opacity:0.7;}
-    .transportadora-card.blocked:hover{background: var(--bg-white);}
+    .transportadora-card.blocked:hover{background: var(--bg-card);}
     .transportadora-card .nome{
       font-family:'Oswald', sans-serif;
       font-size:18px;
@@ -309,12 +399,15 @@
     .transportadora-card .detalhes .qtd{color:var(--warning); font-weight:600;}
     .transportadora-card .detalhes .valor{color:var(--success); font-weight:600;}
     .ids-tabela-wrap{
-      border:1px solid var(--border-color);
-      background: var(--bg-white);
+      border:1px solid rgba(255,255,255,0.35);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
       width:100%;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .ids-tabela-wrap .header{
       padding:18px 24px;
@@ -382,18 +475,35 @@
     .ids-tabela .status-badge.pendente{background:var(--danger); color:#fff;}
     .ids-tabela .status-badge.svc{background:var(--danger); color:#fff;}
     .ids-tabela .status-badge.transp{background:var(--success); color:#fff;}
+    .btn-toggle{
+      padding:5px 12px;
+      font-size:11px;
+      background: var(--success);
+      color:#fff;
+      border:none;
+      border-radius:4px;
+      cursor:pointer;
+      font-family:'Inter', sans-serif;
+      font-weight:600;
+      transition:all .2s;
+    }
+    .btn-toggle:hover{opacity:.85;}
+    .btn-toggle.remover{background:var(--danger);}
     .zona-grid{
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
       gap:2px;
-      background: var(--border-color);
-      border:1px solid var(--border-color);
+      background: rgba(255,255,255,0.35);
+      border:1px solid rgba(255,255,255,0.35);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .zona-card{
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:20px 22px;
       transition:background .2s;
     }
@@ -442,14 +552,17 @@
       display:grid;
       grid-template-columns:1fr 1fr 1fr 1fr;
       gap:2px;
-      background: var(--border-color);
-      border:1px solid var(--border-color);
+      background: rgba(255,255,255,0.35);
+      border:1px solid rgba(255,255,255,0.35);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .cruzamento-stat{
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:24px;
       text-align:center;
     }
@@ -470,7 +583,7 @@
     .cruzamento-stat .sub-label{
       font-family:'IBM Plex Mono', monospace;
       font-size:11px;
-      color: var(--text-muted);
+      color: var(--text-primary);
       margin-top:4px;
     }
     .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
@@ -480,14 +593,17 @@
       display:grid;
       grid-template-columns:1fr 1fr 1fr 1fr;
       gap:2px;
-      background: var(--border-color);
-      border:1px solid var(--border-color);
+      background: rgba(255,255,255,0.35);
+      border:1px solid rgba(255,255,255,0.35);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .cruzamento-transp-card{
-      background: var(--bg-white);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:18px 20px;
       transition:background .2s;
     }
@@ -512,11 +628,14 @@
     .cruzamento-transp-card .detalhes .svc{color:var(--danger); font-weight:600;}
     .cruzamento-transp-card .detalhes .transp{color:var(--success); font-weight:600;}
     .cruzamento-tabela-wrap{
-      border:1px solid var(--border-color);
-      background: var(--bg-white);
+      border:1px solid rgba(255,255,255,0.35);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       margin-top:28px;
       border-radius:6px;
       overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .cruzamento-tabela-wrap .header{
       padding:18px 24px;
@@ -582,18 +701,21 @@
     .cruzamento-tabela .status-badge.svc{background:var(--danger); color:#fff;}
     .cruzamento-tabela .status-badge.transp{background:var(--success); color:#fff;}
     .preview-box{
-      border:1px solid var(--border-color);
-      background: var(--bg-white);
+      border:1px solid rgba(255,255,255,0.35);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding:16px;
       min-height:100px;
       display:flex;
       align-items:center;
       justify-content:center;
       flex-direction:column;
-      max-height:220px;
+      max-height:260px;
       overflow:auto;
       margin-top:18px;
       border-radius:6px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
     .preview-box .empty-message{
       font-family:'IBM Plex Mono', monospace;
@@ -621,7 +743,7 @@
       right:30px;
       z-index:900;
       padding:16px 28px;
-      background: var(--accent);
+      background: var(--btn-gradient);
       color:#fff;
       border:none;
       border-radius:50px;
@@ -630,13 +752,13 @@
       text-transform:uppercase;
       letter-spacing:.06em;
       cursor:pointer;
-      box-shadow:0 4px 24px rgba(211,47,47,0.4);
+      box-shadow:0 4px 24px rgba(198,40,40,0.45);
       transition:all .3s;
       display:flex;
       align-items:center;
       gap:12px;
     }
-    .filter-float-btn:hover{transform:scale(1.05); background: var(--accent-hover); box-shadow:0 6px 36px rgba(211,47,47,0.6);}
+    .filter-float-btn:hover{transform:scale(1.05); background: var(--btn-gradient-hover); box-shadow:0 6px 36px rgba(198,40,40,0.6);}
     .filter-float-btn .badge-count{
       background:rgba(255,255,255,0.25);
       padding:4px 14px;
@@ -648,12 +770,12 @@
       display:none;
       position:fixed;
       inset:0;
-      background:rgba(18,58,107,0.92);
+      background:rgba(15,42,92,0.88);
       z-index:1001;
       justify-content:center;
       align-items:center;
       padding:24px;
-      backdrop-filter:blur(4px);
+      backdrop-filter:blur(6px);
     }
     .filter-modal-overlay.active{display:flex;}
     .filter-modal{
@@ -665,7 +787,7 @@
       display:flex;
       flex-direction:column;
       border-radius:10px;
-      box-shadow:0 8px 48px rgba(0,0,0,0.2);
+      box-shadow:0 8px 48px rgba(0,0,0,0.25);
     }
     .filter-modal-header{
       padding:20px 28px;
@@ -788,7 +910,7 @@
       border-radius:0 0 10px 10px;
     }
     .filter-modal-footer .btn-apply{
-      background: var(--accent);
+      background: var(--btn-gradient);
       color:#fff;
       border:none;
       padding:10px 28px;
@@ -799,18 +921,19 @@
       cursor:pointer;
       border-radius:4px;
       font-weight:600;
-      transition:opacity .2s;
+      transition:all .2s;
     }
-    .filter-modal-footer .btn-apply:hover{opacity:.8; background: var(--accent-hover);}
+    .filter-modal-footer .btn-apply:hover{background: var(--btn-gradient-hover);}
     .modal-overlay{
       display:none;
       position:fixed;
       inset:0;
-      background:rgba(18,58,107,0.92);
+      background:rgba(15,42,92,0.88);
       z-index:1000;
       justify-content:center;
       align-items:center;
       padding:24px;
+      backdrop-filter:blur(4px);
     }
     .modal-overlay.active{display:flex;}
     .modal{
@@ -822,7 +945,7 @@
       display:flex;
       flex-direction:column;
       border-radius:6px;
-      box-shadow:0 8px 48px rgba(0,0,0,0.2);
+      box-shadow:0 8px 48px rgba(0,0,0,0.25);
     }
     .modal-header{
       padding:20px 28px;
@@ -1121,8 +1244,10 @@
     .spinner{width:24px; height:24px; border:3px solid var(--border-color); border-top:3px solid var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
     @keyframes spin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
     .debug-box{
-      background: var(--bg-white);
-      border:1px solid var(--border-color);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border:1px solid rgba(255,255,255,0.35);
       padding:14px 18px;
       margin-top:14px;
       border-radius:6px;
@@ -1138,7 +1263,7 @@
     footer{
       margin-top:60px;
       padding-top:20px;
-      border-top:2px solid var(--border-color);
+      border-top:2px solid rgba(255,255,255,0.35);
       display:flex;
       justify-content:space-between;
       flex-wrap:wrap;
@@ -1148,6 +1273,13 @@
       color: var(--text-on-blue);
       opacity:1;
       letter-spacing:.04em;
+      text-shadow:0 1px 3px rgba(0,0,0,0.3);
+    }
+    footer span{
+      background:rgba(15,42,92,0.45);
+      padding:6px 14px;
+      border-radius:6px;
+      backdrop-filter:blur(4px);
     }
     .role-badge{
       margin-left:12px;
@@ -1167,8 +1299,7 @@
       background: var(--bg-secondary);
       border-left:4px solid var(--cruzamento);
       padding:8px 16px;
-      border-radius:4px;
-      font-family:'IBM Plex Mono', monospace;
+      border-radius:4px;font-family:'IBM Plex Mono', monospace;
       font-size:13px;
       color: var(--text-primary);
       display:inline-block;
@@ -1185,9 +1316,6 @@
       color: var(--text-primary);
     }
     .preview-box .empty-message .loading-spinner span{
-      color: var(--text-primary);
-    }
-    .cruzamento-stat .sub-label{
       color: var(--text-primary);
     }
     @media (max-width:860px){
@@ -1208,6 +1336,7 @@
       }
       .filter-modal-body .transp-filter-item .transp-nome{min-width:90px; font-size:12px;}
       .filter-float-btn{padding:14px 22px; font-size:14px; bottom:24px; right:24px;}
+      .brand-bar{flex-direction:column; align-items:flex-start; gap:14px;}
     }
     @media (max-width:480px){
       .kpi-strip{grid-template-columns:1fr 1fr;}
@@ -1236,12 +1365,24 @@
       .selecao-bar .info{font-size:11px;}
       .selecao-bar .btn-resposta{font-size:11px; padding:6px 14px;}
       .resposta-modal .modal{max-width:100%;}
+      .logo-id .logo-id-main{font-size:24px;}
+      .logo-meli .meli-text{font-size:15px;}
     }
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="masthead">
+    <div class="brand-bar">
+      <a class="logo-id" href="#" title="ID Logistics">
+        <span class="logo-id-main">ID<span class="arrow">↗</span></span>
+        <span class="logo-id-sub">LOGISTICS</span>
+      </a>
+      <a class="logo-meli" href="#" title="Mercado Livre">
+        <span class="handshake">🤝</span>
+        <span class="meli-text">mercado<small>livre</small></span>
+      </a>
+    </div>
     <div class="eyebrow"><span class="dot"></span>WMS DASHBOARD</div>
     <h1>Análise de Pacotes Pendentes & Inventário</h1>
     <p>Dashboards integrados para análise de <b>pacotes pendentes por transportadora</b>, <b>status do inventário por zona</b> e <b>cruzamento</b> entre as duas bases.</p>
@@ -1269,11 +1410,11 @@
       <div class="chart-card"><h3>💰 Valor Total por Transportadora</h3><div class="chart-container"><canvas id="chartValor"></canvas></div></div>
     </div>
     <div style="margin-top:32px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:var(--text-primary);">🚚 Transportadoras</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-muted);" id="legendaSecaoTransportadoras">Clique em uma transportadora para ver os IDs</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+        <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);" id="tituloSecaoTransportadoras">🚚 Transportadoras</h2>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);" id="legendaSecaoTransportadoras">Clique em uma transportadora para ver os IDs</span>
       </div>
-      <div id="containerTransportadoras"></div>
+      <div id="containerTransportadoras" class="transportadoras-grid"></div>
     </div>
     <footer><span>FONTE — ANÁLISES DE INVENTÁRIO PEDRO SMG10</span><span id="footerTotalPacotes">0 registros</span></footer>
   </div>
@@ -1292,9 +1433,9 @@
       <div class="chart-card"><h3>📊 Visão Geral do Inventário</h3><div class="chart-container"><canvas id="chartOverview"></canvas></div></div>
     </div>
     <div style="margin-top:32px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:var(--text-primary);">📍 Zonas</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-muted);">Status de inventário por zona</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+        <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);">📍 Zonas</h2>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Status de inventário por zona</span>
       </div>
       <div class="zona-grid" id="zonaGrid"></div>
     </div>
@@ -1314,11 +1455,11 @@
       <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">0</div><div class="label">🟢 Transportadora (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
     </div>
     <div style="margin-top:28px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:500;color:var(--text-muted);">🚚 Total por Transportadora (Em Ambos)</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-muted);">Pacotes que estão com transportadora E faltantes no inventário</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+        <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);">🚚 Total por Transportadora (Em Ambos)</h2>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Pacotes que estão com transportadora E faltantes no inventário</span>
       </div>
-      <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid"><div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Aguardando autenticação...</div></div>
+      <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid"><div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;background:var(--bg-card);">Aguardando autenticação...</div></div>
     </div>
     <div class="cruzamento-tabela-wrap">
       <div class="header"><h3 id="cruzamentoTitulo">🔗 Detalhamento dos Pacotes</h3><span class="badge" id="cruzamentoCount">0 registros</span></div>
@@ -1327,1951 +1468,14 @@
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
 
-  <!-- TAB RESPOSTAS (SEM PAGINAÇÃO) -->
+  <!-- TAB RESPOSTAS -->
   <div class="tab-content" id="tabRespostas">
     <div class="status-bar">
       <div class="info"><span class="dot-status loading" id="statusDotRespostas"></span><span id="statusTextRespostas">📥 Carregando respostas...</span><span id="recordCountRespostas" style="color:var(--text-primary);"></span><span id="roleBadgeContainerRespostas"></span></div>
       <button class="btn btn-primary" id="refreshRespostas">🔄 Atualizar</button>
     </div>
-    <div style="display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; background:var(--bg-white); padding:14px 20px; border:1px solid var(--border-color); border-radius:6px;">
+    <div style="display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; background:var(--bg-card); backdrop-filter:blur(8px); padding:14px 20px; border:1px solid rgba(255,255,255,0.35); border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,0.14);">
       <div><label style="font-size:13px; color:var(--text-primary);">🔍 Filtrar por:</label><select id="filtroRespostasTransportadora" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"><option value="TODAS">Todas transportadoras</option></select></div>
       <div><label style="font-size:13px; color:var(--text-primary);">👤 Responsável:</label><input type="text" id="filtroRespostasResponsavel" placeholder="Nome..." style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px; width:160px;"></div>
       <div><label style="font-size:13px; color:var(--text-primary);">📅 Data inicial:</label><input type="date" id="filtroRespostasDataInicio" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
-      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date" id="filtroRespostasDataFim" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
-      <button class="btn btn-success" id="btnFiltrarRespostas" style="padding:6px 20px; font-size:13px;">✅ Filtrar</button>
-      <button class="btn btn-danger" id="btnLimparFiltrosRespostas" style="padding:6px 20px; font-size:13px;">❌ Limpar</button>
-      <button class="btn btn-cruzamento" id="btnExportarRespostas" style="padding:6px 20px; font-size:13px;">📤 Exportar CSV</button>
-    </div>
-    <div class="ids-tabela-wrap">
-      <div class="header"><h3>📋 Histórico de Respostas</h3><span class="badge" id="respostasCount">0 registros</span></div>
-      <div class="ids-tabela">
-        <table>
-          <thead><tr><th>#</th><th>ID do Envio</th><th>Transportadora</th><th>Motorista</th><th>Responsável</th><th>Justificativa</th><th>Data/Hora</th></tr></thead>
-          <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:36px;">Carregando respostas...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (RESPOSTAS)</span><span id="footerTotalRespostas">0 registros</span></footer>
-  </div>
-
-  <!-- TAB ADMIN -->
-  <div class="tab-content" id="tabAdmin">
-    <div class="status-bar">
-      <div class="info"><span class="dot-status online" id="statusDotAdmin"></span><span id="statusTextAdmin">👑 Gerenciamento de Usuários</span></div>
-      <button class="btn btn-primary" id="refreshAdmin">🔄 Atualizar</button>
-    </div>
-    <div style="margin-top:24px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
-        <h3 style="font-family:'Oswald',sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);">📋 Lista de Usuários</h3>
-        <button class="btn btn-primary" id="btnAdicionarUsuario" style="background:var(--success);">➕ Adicionar Usuário</button>
-      </div>
-      <div style="overflow-x:auto; background:var(--bg-white); border:1px solid var(--border-color); border-radius:6px;">
-        <table style="width:100%; font-size:14px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;">
-          <thead><tr style="background:var(--bg-secondary); color:var(--text-primary);"><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">E-mail</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Role</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Transportadora</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Ações</th></tr></thead>
-          <tbody id="adminUsuariosTbody"><tr><td colspan="4" style="text-align:center; padding:36px; color:var(--text-muted);">Carregando...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (USUARIOS)</span><span id="footerTotalAdmin">0 usuários</span></footer>
-  </div>
-
-  <!-- MODAIS -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-header"><h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button></div>
-      <div class="modal-body">
-        <div id="filterContainer" style="display:none; margin-bottom:18px;"><div class="filter-container"><label>🔍 Filtrar por:</label><select id="subTransportadoraFilter"><option value="TODAS">📦 Todas as sub-transportadoras</option></select><span class="filter-badge" id="filterCount">0 IDs</span></div></div>
-        <div class="stats" id="modalStats"></div>
-        <span class="ids-count" id="modalIdsCount"></span>
-        <div class="ids-list" id="modalIds"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-copy-all" id="modalCopyAll">📋 Copiar todos (com IDs)</button>
-        <button class="btn-copy" id="modalCopy">📋 Copiar apenas IDs</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay resposta-modal" id="respostaModalOverlay">
-    <div class="modal">
-      <div class="modal-header"><h2>📝 Responder Pacotes</h2><button class="close-btn" id="respostaModalClose">✕</button></div>
-      <div class="modal-body">
-        <div class="resumo-selecao"><div class="label">📌 <span id="respostaCount">0</span> pacotes selecionados</div><div class="ids-list" id="respostaIdsList"></div></div>
-        <div class="campo"><label>👤 Seu Nome *</label><input type="text" id="respostaNome" placeholder="Digite seu nome"></div>
-        <div class="campo"><label>🚚 Motorista</label><input type="text" id="respostaMotorista" placeholder="Motorista do pacote"></div>
-        <div class="campo"><label>📝 Justificativa *</label><textarea id="respostaJustificativa" placeholder="Descreva a justificativa para estes pacotes..."></textarea></div>
-        <div class="status-msg" id="respostaStatus"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" id="respostaCancelar" style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); padding:10px 24px;">Cancelar</button>
-        <button class="btn-cruzamento" id="respostaEnviar" style="background:var(--cruzamento); color:#fff; border:none; padding:10px 24px;">📤 Enviar Respostas</button>
-      </div>
-    </div>
-  </div>
-
-  <button class="filter-float-btn hidden" id="filterFloatBtn">🔍 Filtros <span class="badge-count" id="filterFloatBadge">0</span></button>
-  <div class="filter-modal-overlay" id="filterModalOverlay">
-    <div class="filter-modal">
-      <div class="filter-modal-header"><h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">✕</button></div>
-      <div class="filter-modal-body">
-        <div class="filter-info">
-          <div class="counts">
-            <span>🔴 SVC: <span id="filterCountSVC">0</span> transportadoras</span>
-            <span>🟢 Transportadora: <span id="filterCountTransp">0</span> transportadoras</span>
-          </div>
-          <div class="filter-actions">
-            <button class="btn-sm btn-select-all" id="filterSelectAll">✅ Selecionar todas</button>
-            <button class="btn-sm btn-clear-all" id="filterClearAll">❌ Limpar todas</button>
-          </div>
-        </div>
-        <div class="transp-filter-container" id="transpFilterContainer"><span style="color:var(--text-primary);">Aguardando autenticação...</span></div>
-      </div>
-      <div class="filter-modal-footer"><button class="btn-apply" id="filterApplyBtn">✅ Aplicar Filtros</button></div>
-    </div>
-  </div>
-</div>
-
-<script>
-// ================================================================
-//  CONFIGURAÇÃO
-// ================================================================
-const CACHE_DURATION = 5 * 60 * 1000;
-const MAX_CACHE_SIZE = 5 * 1024 * 1024;
-
-function getCacheKey(action, params = '') { return `wms_cache_${action}_${params}`; }
-function getFromCache(action, params = '') {
-  const key = getCacheKey(action, params);
-  const cached = localStorage.getItem(key);
-  if (!cached) return null;
-  try {
-    const data = JSON.parse(cached);
-    if (Date.now() - data.timestamp > CACHE_DURATION) { localStorage.removeItem(key); return null; }
-    return data.value;
-  } catch (e) { return null; }
-}
-function setCache(action, value, params = '') {
-  try {
-    const key = getCacheKey(action, params);
-    const serialized = JSON.stringify({ timestamp: Date.now(), value });
-    if (serialized.length > MAX_CACHE_SIZE) { console.warn(`[Cache] Dados muito grandes para ${action} - não armazenado.`); return; }
-    localStorage.setItem(key, serialized);
-  } catch (e) { console.warn(`[Cache] Não foi possível armazenar ${action}:`, e.message); }
-}
-function clearCache() {
-  Object.keys(localStorage).forEach(key => { if (key.startsWith('wms_cache_')) localStorage.removeItem(key); });
-  console.log('[Cache] Cache limpo');
-}
-
-// ================================================================
-//  ESTADO DA SESSÃO
-// ================================================================
-let currentUserEmail = '';
-let currentUserRole = 'viewer';
-let usuarioTransportadora = null;
-let isAuthenticated = false;
-
-// ================================================================
-//  DADOS GLOBAIS
-// ================================================================
-let rawDataPacotes = null, processedDataPacotes = null;
-let rawDataInventario = null, processedDataInventario = null;
-let dadosCruzamento = null;
-let chartQuantidade = null, chartValor = null, chartZona = null, chartOverview = null;
-let modalTransportadora = null;
-let idsSelecionados = new Set();
-let motoristasSelecionados = {};
-let modalCurrentPage = 1;
-const ITEMS_PER_PAGE = 50;
-let modalTotalIds = [], modalTotalValores = [], modalTotalMotoristas = [];
-let descricaoMap = {};
-let respostasSet = new Set();
-
-// ================================================================
-//  FILTROS DO CRUZAMENTO (NOVOS)
-// ================================================================
-let filtroSVC = new Set();        // transportadoras marcadas para SVC
-let filtroTransportadora = new Set(); // transportadoras marcadas para Transportadora
-
-// ================================================================
-//  DADOS DE EXEMPLO (FALLBACK)
-// ================================================================
-const DADOS_EXEMPLO_PACOTES = [
-  { 'ID do envio':'47766750140','TRANSPORTADORA':'HAWK TRANSPORTES','Valor declarado':'28.00','Status do envio':'sorting','MOTORISTA':'','Cod_Motorista':'4084721','DATA':'2025-03-10','LINK':'https://envios.adminml.com/logistics/package-management/package/47766750140' },
-  { 'ID do envio':'47755039490','TRANSPORTADORA':'HAWK TRANSPORTES','Valor declarado':'45.97','Status do envio':'sorting','MOTORISTA':'','Cod_Motorista':'4084721','DATA':'2025-03-12','LINK':'https://envios.adminml.com/logistics/package-management/package/47755039490' },
-  { 'ID do envio':'47753274288','TRANSPORTADORA':'HAWK TRANSPORTES','Valor declarado':'57.32','Status do envio':'sorting','MOTORISTA':'','Cod_Motorista':'3726882','DATA':'2025-03-08','LINK':'https://envios.adminml.com/logistics/package-management/package/47753274288' },
-  { 'ID do envio':'47740732761','TRANSPORTADORA':'HAWK TRANSPORTES','Valor declarado':'58.10','Status do envio':'sorting','MOTORISTA':'','Cod_Motorista':'3035111','DATA':'2025-03-11','LINK':'https://envios.adminml.com/logistics/package-management/package/47740732761' }
-];
-const DADOS_EXEMPLO_INVENTARIO = [
-  { 'SHIPMENT':'47766750140','CLASIFICACION':'FALTANTE EN INVENTARIO','SHP_ZONE_NAME':'problem_solving' },
-  { 'SHIPMENT':'47755039490','CLASIFICACION':'INVENTARIADO PLANIFICADO','SHP_ZONE_NAME':'dispatch' },
-  { 'SHIPMENT':'47753274288','CLASIFICACION':'INVENTARIADO NO PLANIFICADO','SHP_ZONE_NAME':'receiving' },
-  { 'SHIPMENT':'47740732761','CLASIFICACION':'INTRUSO','SHP_ZONE_NAME':'storage' }
-];
-const DADOS_EXEMPLO_DESCRICAO = { '47766750140':'Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia','47755039490':'Kit Sandália Infantil Papete + Bolsa Trançada Margarida Baby Rosa Bebê 29/30 Trançado','47753274288':'Mecanismo Reparo Saída Caixa Acoplada Universal Duplo','47740732761':'Espelho Redondo 60cm Diam Multiuso Fita Dupla Face Lapidado' };
-const DADOS_EXEMPLO_RESPOSTAS = ['47755039490'];
-
-// ================================================================
-//  FUNÇÃO AUXILIAR
-// ================================================================
-function parseDataBR(texto) {
-  if (!texto) return null;
-  texto = texto.trim();
-  const isoMatch = texto.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (isoMatch) { const ano = parseInt(isoMatch[1],10), mes = parseInt(isoMatch[2],10)-1, dia = parseInt(isoMatch[3],10); if (!isNaN(ano)&&!isNaN(mes)&&!isNaN(dia)) return new Date(ano,mes,dia); }
-  const meses = { 'jan':0,'jan.':0,'janeiro':0,'fev':1,'fev.':1,'fevereiro':1,'mar':2,'mar.':2,'março':2,'abr':3,'abr.':3,'abril':3,'mai':4,'mai.':4,'maio':4,'jun':5,'jun.':5,'junho':5,'jul':6,'jul.':6,'julho':6,'ago':7,'ago.':7,'agosto':7,'set':8,'set.':8,'setembro':8,'out':9,'out.':9,'outubro':9,'nov':10,'nov.':10,'novembro':10,'dez':11,'dez.':11,'dezembro':11 };
-  const regex = /^(\d{1,2})\s+de\s+([a-zA-Z.]+)\s+de\s+(\d{4})$/;
-  const match = texto.match(regex);
-  if (match) { const dia = parseInt(match[1],10), mesTexto = match[2].toLowerCase(), ano = parseInt(match[3],10), mes = meses[mesTexto]; if (mes !== undefined && !isNaN(dia) && !isNaN(ano)) return new Date(ano,mes,dia); }
-  const fallback = new Date(texto);
-  if (!isNaN(fallback.getTime())) return fallback;
-  return null;
-}
-
-// ================================================================
-//  LOGIN E SESSÃO
-// ================================================================
-async function fazerLogin(email, senha) {
-  try {
-    const response = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, senha }) });
-    const data = await response.json();
-    if (data.success) {
-      currentUserEmail = data.email;
-      currentUserRole = data.role;
-      usuarioTransportadora = data.transportadora;
-      isAuthenticated = true;
-      localStorage.setItem('wms_user', JSON.stringify({ email:data.email, role:data.role, transportadora:data.transportadora, timestamp:Date.now() }));
-      clearCache();
-      rawDataPacotes = null;
-      rawDataInventario = null;
-      processedDataPacotes = null;
-      processedDataInventario = null;
-      dadosCruzamento = null;
-      atualizarUIposLogin();
-      carregarTodosOsDados();
-      return true;
-    } else {
-      Swal.fire({ icon:'error', title:'Falha no login', text:data.error || 'E-mail ou senha incorretos.', confirmButtonColor:'#C62828' });
-      return false;
-    }
-  } catch (error) {
-    console.error('Erro no login:', error);
-    Swal.fire({ icon:'error', title:'Erro de conexão', text:'Não foi possível conectar ao servidor de autenticação.', confirmButtonColor:'#C62828' });
-    return false;
-  }
-}
-
-function logout() {
-  localStorage.removeItem('wms_user');
-  isAuthenticated = false;
-  currentUserEmail = ''; currentUserRole = 'viewer'; usuarioTransportadora = null;
-  document.getElementById('loginBtn').textContent = '🔑 Login';
-  document.getElementById('loginBtn').classList.remove('logged');
-  document.getElementById('statusTextPacotes').textContent = '🔑 Desconectado. Clique em "Login" para acessar.';
-  document.getElementById('statusTextPacotes').style.color = 'var(--warning)';
-  document.getElementById('statusDotPacotes').className = 'dot-status loading';
-  rawDataPacotes = null; rawDataInventario = null; processedDataPacotes = null; processedDataInventario = null;
-  renderKPI_Pacotes(null); renderGraficosPacotes(null, null); renderSecaoTransportadoras(null); renderPreviewPacotes(null);
-  renderKPI_Inventario(null); renderGraficos_Inventario(null); renderZonas(null); renderPreviewInventario(null, null);
-  clearCache(); carregarDadosExemplo();
-}
-
-function verificarSessao() {
-  const saved = localStorage.getItem('wms_user');
-  if (saved) {
-    try {
-      const user = JSON.parse(saved);
-      if (Date.now() - user.timestamp < 24*60*60*1000) {
-        currentUserEmail = user.email; currentUserRole = user.role; usuarioTransportadora = user.transportadora; isAuthenticated = true;
-        atualizarUIposLogin(); carregarTodosOsDados();
-        return true;
-      } else localStorage.removeItem('wms_user');
-    } catch (e) { localStorage.removeItem('wms_user'); }
-  }
-  return false;
-}
-
-function atualizarUIposLogin() {
-  const btn = document.getElementById('loginBtn');
-  btn.textContent = `✅ ${currentUserEmail}`; btn.classList.add('logged');
-  document.getElementById('statusTextPacotes').textContent = `✅ Conectado como ${currentUserRole}`;
-  document.getElementById('statusTextPacotes').style.color = 'var(--success)';
-  document.getElementById('statusDotPacotes').className = 'dot-status online';
-  const containers = [ document.getElementById('roleBadgeContainer'), document.getElementById('roleBadgeContainerInventario'), document.getElementById('roleBadgeContainerCruzamento') ];
-  const roleNames = { 'admin':'👑 Admin', 'assist-adm':'🛠️ Assist-ADM', 'editor':'📦 Operador', 'viewer':'👁️ Viewer' };
-  const roleClasses = { 'admin':'admin', 'assist-adm':'assist-adm', 'editor':'editor', 'viewer':'viewer' };
-  containers.forEach(container => {
-    if (!container) return;
-    container.innerHTML = '';
-    const badge = document.createElement('span');
-    badge.className = `role-badge ${roleClasses[currentUserRole] || 'viewer'}`;
-    badge.textContent = roleNames[currentUserRole] || '👁️ Viewer';
-    badge.title = currentUserEmail;
-    container.appendChild(badge);
-  });
-  const filterInfo = document.getElementById('filterInfoTransp');
-  if (filterInfo) {
-    if (usuarioTransportadora) {
-      filterInfo.style.display = 'inline-block';
-      const nomes = usuarioTransportadora.split(';').map(s=>s.trim()).filter(Boolean).join(', ');
-      filterInfo.innerHTML = `🚚 <strong>${nomes}</strong> (filtro automático)`;
-    } else filterInfo.style.display = 'none';
-  }
-  carregarDescricoesERespostas();
-  aplicarRestricoesPorPerfil();
-}
-
-function mostrarModalLogin() {
-  Swal.fire({
-    title:'🔐 Login Interno',
-    html:`<input type="email" id="loginEmail" class="swal2-input" placeholder="Seu e-mail" autofocus><input type="password" id="loginPassword" class="swal2-input" placeholder="Sua senha"><div style="text-align:left; font-size:11px; color:#4A6A8A; margin-top:8px;">⚠️ Senha cadastrada na planilha USUARIOS (coluna SENHA).</div>`,
-    confirmButtonText:'Entrar', cancelButtonText:'Cancelar', showCancelButton:true, focusConfirm:false,
-    preConfirm:() => { const email = document.getElementById('loginEmail').value.trim(); const senha = document.getElementById('loginPassword').value.trim(); if (!email||!senha) { Swal.showValidationMessage('Preencha e-mail e senha'); return false; } return { email, senha }; }
-  }).then(async (result) => {
-    if (result.isConfirmed && result.value) {
-      const { email, senha } = result.value;
-      await fazerLogin(email, senha);
-    }
-  });
-}
-
-// ================================================================
-//  FUNÇÕES DE CARREGAMENTO VIA API
-// ================================================================
-async function lerDados(action) {
-  const cached = getFromCache(action);
-  if (cached) { console.log(`[Cache] Usando cache para ${action}`); return cached; }
-  try {
-    const response = await fetch(`/api/dados?action=${encodeURIComponent(action)}`);
-    const result = await response.json();
-    if (result.success) { setCache(action, result.data); return result.data; }
-    else throw new Error(result.error || 'Erro ao carregar dados');
-  } catch (error) { console.error(`Erro ao carregar ${action}:`, error); throw error; }
-}
-
-async function listarAbasViaAPI() {
-  const cached = getFromCache('listarAbas');
-  if (cached) { console.log('[Cache] Usando cache para listar abas'); return cached; }
-  try {
-    const response = await fetch('/api/dados?action=listarAbas');
-    const result = await response.json();
-    if (result.success) { setCache('listarAbas', result.abas); return result.abas; }
-    else throw new Error(result.error || 'Erro ao listar abas');
-  } catch (error) { console.error('Erro ao listar abas:', error); throw error; }
-}
-
-async function lerAbaViaAPI(nomeAba) {
-  const noCache = ['Descrição','DESCRIÇÃO','RESPOSTAS','respostas'];
-  const shouldCache = !noCache.includes(nomeAba);
-  if (shouldCache) {
-    const cacheKey = `aba_${nomeAba}`;
-    const cached = getFromCache(cacheKey);
-    if (cached) { console.log(`[Cache] Usando cache para aba ${nomeAba}`); return cached; }
-  }
-  try {
-    const response = await fetch(`/api/dados?action=lerAba&nome=${encodeURIComponent(nomeAba)}`);
-    const result = await response.json();
-    if (result.success) {
-      if (shouldCache) setCache(`aba_${nomeAba}`, result.data);
-      else console.log(`[Cache] Ignorando cache para aba ${nomeAba} (grande ou sensível)`);
-      return result.data;
-    } else throw new Error(result.error || 'Erro ao ler aba');
-  } catch (error) { console.error(`Erro ao ler aba ${nomeAba}:`, error); throw error; }
-}
-
-// ================================================================
-//  CARREGAR DESCRIÇÕES E RESPOSTAS
-// ================================================================
-async function carregarDescricoesERespostas() {
-  if (!isAuthenticated) return;
-  console.log('[Descrições] Carregando descrições e respostas...');
-  try {
-    const descData = await lerAbaViaAPI('Descrição');
-    if (descData && descData.length > 0) {
-      const headers = Object.keys(descData[0]);
-      const idCol = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0;
-      const descCol = headers.indexOf('DESCRIÇÃO') !== -1 ? headers.indexOf('DESCRIÇÃO') : 2;
-      descricaoMap = {};
-      descData.forEach(row => { const rowValues = Object.values(row); const id = rowValues[idCol]?.trim()||''; const desc = rowValues[descCol]?.trim()||''; if (id) descricaoMap[id] = desc; });
-      console.log(`[Descrições] Carregadas ${Object.keys(descricaoMap).length} descrições`);
-    } else { descricaoMap = {}; console.log('[Descrições] Nenhuma descrição encontrada'); }
-    const respData = await lerAbaViaAPI('RESPOSTAS');
-    respostasSet = new Set();
-    if (respData && respData.length > 0) {
-      const headers = Object.keys(respData[0]);
-      const idCol = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0;
-      respData.forEach(row => { const rowValues = Object.values(row); const id = rowValues[idCol]?.trim()||''; if (id) respostasSet.add(id); });
-      console.log(`[Descrições] Carregadas ${respostasSet.size} respostas`);
-    } else respostasSet = new Set();
-  } catch (error) { console.warn('[Descrições] Erro ao carregar descrições/respostas:', error); descricaoMap = {}; respostasSet = new Set(); }
-}
-
-// ================================================================
-//  FUNÇÕES DE PROCESSAMENTO
-// ================================================================
-function processarDadosPacotes(data) {
-  const transportadoras = {}, subTransportadoras = {};
-  let totalGeral = 0, valorTotalGeral = 0, idsEncontrados = 0, idsNaoEncontrados = 0;
-  data.forEach(row => {
-    let orig = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || row['Coluna D'] || row['D'] || 'Não especificado';
-    let agrup = orig;
-    if (orig.toUpperCase().includes('ENVIOS EXTRA')) {
-      agrup = 'ENVIOS EXTRA';
-      if (!subTransportadoras['ENVIOS EXTRA']) subTransportadoras['ENVIOS EXTRA'] = {};
-      if (!subTransportadoras['ENVIOS EXTRA'][orig]) subTransportadoras['ENVIOS EXTRA'][orig] = { nome: orig, ids: [], valores: [], motoristas: [], quantidade: 0 };
-    }
-    const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-    const valorStr = String(row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '0').replace(',','.').replace(/[^0-9.]/g,'');
-    const valor = parseFloat(valorStr) || 0;
-    let motorista = String(row['MOTORISTA'] || row['motorista'] || '').trim();
-    if (!motorista || motorista === 'N/A') motorista = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A';
-    if (!transportadoras[agrup]) {
-      transportadoras[agrup] = { nome: agrup, ids: [], valores: [], motoristas: [], subIds: {}, subValores: {}, subMotoristas: {}, quantidade: 0, valorTotal: 0, valorFormatado: 'R$ 0,00' };
-    }
-    if (id) {
-      transportadoras[agrup].ids.push(id);
-      transportadoras[agrup].valores.push(valor);
-      transportadoras[agrup].motoristas.push(motorista);
-      if (agrup === 'ENVIOS EXTRA') {
-        if (!transportadoras[agrup].subIds[orig]) { transportadoras[agrup].subIds[orig] = []; transportadoras[agrup].subValores[orig] = []; transportadoras[agrup].subMotoristas[orig] = []; }
-        transportadoras[agrup].subIds[orig].push(id);
-        transportadoras[agrup].subValores[orig].push(valor);
-        transportadoras[agrup].subMotoristas[orig].push(motorista);
-        subTransportadoras['ENVIOS EXTRA'][orig].ids.push(id);
-        subTransportadoras['ENVIOS EXTRA'][orig].valores.push(valor);
-        subTransportadoras['ENVIOS EXTRA'][orig].motoristas.push(motorista);
-        subTransportadoras['ENVIOS EXTRA'][orig].quantidade++;
-      }
-      idsEncontrados++;
-    } else idsNaoEncontrados++;
-    transportadoras[agrup].quantidade++;
-    transportadoras[agrup].valorTotal += valor;
-    totalGeral++; valorTotalGeral += valor;
-  });
-  Object.values(transportadoras).forEach(t => { t.valorFormatado = 'R$ ' + t.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); });
-  const lista = Object.values(transportadoras).sort((a,b) => b.quantidade - a.quantidade);
-  return { transportadoras: lista, subTransportadoras, totalGeral, idsEncontrados, idsNaoEncontrados, valorTotalGeral: 'R$ ' + valorTotalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) };
-}
-
-function processarDadosInventario(data) {
-  const zonas = {};
-  let totalInventariado = 0, totalFaltante = 0, totalIntruso = 0, totalNaoClassificado = 0;
-  let totalSVC = 0, totalTransportadora = 0;
-  data.forEach(row => {
-    const statusRaw = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim();
-    const zona = String(row['SHP_ZONE_NAME'] || row['shp_zone_name'] || '').trim() || 'Não especificado';
-    const status = statusRaw.replace(/\s+/g,' ').trim().toUpperCase();
-    const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-    const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-    const isIntruso = status === 'INTRUSO';
-    const isSVC = isFaltante || (zona.toLowerCase() === 'problem_solving');
-    const isTransportadora = !isSVC;
-    if (!zonas[zona]) zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, svc: 0, transp: 0, total: 0 };
-    if (isInventariado) { zonas[zona].inventariado++; totalInventariado++; }
-    else if (isFaltante) { zonas[zona].faltante++; totalFaltante++; }
-    else if (isIntruso) { zonas[zona].intruso++; totalIntruso++; }
-    else { totalNaoClassificado++; }
-    if (isSVC) { zonas[zona].svc++; totalSVC++; }
-    else { zonas[zona].transp++; totalTransportadora++; }
-    zonas[zona].total++;
-  });
-  const totalGeral = totalInventariado + totalFaltante;
-  const zonaList = Object.values(zonas).map(z => ({
-    ...z,
-    taxaInventariado: z.total > 0 ? (z.inventariado / z.total * 100) : 0,
-    taxaFaltante: z.total > 0 ? (z.faltante / z.total * 100) : 0,
-    taxaIntruso: z.total > 0 ? (z.intruso / z.total * 100) : 0,
-    taxaAcuracia: (z.inventariado + z.faltante) > 0 ? (z.inventariado / (z.inventariado + z.faltante) * 100) : 0,
-    taxaSVC: z.total > 0 ? (z.svc / z.total * 100) : 0,
-    taxaTransp: z.total > 0 ? (z.transp / z.total * 100) : 0
-  })).sort((a,b) => b.total - a.total);
-  const totalParaAcuracia = totalInventariado + totalFaltante;
-  const taxaAcuraciaGeral = totalParaAcuracia > 0 ? (totalInventariado / totalParaAcuracia * 100) : 0;
-  return { totalGeral, totalInventariado, totalFaltante, totalIntruso, totalNaoClassificado, totalSVC, totalTransportadora, taxaAcuraciaGeral, zonas: zonaList };
-}
-
-function realizarCruzamento(dadosPacotes, dadosInventario) {
-  // Mapa de informações do inventário: shipment -> { status, zona, classificacao }
-  const invMap = {};
-  dadosInventario.forEach(row => {
-    const shipment = String(row['SHIPMENT'] || '').trim();
-    if (shipment) {
-      const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
-      const zona = String(row['SHP_ZONE_NAME'] || row['shp_zone_name'] || '').trim();
-      const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-      const isSVC = isFaltante || (zona && zona.toLowerCase() === 'problem_solving');
-      invMap[shipment] = { status, zona, isFaltante, isSVC };
-    }
-  });
-
-  // Faltantes (para o cálculo de em ambos)
-  const faltantesSet = new Set();
-  dadosInventario.forEach(row => {
-    const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
-    if (status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO') {
-      const shipment = String(row['SHIPMENT'] || '').trim();
-      if (shipment) faltantesSet.add(shipment);
-    }
-  });
-
-  const resultado = [], transportadoraCount = {};
-  dadosPacotes.forEach(row => {
-    let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || 'Não especificado';
-    if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
-    const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-    if (id && faltantesSet.has(id)) {
-      const info = invMap[id] || { status: 'FALTANTE EN INVENTARIO', zona: 'Não especificado', isFaltante: true, isSVC: true };
-      const classificacao = info.isSVC ? 'SVC' : 'Transportadora';
-      resultado.push({ id, transportadora: transp, status: info.status, zona: info.zona, classificacao });
-      if (!transportadoraCount[transp]) transportadoraCount[transp] = { total: 0, svc: 0, transp: 0 };
-      transportadoraCount[transp].total++;
-      if (info.isSVC) transportadoraCount[transp].svc++;
-      else transportadoraCount[transp].transp++;
-    }
-  });
-  resultado.sort((a,b) => a.id.localeCompare(b.id));
-  const transportadoraList = Object.entries(transportadoraCount).map(([nome, counts]) => ({ nome, quantidade: counts.total, svc: counts.svc, transp: counts.transp })).sort((a,b) => b.quantidade - a.quantidade);
-  const totalComTransportadora = dadosPacotes.filter(r => String(r['ID do envio']||'').trim()).length;
-  const totalFaltantes = faltantesSet.size;
-  const emAmbos = resultado.length;
-  const responsabilidadeId = totalComTransportadora - emAmbos;
-  return { dados: resultado, totalComTransportadora, totalFaltantes, emAmbos, responsabilidadeId, transportadoraList, invMap };
-}
-
-// ================================================================
-//  RENDERIZAÇÃO (KPI, GRÁFICOS, ZONAS, PREVIEWS)
-// ================================================================
-function renderKPI_Pacotes(data) {
-  const strip = document.getElementById('kpiStripPacotes');
-  if (!strip) return;
-  if (!data) { strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">0</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">0</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num">R$ 0,00</div></div>`; return; }
-  strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">${data.totalGeral}</div><div class="pct">${data.idsEncontrados} IDs encontrados</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">${data.transportadoras.length}</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num" style="font-size:32px;">${data.valorTotalGeral}</div></div>`;
-  const footerTotal = document.getElementById('footerTotalPacotes');
-  if (footerTotal) footerTotal.textContent = `${data.totalGeral} registros`;
-}
-
-function renderKPI_Inventario(data) {
-  const grid = document.getElementById('kpiStripInventario');
-  if (!grid) return;
-  if (!data) {
-    grid.innerHTML = `<div class="kpi"><div class="tag">📦 Total</div><div class="num">0</div></div><div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">0</div></div><div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">0</div></div><div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">0</div></div><div class="kpi"><div class="tag">📊 Acurácia</div><div class="num warning">0%</div></div><div class="kpi"><div class="tag">🔴 SVC</div><div class="num svc">0</div></div><div class="kpi"><div class="tag">🟢 Transportadora</div><div class="num transp">0</div></div>`;
-    return;
-  }
-  const totalBase = data.totalGeral;
-  grid.innerHTML = `
-    <div class="kpi"><div class="tag">📦 Total de Itens</div><div class="num">${totalBase}</div><div class="sub">${data.zonas.length} zonas</div></div>
-    <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">${data.totalInventariado}</div><div class="sub">${(totalBase > 0 ? (data.totalInventariado / totalBase * 100) : 0).toFixed(1)}%</div></div>
-    <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">${data.totalFaltante}</div><div class="sub">${(totalBase > 0 ? (data.totalFaltante / totalBase * 100) : 0).toFixed(1)}%</div></div>
-    <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${data.totalIntruso > 0 ? `+ ${data.totalIntruso}` : '✅ Nenhum'}</div></div>
-    <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.totalNaoClassificado > 0 ? `⚠️ ${data.totalNaoClassificado} NC` : '✅ OK'}</div></div>
-    <div class="kpi"><div class="tag">🔴 SVC</div><div class="num svc">${data.totalSVC}</div><div class="sub">${(totalBase > 0 ? (data.totalSVC / totalBase * 100) : 0).toFixed(1)}%</div></div>
-    <div class="kpi"><div class="tag">🟢 Transportadora</div><div class="num transp">${data.totalTransportadora}</div><div class="sub">${(totalBase > 0 ? (data.totalTransportadora / totalBase * 100) : 0).toFixed(1)}%</div></div>
-  `;
-  const footerTotal = document.getElementById('footerTotalInventario');
-  if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
-}
-
-function renderGraficosPacotes(data, dadosFiltrados) {
-  try { if (chartQuantidade) { chartQuantidade.destroy(); chartQuantidade = null; } if (chartValor) { chartValor.destroy(); chartValor = null; } } catch(e) {}
-  const chartQuant = document.getElementById('chartQuantidade');
-  const chartVal = document.getElementById('chartValor');
-  if (!chartQuant || !chartVal) return;
-  if (!data || data.transportadoras.length === 0) {
-    const h3s = document.querySelectorAll('.chart-card h3');
-    if (h3s.length >= 2) { h3s[0].textContent = '📊 Pacotes por Transportadora'; h3s[1].textContent = '💰 Valor Total por Transportadora'; }
-    return;
-  }
-  const isTranspView = !!usuarioTransportadora;
-  function criarGraficoPareto(ctx, labels, valores, titulo, corBarra, formatadorTooltip) {
-    const combinados = labels.map((label,i) => ({ label, value: valores[i] }));
-    combinados.sort((a,b) => b.value - a.value);
-    const sortedLabels = combinados.map(item => item.label.length > 20 ? item.label.substring(0,18)+'...' : item.label);
-    const sortedValues = combinados.map(item => item.value);
-    const total = sortedValues.reduce((a,b)=>a+b,0);
-    let acumulado = 0;
-    const porcentagens = sortedValues.map(val => { acumulado += val; return parseFloat((acumulado / total * 100).toFixed(1)); });
-    const maxVal = Math.max(...sortedValues, 1);
-    let stepSize = 1;
-    if (maxVal > 20) stepSize = Math.ceil(maxVal / 10);
-    if (maxVal > 200) stepSize = Math.ceil(maxVal / 20);
-    if (maxVal > 1000) stepSize = Math.ceil(maxVal / 30);
-    const yMax = maxVal + stepSize * 2;
-    return new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: sortedLabels,
-        datasets: [
-          { label: 'Valores', data: sortedValues, backgroundColor: corBarra, borderColor: corBarra, borderWidth: 1, borderRadius: 4, order: 1, yAxisID: 'y', hoverBackgroundColor: corBarra.replace(')',',0.8)') },
-          { label: 'Porcentagem Acumulada (%)', data: porcentagens, type: 'line', borderColor: '#C62828', backgroundColor: 'rgba(198,40,40,0.1)', borderWidth: 3, pointBackgroundColor: '#C62828', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.3, order: 0, yAxisID: 'y1' }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom', labels: { color: '#4A6A8A', font: { size: 11, weight:'500', family:'Inter' }, boxWidth: 14, padding: 16, usePointStyle: true, pointStyle: 'circle' } },
-          tooltip: { backgroundColor: 'rgba(18,58,107,0.92)', titleColor: '#fff', bodyColor: '#fff', borderColor: '#B0C4DE', borderWidth: 1, padding: 12, cornerRadius: 8, callbacks: { label: function(context) { if (context.datasetIndex === 0) return ` ${context.dataset.label}: ${formatadorTooltip ? formatadorTooltip(context.raw) : context.raw}`; else return ` ${context.dataset.label}: ${context.raw}%`; } } }
-        },
-        scales: {
-          y: { beginAtZero: true, position: 'left', max: yMax, ticks: { color: '#4A6A8A', font: { size: 10 }, stepSize: stepSize, maxTicksLimit: 20 }, grid: { color: '#B0C4DE' } },
-          y1: { beginAtZero: true, position: 'right', max: 100, ticks: { color: '#4A6A8A', font: { size: 10 }, callback: function(value) { return value + '%'; } }, grid: { drawOnChartArea: false } },
-          x: { ticks: { color: '#4A6A8A', font: { size: 9 } }, grid: { display: false } }
-        }
-      }
-    });
-  }
-  if (isTranspView && dadosFiltrados && dadosFiltrados.length > 0) {
-    const motoristaMap = {};
-    dadosFiltrados.forEach(row => {
-      let motorista = row['MOTORISTA'] || '';
-      motorista = motorista.trim();
-      if (!motorista) motorista = row['Cod_Motorista'] || 'Sem motorista';
-      if (!motorista) motorista = 'Sem motorista';
-      const valorStr = String(row['Valor declarado'] || row['valor_declarado'] || row['Valor'] || '0').replace(',','.').replace(/[^0-9.]/g,'');
-      const valor = parseFloat(valorStr) || 0;
-      if (!motoristaMap[motorista]) motoristaMap[motorista] = { count: 0, total: 0 };
-      motoristaMap[motorista].count++;
-      motoristaMap[motorista].total += valor;
-    });
-    const labels = Object.keys(motoristaMap);
-    const counts = labels.map(m => motoristaMap[m].count);
-    const totals = labels.map(m => motoristaMap[m].total);
-    chartQuantidade = criarGraficoPareto(chartQuant, labels, counts, '📊 Pareto - Pacotes por Motorista', '#1565C0', (value) => `${value} pacotes`);
-    chartValor = criarGraficoPareto(chartVal, labels, totals, '💰 Pareto - Valor Total por Motorista', '#2E7D32', (value) => `R$ ${value.toFixed(2)}`);
-    const h3s = document.querySelectorAll('.chart-card h3');
-    if (h3s.length >= 2) { h3s[0].textContent = '📊 Pareto - Pacotes por Motorista'; h3s[1].textContent = '💰 Pareto - Valor Total por Motorista'; }
-  } else {
-    const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0,18)+'...' : t.nome);
-    const quantidades = data.transportadoras.map(t => t.quantidade);
-    const valores = data.transportadoras.map(t => t.valorTotal);
-    chartQuantidade = new Chart(chartQuant, { type:'bar', data:{ labels, datasets:[{ label:'Pacotes', data:quantidades, backgroundColor:'#F57F17', borderColor:'#F57F17', borderWidth:1, borderRadius:4, hoverBackgroundColor:'#F9A825' }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ color:'#4A6A8A', font:{ size:10 }, maxTicksLimit:15 }, grid:{ color:'#B0C4DE' } }, x:{ ticks:{ color:'#4A6A8A', font:{ size:9 } }, grid:{ display:false } } } } });
-    chartValor = new Chart(chartVal, { type:'bar', data:{ labels, datasets:[{ label:'Valor Total (R$)', data:valores, backgroundColor:'#2E7D32', borderColor:'#2E7D32', borderWidth:1, borderRadius:4, hoverBackgroundColor:'#388E3C' }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(context){ return 'R$ ' + context.raw.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); } } } }, scales:{ y:{ beginAtZero:true, ticks:{ color:'#4A6A8A', font:{ size:10 }, callback:function(value){ return 'R$ ' + value.toLocaleString('pt-BR'); }, maxTicksLimit:15 }, grid:{ color:'#B0C4DE' } }, x:{ ticks:{ color:'#4A6A8A', font:{ size:9 } }, grid:{ display:false } } } } });
-    const h3s = document.querySelectorAll('.chart-card h3');
-    if (h3s.length >= 2) { h3s[0].textContent = '📊 Pacotes por Transportadora'; h3s[1].textContent = '💰 Valor Total por Transportadora'; }
-  }
-}
-
-function renderGraficos_Inventario(data) {
-  try { if (chartZona && typeof chartZona.destroy === 'function') chartZona.destroy(); if (chartOverview && typeof chartOverview.destroy === 'function') chartOverview.destroy(); } catch(e) {}
-  const ctxZona = document.getElementById('chartZona');
-  const ctxOverview = document.getElementById('chartOverview');
-  if (!ctxZona || !ctxOverview) return;
-  if (!data || data.zonas.length === 0) return;
-  const labels = data.zonas.slice(0,15).map(z => z.nome.length > 20 ? z.nome.substring(0,18)+'...' : z.nome);
-  const inventariado = data.zonas.slice(0,15).map(z => z.inventariado);
-  const faltante = data.zonas.slice(0,15).map(z => z.faltante);
-  const intruso = data.zonas.slice(0,15).map(z => z.intruso);
-  try {
-    chartZona = new Chart(ctxZona, { type:'bar', data:{ labels, datasets:[ { label:'Inventariados', data:inventariado, backgroundColor:'#2E7D32', borderColor:'#2E7D32', borderWidth:1, borderRadius:2 }, { label:'Faltantes', data:faltante, backgroundColor:'#C62828', borderColor:'#C62828', borderWidth:1, borderRadius:2 }, { label:'Intrusos', data:intruso, backgroundColor:'#6A1B9A', borderColor:'#6A1B9A', borderWidth:1, borderRadius:2 } ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'#4A6A8A', font:{ size:10 } } } }, scales:{ y:{ beginAtZero:true, stacked:true, ticks:{ color:'#4A6A8A', font:{ size:10 }, maxTicksLimit:10 }, grid:{ color:'#B0C4DE' } }, x:{ stacked:true, ticks:{ color:'#4A6A8A', font:{ size:9 } }, grid:{ display:false } } } } });
-    chartOverview = new Chart(ctxOverview, { type:'doughnut', data:{ labels:['Inventariados','Faltantes','Intrusos'], datasets:[{ data:[data.totalInventariado,data.totalFaltante,data.totalIntruso], backgroundColor:['#2E7D32','#C62828','#6A1B9A'], borderColor:['#2E7D32','#C62828','#6A1B9A'], borderWidth:2, hoverOffset:8 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#4A6A8A', font:{ size:11 }, padding:16 } } }, cutout:'60%' } });
-  } catch(e) { console.warn('Erro ao renderizar gráficos de inventário:', e); }
-}
-
-function renderZonas(data) {
-  const grid = document.getElementById('zonaGrid');
-  if (!grid) return;
-  if (!data || data.zonas.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma zona encontrada</div>`; return; }
-  grid.innerHTML = data.zonas.map(z => {
-    const pctInv = z.taxaInventariado, pctFalt = z.taxaFaltante, pctInt = z.taxaIntruso;
-    return `<div class="zona-card"><div class="nome">${z.nome}</div><div class="detalhes">
-      <span class="total">📦 ${z.total}</span>
-      <span class="inventariado">✅ ${z.inventariado}</span>
-      <span class="faltante">❌ ${z.faltante}</span>
-      <span class="intruso">🟣 ${z.intruso}</span>
-      <span class="svc">🔴 SVC ${z.svc}</span>
-      <span class="transp">🟢 Transp ${z.transp}</span>
-    </div>
-    <div class="barra"><div class="fill-success" style="width:${pctInv}%;"></div><div class="fill-danger" style="width:${pctFalt}%;"></div><div class="fill-intruso" style="width:${pctInt}%;"></div></div>
-    <div class="status-labels"><span>✅ ${pctInv.toFixed(1)}%</span><span>❌ ${pctFalt.toFixed(1)}%</span><span>🟣 ${pctInt.toFixed(1)}%</span><span style="color:${z.taxaAcuracia >= 95 ? 'var(--success)' : z.taxaAcuracia >= 80 ? 'var(--warning)' : 'var(--danger)'};">🎯 ${z.taxaAcuracia.toFixed(1)}%</span></div></div>`;
-  }).join('');
-}
-
-function renderPreviewPacotes(data) {
-  const preview = document.getElementById('previewPacotes');
-  if (!preview) return;
-  if (!data || data.length === 0) { preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`; return; }
-  const total = data.length;
-  preview.innerHTML = `<div style="text-align:center; padding:24px 0;"><div style="font-size:28px; margin-bottom:8px;">✅</div><div style="font-family:'IBM Plex Mono', monospace; font-size:16px; color:var(--success);">${total} registros carregados com sucesso</div><div style="font-size:13px; color:var(--text-muted); margin-top:6px;">Dados disponíveis para análise nos gráficos e transportadoras</div></div>`;
-}
-
-function renderPreviewInventario(processedData, weeklyStats) {
-  const preview = document.getElementById('previewInventario');
-  if (!preview) return;
-  if (!processedData || !processedData.zonas || processedData.zonas.length === 0) { preview.innerHTML = `<div class="empty-message">📋 Nenhum dado carregado</div>`; return; }
-  const total = processedData.totalGeral;
-  if (!weeklyStats || !Array.isArray(weeklyStats) || weeklyStats.length === 0) {
-    const colorClass = processedData.taxaAcuraciaGeral >= 95 ? 'success' : processedData.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger';
-    preview.innerHTML = `<div style="text-align:center; padding:24px 0;"><div style="font-size:28px; margin-bottom:8px;">⚠️</div><div style="font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--warning);">Backups semanais não encontrados</div><div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Acurácia atual: <strong style="color:var(--${colorClass});">${processedData.taxaAcuraciaGeral.toFixed(1)}%</strong></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Verifique se o Apps Script está rodando diariamente.</div></div>`;
-    return;
-  }
-  const diasSemana = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
-  const hoje = new Date();
-  const diaSemana = hoje.getDay();
-  function getColorClass(valor) { if (valor >= 95) return 'success'; if (valor >= 80) return 'warning'; return 'danger'; }
-  let totalInvSemana = 0, totalFaltSemana = 0;
-  weeklyStats.forEach(d => { if (d.existe) { totalInvSemana += d.inventariado; totalFaltSemana += d.faltante; } });
-  const baseSemana = totalInvSemana + totalFaltSemana;
-  const acuraciaMedia = baseSemana > 0 ? (totalInvSemana / baseSemana * 100) : 0;
-  let html = `<div style="display:flex; flex-direction:column; gap:10px; width:100%; padding:10px 0;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;"><span style="font-family:'Oswald',sans-serif; font-size:18px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);">📊 Acurácia Semanal (Backups)</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-muted);">${total} registros atuais</span></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px;">`;
-  weeklyStats.forEach((dia, index) => {
-    const colorClass = getColorClass(dia.acuracia);
-    const isHoje = index === diaSemana;
-    const hojeClass = isHoje ? 'border:2px solid var(--cruzamento);' : '';
-    const hasData = dia.existe && (dia.inventariado + dia.faltante) > 0;
-    const displayAcuracia = hasData ? dia.acuracia.toFixed(1) : '—';
-    const dataFormatada = dia.date ? dia.date.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : '--/--';
-    html += `<div style="background:var(--bg-secondary); border-radius:6px; padding:12px 8px; text-align:center; ${hojeClass} ${!hasData ? 'opacity:0.5;' : ''}"><div style="font-family:'Inter',sans-serif; font-size:13px; color:var(--text-muted); font-weight:500;">${diasSemana[index]}</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-bottom:4px;">${dataFormatada}</div><div style="font-family:'Oswald',sans-serif; font-size:24px; font-weight:600; color:${hasData ? 'var(--' + colorClass + ')' : 'var(--text-muted)'};">${displayAcuracia}${hasData ? '%' : ''}</div>${hasData ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-muted);">✅${dia.inventariado} ❌${dia.faltante}</div>` : `<div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-muted);">📭 sem backup</div>`}</div>`;
-  });
-  html += `</div>`;
-  const colorClass = getColorClass(acuraciaMedia);
-  html += `<div style="background:var(--bg-secondary); border-radius:6px; padding:14px 20px; margin-top:6px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--${colorClass});"><span style="font-family:'Oswald',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted);">📌 Média Semanal (${totalInvSemana + totalFaltSemana} itens)</span><span style="font-family:'Oswald',sans-serif; font-size:32px; font-weight:600; color:var(--${colorClass});">${acuraciaMedia.toFixed(1)}%</span></div>`;
-  preview.innerHTML = html;
-}
-
-function renderSecaoTransportadoras(data) {
-  const container = document.getElementById('containerTransportadoras');
-  const titulo = document.getElementById('tituloSecaoTransportadoras');
-  const legenda = document.getElementById('legendaSecaoTransportadoras');
-  if (!container) return;
-  if (!data || data.transportadoras.length === 0) { container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`; return; }
-  if (usuarioTransportadora) {
-    const transportadoras = usuarioTransportadora.split(';').map(s=>s.trim()).filter(Boolean);
-    const transpObjs = data.transportadoras.filter(t => transportadoras.some(transp => { const tUpper = t.nome.toUpperCase(); const transpUpper = transp.toUpperCase(); if (transpUpper === 'ENVIOS EXTRA') return tUpper.includes('ENVIOS EXTRA'); return tUpper === transpUpper; }));
-    if (transpObjs.length === 0) { container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Dados das transportadoras não encontrados</div>`; return; }
-    const idsConsolidados = [], valoresConsolidados = [], motoristasConsolidados = [];
-    transpObjs.forEach(t => { idsConsolidados.push(...t.ids); valoresConsolidados.push(...t.valores); motoristasConsolidados.push(...t.motoristas); });
-    const transpObjConsolidado = { nome: usuarioTransportadora.replace(/;/g, ', '), ids: idsConsolidados, valores: valoresConsolidados, motoristas: motoristasConsolidados, quantidade: idsConsolidados.length, valorTotal: valoresConsolidados.reduce((a,b)=>a+b,0), valorFormatado: 'R$ ' + valoresConsolidados.reduce((a,b)=>a+b,0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) };
-    if (titulo) titulo.textContent = `📦 Pacotes - ${usuarioTransportadora.replace(/;/g, ', ')}`;
-    if (legenda) legenda.textContent = `Total: ${transpObjConsolidado.ids.length} pacotes`;
-    let linhasFiltradas = [];
-    if (window._dadosFiltradosCompletos) {
-      const idsSet = new Set(transpObjConsolidado.ids);
-      linhasFiltradas = window._dadosFiltradosCompletos.filter(row => { const id = String(row['ID do envio']||'').trim(); return idsSet.has(id); });
-    } else if (rawDataPacotes) {
-      const idsSet = new Set(transpObjConsolidado.ids);
-      linhasFiltradas = rawDataPacotes.filter(row => { const id = String(row['ID do envio']||'').trim(); return idsSet.has(id); });
-    }
-    renderListaIdsTransportadora(transpObjConsolidado, linhasFiltradas);
-  } else {
-    if (titulo) titulo.textContent = '🚚 Transportadoras';
-    if (legenda) legenda.textContent = 'Clique em uma transportadora para ver os IDs';
-    renderTransportadoras(data);
-  }
-}
-
-function renderListaIdsTransportadora(transpObj, linhasFiltradas) {
-  const container = document.getElementById('containerTransportadoras');
-  if (!container) return;
-  let linhas = linhasFiltradas || [];
-  if (linhas.length === 0 && transpObj.ids) {
-    linhas = transpObj.ids.map((id,i) => ({ 'ID do envio': id, 'Valor declarado': String(transpObj.valores[i]||0), 'MOTORISTA': transpObj.motoristas[i]||'', 'DATA': '' }));
-  }
-  if (linhas.length === 0) { container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhum pacote encontrado</div>`; return; }
-  window._linhasAtuais = linhas;
-  window._ordenacaoAtual = 'valor_asc';
-  window._paginaIdsAtual = 1;
-
-  function ordenarERenderizar(opcao) {
-    window._ordenacaoAtual = opcao;
-    let linhasOrdenadas = [...window._linhasAtuais];
-    const isAdmin = currentUserRole === 'admin';
-    switch(opcao) {
-      case 'valor_asc': linhasOrdenadas.sort((a,b) => { const va = parseFloat(String(a['Valor declarado']||'0').replace(',','.'))||0; const vb = parseFloat(String(b['Valor declarado']||'0').replace(',','.'))||0; return va - vb; }); break;
-      case 'valor_desc': linhasOrdenadas.sort((a,b) => { const va = parseFloat(String(a['Valor declarado']||'0').replace(',','.'))||0; const vb = parseFloat(String(b['Valor declarado']||'0').replace(',','.'))||0; return vb - va; }); break;
-      case 'data_asc': linhasOrdenadas.sort((a,b) => { const da = a['DATA']||''; const db = b['DATA']||''; return da.localeCompare(db); }); break;
-      case 'data_desc': linhasOrdenadas.sort((a,b) => { const da = a['DATA']||''; const db = b['DATA']||''; return db.localeCompare(da); }); break;
-      default: break;
-    }
-    const ids = linhasOrdenadas.map(row => String(row['ID do envio']||'').trim());
-    const valores = linhasOrdenadas.map(row => parseFloat(String(row['Valor declarado']||'0').replace(',','.'))||0);
-    const motoristas = linhasOrdenadas.map(row => { let m = String(row['MOTORISTA'] || row['motorista'] || '').trim(); if (!m || m === 'N/A') m = String(row['Cod_Motorista'] || row['cod_motorista'] || '').trim() || 'N/A'; return m; });
-    let linkField = null;
-    const colunasPossiveis = ['LINK','Link','link','URL','Url','url'];
-    if (linhasOrdenadas.length > 0) {
-      const sampleRow = linhasOrdenadas[0];
-      for (let col of colunasPossiveis) { if (sampleRow.hasOwnProperty(col)) { linkField = col; break; } }
-    }
-    const links = linhasOrdenadas.map(row => {
-      if (linkField && row[linkField]) return row[linkField];
-      const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
-      if (id) return `https://envios.adminml.com/logistics/package-management/package/${id}`;
-      return '';
-    });
-    const objOrdenado = { nome: transpObj.nome, ids, valores, motoristas, links, quantidade: ids.length, valorTotal: valores.reduce((a,b)=>a+b,0), valorFormatado: 'R$ ' + valores.reduce((a,b)=>a+b,0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) };
-    renderizarListaPaginada(objOrdenado);
-  }
-
-  function renderizarListaPaginada(objOrdenado) {
-    const ids = objOrdenado.ids, valores = objOrdenado.valores, motoristas = objOrdenado.motoristas, links = objOrdenado.links || [];
-    const descricoes = ids.map(id => descricaoMap[id] || '');
-    const justificados = ids.map(id => respostasSet.has(id));
-    const page = window._paginaIdsAtual || 1;
-    const totalPaginas = Math.ceil(ids.length / ITEMS_PER_PAGE);
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = Math.min(start + ITEMS_PER_PAGE, ids.length);
-    const idsPagina = ids.slice(start, end);
-    const valoresPagina = valores.slice(start, end);
-    const motoristasPagina = motoristas.slice(start, end);
-    const linksPagina = links.slice(start, end);
-    const descricoesPagina = descricoes.slice(start, end);
-    const justificadosPagina = justificados.slice(start, end);
-
-    const navHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--bg-secondary); border-top:1px solid var(--border-color); flex-wrap:wrap; gap:10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-muted);">Mostrando ${start+1} a ${end} de ${ids.length} IDs (Página ${page} de ${totalPaginas})</span><div style="display:flex; gap:10px;"><button class="btn-secondary" style="padding:6px 18px; font-size:13px; background:var(--bg-white);" onclick="irParaPaginaIds(${page-1})" ${page <= 1 ? 'disabled' : ''}>◀ Anterior</button><button class="btn-secondary" style="padding:6px 18px; font-size:13px; background:var(--bg-white);" onclick="irParaPaginaIds(${page+1})" ${end >= ids.length ? 'disabled' : ''}>Próximo ▶</button></div></div>`;
-    const selecaoBar = `<div class="selecao-bar" id="selecaoBarIds"><div class="info">📌 <span id="selecionadosCountIds">0</span> pacotes selecionados</div><button class="btn-resposta" id="btnAbrirRespostaIds" disabled onclick="abrirRespostaIds()">📝 Responder</button><button class="btn-selecionar" onclick="selecionarTodosIds()">Selecionar todos</button><button class="btn-selecionar" onclick="limparSelecaoIds()">Limpar</button></div>`;
-    const isAdmin = currentUserRole === 'admin';
-    let headerCols = `<th style="width:30px;"></th><th style="width:30px;">#</th><th>ID do Envio</th><th>Descrição</th><th>Valor (R$)</th><th>Motorista</th><th>Status</th>`;
-    if (isAdmin) headerCols += `<th style="width:80px;">Ação</th>`;
-    const ordenacaoHtml = `<div style="display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--bg-secondary); border-bottom:1px solid var(--border-color); flex-wrap:wrap;"><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-muted);">Ordenar por:</span><select id="ordenacaoSelect" style="background:var(--bg-white); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:13px; cursor:pointer; outline:none;"><option value="valor_asc" ${window._ordenacaoAtual === 'valor_asc' ? 'selected' : ''}>Valor (menor → maior)</option><option value="valor_desc" ${window._ordenacaoAtual === 'valor_desc' ? 'selected' : ''}>Valor (maior → menor)</option><option value="data_asc" ${window._ordenacaoAtual === 'data_asc' ? 'selected' : ''}>Data (mais antigo)</option><option value="data_desc" ${window._ordenacaoAtual === 'data_desc' ? 'selected' : ''}>Data (mais recente)</option></select></div>`;
-    let tableHtml = `<div class="ids-tabela-wrap"><div class="header"><h3>📋 Lista de Pacotes</h3><span class="badge">${ids.length} registros</span></div>${ordenacaoHtml}${selecaoBar}<div class="ids-tabela"><table><thead><tr>${headerCols}</tr></thead><tbody>`;
-    idsPagina.forEach((id, index) => {
-      const globalIndex = start + index + 1;
-      const valor = valoresPagina[index] || 0;
-      const motorista = motoristasPagina[index] || 'N/A';
-      const descricao = descricoesPagina[index]?.trim() || 'Pacote de devolução sem identificação';
-      const justificado = justificadosPagina[index];
-      const statusClass = justificado ? 'justificado' : 'pendente';
-      const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
-      const link = linksPagina[index] || '';
-      let idHtml = link ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;">${id}</a>` : `<strong>${id}</strong>`;
-      let row = `<tr><td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}','${motorista.replace(/'/g,"\\'")}')"></td><td>${globalIndex}</td><td>${idHtml}</td><td>${descricao}</td><td>R$ ${valor.toFixed(2)}</td><td>${motorista}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
-      if (isAdmin) { const btnText = justificado ? 'Desmarcar' : 'Justificar'; const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle'; row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}','${objOrdenado.nome.replace(/'/g,"\\'")}','${motorista.replace(/'/g,"\\'")}')">${btnText}</button></td>`; }
-      row += `</tr>`;
-      tableHtml += row;
-    });
-    tableHtml += `</tbody></table>${navHtml}</div></div>`;
-    container.innerHTML = tableHtml;
-    atualizarSelecaoIds();
-    const select = document.getElementById('ordenacaoSelect');
-    if (select) {
-      select.addEventListener('change', function() { const opcao = this.value; window._paginaIdsAtual = 1; ordenarERenderizar(opcao); });
-    }
-  }
-
-  window.irParaPaginaIds = function(pagina) {
-    const totalPaginas = Math.ceil(window._linhasAtuais.length / ITEMS_PER_PAGE);
-    if (pagina < 1 || pagina > totalPaginas) return;
-    window._paginaIdsAtual = pagina;
-    ordenarERenderizar(window._ordenacaoAtual);
-  };
-  window.selecionarTodosIds = function() {
-    document.querySelectorAll('.id-checkbox-ids').forEach(cb => { cb.checked = true; const id = cb.dataset.id; const motorista = cb.dataset.motorista; idsSelecionados.add(id); motoristasSelecionados[id] = motorista; });
-    atualizarSelecaoIds();
-  };
-  window.limparSelecaoIds = function() {
-    document.querySelectorAll('.id-checkbox-ids').forEach(cb => { cb.checked = false; });
-    idsSelecionados.clear(); motoristasSelecionados = {};
-    atualizarSelecaoIds();
-  };
-  window.toggleSelecaoIds = function(id, motorista) {
-    if (idsSelecionados.has(id)) { idsSelecionados.delete(id); delete motoristasSelecionados[id]; }
-    else { idsSelecionados.add(id); motoristasSelecionados[id] = motorista; }
-    atualizarSelecaoIds();
-  };
-  window.atualizarSelecaoIds = function() {
-    const count = idsSelecionados.size;
-    const countEl = document.getElementById('selecionadosCountIds');
-    const btn = document.getElementById('btnAbrirRespostaIds');
-    if (countEl) countEl.textContent = count;
-    if (btn) { btn.disabled = count === 0; btn.textContent = count > 0 ? `📝 Responder (${count})` : '📝 Responder'; }
-  };
-  window.abrirRespostaIds = function() {
-    if (idsSelecionados.size === 0) {
-      Swal.fire({ icon:'warning', title:'Nenhum pacote selecionado', text:'Selecione pelo menos um pacote para responder.', confirmButtonColor:'#F57F17' });
-      return;
-    }
-    modalTransportadora = transpObj;
-    abrirModalResposta();
-  };
-  ordenarERenderizar('valor_asc');
-}
-
-function renderTransportadoras(data) {
-  const container = document.getElementById('containerTransportadoras');
-  if (!container) return;
-  if (!data || data.transportadoras.length === 0) { container.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma transportadora encontrada</div>`; return; }
-  const isViewer = currentUserRole === 'viewer';
-  container.innerHTML = data.transportadoras.map(t => {
-    const cardClass = isViewer ? 'transportadora-card blocked' : 'transportadora-card';
-    const bloqueioMsg = isViewer ? '<span style="font-size:12px;color:var(--text-muted);display:block;margin-top:6px;">🔒 Acesso restrito</span>' : '';
-    const nomeEscapado = t.nome.replace(/"/g,'&quot;');
-    return `<div class="${cardClass}" data-transportadora="${nomeEscapado}"><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">📦 ${t.quantidade} pacotes</span><span class="valor">💰 ${t.valorFormatado}</span></div>${bloqueioMsg}</div>`;
-  }).join('');
-  container.querySelectorAll('.transportadora-card:not(.blocked)').forEach(card => {
-    card.addEventListener('click', function() { const nome = this.dataset.transportadora; abrirModalPacotes(nome); });
-  });
-  if (isViewer) {
-    container.querySelectorAll('.transportadora-card.blocked').forEach(card => {
-      card.addEventListener('click', function(e) { e.stopPropagation(); Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Você não tem permissão para visualizar os IDs. Contate o administrador.', confirmButtonColor:'#C62828' }); });
-    });
-  }
-}
-
-// ================================================================
-//  TAB RESPOSTAS
-// ================================================================
-let respostasData = [];
-let respostasFiltradas = [];
-
-async function carregarRespostas() {
-  const tbody = document.getElementById('respostasTbody');
-  const statusDot = document.getElementById('statusDotRespostas');
-  const statusText = document.getElementById('statusTextRespostas');
-  const countSpan = document.getElementById('respostasCount');
-  const footerSpan = document.getElementById('footerTotalRespostas');
-  const roleBadge = document.getElementById('roleBadgeContainerRespostas');
-
-  if (currentUserRole !== 'admin' && currentUserRole !== 'assist-adm') {
-    if (statusText) statusText.textContent = '🔒 Acesso restrito apenas para administradores e assistentes.';
-    if (statusDot) statusDot.className = 'dot-status offline';
-    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">Apenas administradores e assistentes podem visualizar o histórico de respostas.</td></tr>`;
-    if (countSpan) countSpan.textContent = '0 registros';
-    if (footerSpan) footerSpan.textContent = '0 registros';
-    if (roleBadge) roleBadge.innerHTML = '';
-    return;
-  }
-
-  try {
-    if (statusDot) statusDot.className = 'dot-status loading';
-    if (statusText) statusText.textContent = '📥 Carregando respostas...';
-
-    const data = await lerAbaViaAPI('RESPOSTAS');
-    respostasData = data || [];
-    console.log('[Respostas] Dados carregados:', respostasData.length, 'registros');
-
-    const transpSet = new Set();
-    respostasData.forEach(row => {
-      const t = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
-      if (t) transpSet.add(t);
-    });
-    const transportadoras = [...transpSet];
-    const selectTransp = document.getElementById('filtroRespostasTransportadora');
-    if (selectTransp) {
-      selectTransp.innerHTML = '<option value="TODAS">Todas transportadoras</option>';
-      transportadoras.sort().forEach(t => { selectTransp.innerHTML += `<option value="${t.replace(/"/g,'&quot;')}">${t}</option>`; });
-    }
-
-    if (roleBadge) {
-      roleBadge.innerHTML = '';
-      const badge = document.createElement('span');
-      badge.className = `role-badge ${currentUserRole === 'admin' ? 'admin' : 'assist-adm'}`;
-      badge.textContent = currentUserRole === 'admin' ? '👑 Admin' : '🛠️ Assist-ADM';
-      roleBadge.appendChild(badge);
-    }
-    if (statusDot) statusDot.className = 'dot-status online';
-    if (statusText) statusText.textContent = `✅ ${respostasData.length} respostas carregadas`;
-    aplicarFiltrosRespostas();
-  } catch (error) {
-    console.error('[Respostas] Erro ao carregar:', error);
-    if (statusDot) statusDot.className = 'dot-status offline';
-    if (statusText) statusText.textContent = `❌ Erro: ${error.message}`;
-    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">Erro ao carregar respostas: ${error.message}</td></tr>`;
-  }
-}
-
-function aplicarFiltrosRespostas() {
-  const transpFiltro = document.getElementById('filtroRespostasTransportadora')?.value || 'TODAS';
-  const responsavelFiltro = document.getElementById('filtroRespostasResponsavel')?.value.trim().toLowerCase() || '';
-  const dataInicio = document.getElementById('filtroRespostasDataInicio')?.value;
-  const dataFim = document.getElementById('filtroRespostasDataFim')?.value;
-
-  respostasFiltradas = respostasData.filter(row => {
-    const transp = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
-    if (transpFiltro !== 'TODAS' && transp !== transpFiltro) return false;
-    const responsavel = (row['Nome_Responsavel'] || row['Nome Responsável'] || row['responsavel'] || row['DISPATCHER'] || '').toLowerCase();
-    if (responsavelFiltro && !responsavel.includes(responsavelFiltro)) return false;
-    const dataHoraStr = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
-    if (dataInicio || dataFim) {
-      const parts = dataHoraStr.split(' ');
-      const datePart = parts[0] || '';
-      const [dia, mes, ano] = datePart.split('/').map(Number);
-      if (dia && mes && ano) {
-        const dataObj = new Date(ano, mes-1, dia);
-        if (dataInicio) { const inicio = new Date(dataInicio); if (dataObj < inicio) return false; }
-        if (dataFim) { const fim = new Date(dataFim); fim.setHours(23,59,59); if (dataObj > fim) return false; }
-      }
-    }
-    return true;
-  });
-
-  respostasFiltradas.sort((a,b) => {
-    const da = a['Data_Hora'] || a['Data/Hora'] || a['data_hora'] || a['DATA RESPOSTA'] || '';
-    const db = b['Data_Hora'] || b['Data/Hora'] || b['data_hora'] || b['DATA RESPOSTA'] || '';
-    return db.localeCompare(da);
-  });
-
-  renderizarRespostas();
-}
-
-function renderizarRespostas() {
-  const tbody = document.getElementById('respostasTbody');
-  const countSpan = document.getElementById('respostasCount');
-  const footerSpan = document.getElementById('footerTotalRespostas');
-
-  const total = respostasFiltradas.length;
-
-  if (countSpan) countSpan.textContent = `${total} registros`;
-  if (footerSpan) footerSpan.textContent = `${total} registros`;
-
-  if (total === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:36px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = respostasFiltradas.map((row, index) => {
-    const globalIndex = index + 1;
-    const id = row['ID'] || row['ID do envio'] || '';
-    const transportadora = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
-    const motorista = row['Motorista'] || row['motorista'] || row['MOTORISTA'] || '';
-    const responsavel = row['Nome_Responsavel'] || row['Nome Responsável'] || row['responsavel'] || row['DISPATCHER'] || '';
-    const justificativa = row['Justificativa'] || row['justificativa'] || row['MOTIVO'] || '';
-    const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
-    return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
-  }).join('');
-}
-
-document.getElementById('btnFiltrarRespostas')?.addEventListener('click', aplicarFiltrosRespostas);
-document.getElementById('btnLimparFiltrosRespostas')?.addEventListener('click', function() {
-  document.getElementById('filtroRespostasTransportadora').value = 'TODAS';
-  document.getElementById('filtroRespostasResponsavel').value = '';
-  document.getElementById('filtroRespostasDataInicio').value = '';
-  document.getElementById('filtroRespostasDataFim').value = '';
-  aplicarFiltrosRespostas();
-});
-document.getElementById('refreshRespostas')?.addEventListener('click', function() {
-  if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) carregarRespostas();
-  else Swal.fire({ icon:'warning', title:'Acesso negado', text:'Apenas administradores e assistentes.' });
-});
-document.getElementById('btnExportarRespostas')?.addEventListener('click', function() {
-  if (respostasFiltradas.length === 0) {
-    Swal.fire({ icon:'warning', title:'Nenhum dado', text:'Não há respostas para exportar.' });
-    return;
-  }
-  const headers = ['ID','Transportadora','Motorista','Responsável','Justificativa','Data_Hora'];
-  const rows = respostasFiltradas.map(r => [
-    r['ID'] || r['ID do envio'] || '',
-    r['Transportadora'] || r['transportadora'] || r['TRANSPORTADORA'] || '',
-    r['Motorista'] || r['motorista'] || r['MOTORISTA'] || '',
-    r['Nome_Responsavel'] || r['DISPATCHER'] || '',
-    r['Justificativa'] || r['MOTIVO'] || '',
-    r['Data_Hora'] || r['DATA RESPOSTA'] || ''
-  ]);
-  const csvContent = [headers.join(','), ...rows.map(row=>row.join(','))].join('\n');
-  const blob = new Blob([csvContent], { type:'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `respostas_${new Date().toISOString().slice(0,10)}.csv`;
-  link.click();
-});
-
-// ================================================================
-//  BACKUPS SEMANAIS
-// ================================================================
-async function carregarBackupsSemanais() {
-  console.log('[Backups] Iniciando carregamento...');
-  try {
-    const abas = await listarAbasViaAPI();
-    const backupSheets = abas.filter(name => name.startsWith('BACKUP_'));
-    const hoje = new Date();
-    const diaSemana = hoje.getDay();
-    const domingo = new Date(hoje);
-    domingo.setDate(hoje.getDate() - diaSemana);
-    domingo.setHours(0,0,0,0);
-    const resultados = [];
-    for (let i=0; i<7; i++) resultados.push({ date:null, inventariado:0, faltante:0, intruso:0, total:0, existe:false, acuracia:0 });
-    for (const nomeAba of backupSheets) {
-      try {
-        const data = await lerAbaViaAPI(nomeAba);
-        if (!data || data.length === 0) continue;
-        const headers = Object.keys(data[0]);
-        let dataColIdx = headers.indexOf('DATA'); if (dataColIdx === -1) dataColIdx = headers.indexOf('data'); if (dataColIdx === -1) dataColIdx = headers.indexOf('Data'); if (dataColIdx === -1) dataColIdx = 1;
-        const firstRow = data[0];
-        const values = Object.values(firstRow);
-        const dataStr = values[dataColIdx]?.trim() || '';
-        let dateObj = parseDataBR(dataStr);
-        if (!dateObj) {
-          const dataNome = nomeAba.replace('BACKUP_','');
-          const parts = dataNome.split('-');
-          if (parts.length === 3) { const ano = parseInt(parts[0],10); const mes = parseInt(parts[1],10)-1; const dia = parseInt(parts[2],10); if (!isNaN(ano)&&!isNaN(mes)&&!isNaN(dia)) dateObj = new Date(ano,mes,dia); }
-        }
-        if (!dateObj) continue;
-        const dataSemana = new Date(domingo); dataSemana.setDate(domingo.getDate()+6); dataSemana.setHours(23,59,59,999);
-        if (dateObj < domingo || dateObj > dataSemana) continue;
-        const index = dateObj.getDay();
-        let stats = { date:dateObj, inventariado:0, faltante:0, intruso:0, total:0, existe:true, acuracia:0 };
-        const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
-        if (statusColIdx === -1) continue;
-        data.forEach(row => {
-          const rowValues = Object.values(row);
-          const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
-          const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-          const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-          const isIntruso = status === 'INTRUSO';
-          if (isInventariado) stats.inventariado++;
-          else if (isFaltante) stats.faltante++;
-          else if (isIntruso) stats.intruso++;
-        });
-        stats.total = stats.inventariado + stats.faltante + stats.intruso;
-        const base = stats.inventariado + stats.faltante;
-        stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
-        resultados[index] = stats;
-        console.log(`[Backups] ${nomeAba} -> ${dateObj.toISOString().split('T')[0]}: inv=${stats.inventariado}, falt=${stats.faltante}, acurácia=${stats.acuracia.toFixed(1)}%`);
-      } catch (error) { console.error(`[Backups] Erro ao ler ${nomeAba}:`, error); }
-    }
-    const ontem = new Date(hoje); ontem.setDate(hoje.getDate()-1); ontem.setHours(0,0,0,0);
-    const ontemIndex = ontem.getDay();
-    if (!resultados[ontemIndex].existe) {
-      console.log('[Backups] Dia de ontem sem backup, tentando usar INVENTÁRIO...');
-      try {
-        const inventarioData = await lerDados('inventario');
-        if (inventarioData && inventarioData.length > 0) {
-          const headers = Object.keys(inventarioData[0]);
-          let dataColIdx = 1;
-          const dataHeaderIndex = headers.indexOf('DATA'); if (dataHeaderIndex !== -1) dataColIdx = dataHeaderIndex; else if (headers.indexOf('data') !== -1) dataColIdx = headers.indexOf('data'); else if (headers.indexOf('Data') !== -1) dataColIdx = headers.indexOf('Data');
-          const firstRow = inventarioData[0]; const values = Object.values(firstRow);
-          const dataStr = values[dataColIdx]?.trim() || '';
-          let dateObj = parseDataBR(dataStr);
-          if (!dateObj) { const parts = dataStr.split('/'); if (parts.length === 3) { const dia = parseInt(parts[0],10); const mes = parseInt(parts[1],10)-1; const ano = parseInt(parts[2],10); if (!isNaN(dia)&&!isNaN(mes)&&!isNaN(ano)) dateObj = new Date(ano,mes,dia); } }
-          if (!dateObj) { const parts = dataStr.split('-'); if (parts.length === 3) { const ano = parseInt(parts[0],10); const mes = parseInt(parts[1],10)-1; const dia = parseInt(parts[2],10); if (!isNaN(ano)&&!isNaN(mes)&&!isNaN(dia)) dateObj = new Date(ano,mes,dia); } }
-          if (dateObj) {
-            const dataStrInventario = dateObj.toISOString().split('T')[0];
-            const dataStrOntem = ontem.toISOString().split('T')[0];
-            if (dataStrInventario === dataStrOntem) {
-              let stats = { date:ontem, inventariado:0, faltante:0, intruso:0, total:0, existe:true, acuracia:0 };
-              const statusColIdx = headers.indexOf('CLASIFICACION') !== -1 ? headers.indexOf('CLASIFICACION') : headers.indexOf('clasificacion');
-              if (statusColIdx !== -1) {
-                inventarioData.forEach(row => {
-                  const rowValues = Object.values(row);
-                  const status = String(rowValues[statusColIdx] || '').trim().toUpperCase();
-                  const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
-                  const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
-                  const isIntruso = status === 'INTRUSO';
-                  if (isInventariado) stats.inventariado++;
-                  else if (isFaltante) stats.faltante++;
-                  else if (isIntruso) stats.intruso++;
-                });
-                stats.total = stats.inventariado + stats.faltante + stats.intruso;
-                const base = stats.inventariado + stats.faltante;
-                stats.acuracia = base > 0 ? (stats.inventariado / base * 100) : 0;
-                resultados[ontemIndex] = stats;
-                console.log(`[Backups] ✅ Fallback INVENTÁRIO para ontem (${dataStrOntem}): inv=${stats.inventariado}, falt=${stats.faltante}, acurácia=${stats.acuracia.toFixed(1)}%`);
-              }
-            } else console.log(`[Backups] ⚠️ Data da planilha INVENTÁRIO (${dataStrInventario}) não corresponde a ontem (${dataStrOntem})`);
-          } else console.warn(`[Backups] Não foi possível parsear a data: "${dataStr}"`);
-        } else console.warn('[Backups] Planilha INVENTÁRIO vazia ou não encontrada');
-      } catch (error) { console.warn('[Backups] Erro ao carregar INVENTÁRIO como fallback:', error); }
-    } else console.log('[Backups] Dia de ontem já tem backup, fallback ignorado.');
-    console.log('[Backups] Resultado final:', resultados);
-    return resultados;
-  } catch (error) { console.warn('[Backups] Erro ao carregar backups semanais:', error); return null; }
-}
-
-// ================================================================
-//  CARREGAMENTO PRINCIPAL
-// ================================================================
-async function carregarDadosPacotes() {
-  const statusDot = document.getElementById('statusDotPacotes');
-  const statusText = document.getElementById('statusTextPacotes');
-  const preview = document.getElementById('previewPacotes');
-  const debugBox = document.getElementById('debugPacotes');
-  try {
-    if (statusDot) statusDot.className = 'dot-status loading';
-    if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-muted)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
-    if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-primary);">⏳ Buscando dados da planilha...</div>';
-    const data = await lerDados('pacotes');
-    rawDataPacotes = data;
-    if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Cabeçalhos:</span> <span class="value">${Object.keys(data[0]||{}).join(', ')}</span></div>`; }
-    if (statusDot) statusDot.className = 'dot-status online';
-    processarPacotesComFiltro();
-  } catch (error) {
-    if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`; }
-    if (statusDot) statusDot.className = 'dot-status offline';
-    if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-muted);">Verifique sua conexão ou tente recarregar.</span></div>`;
-  }
-}
-
-async function carregarDadosInventario() {
-  const statusDot = document.getElementById('statusDotInventario');
-  const statusText = document.getElementById('statusTextInventario');
-  const preview = document.getElementById('previewInventario');
-  const debugBox = document.getElementById('debugInventario');
-  try {
-    if (statusDot) statusDot.className = 'dot-status loading';
-    if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-muted)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
-    if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-primary);">⏳ Buscando dados do inventário...</div>';
-    const data = await lerDados('inventario');
-    rawDataInventario = data;
-    processedDataInventario = processarDadosInventario(data);
-    if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Zonas:</span> <span class="value">${processedDataInventario.zonas.length}</span></div>`; }
-    if (statusDot) statusDot.className = 'dot-status online';
-    if (statusText) { statusText.textContent = `✅ ${data.length} registros · Acurácia: ${processedDataInventario.taxaAcuraciaGeral.toFixed(1)}%`; statusText.style.color = 'var(--success)'; }
-    renderKPI_Inventario(processedDataInventario);
-    renderGraficos_Inventario(processedDataInventario);
-    renderZonas(processedDataInventario);
-    let weeklyStats = null;
-    try { weeklyStats = await carregarBackupsSemanais(); } catch (e) { console.warn('Erro ao carregar backups semanais:', e); weeklyStats = null; }
-    renderPreviewInventario(processedDataInventario, weeklyStats);
-    const footerTotal = document.getElementById('footerTotalInventario');
-    if (footerTotal) footerTotal.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
-  } catch (error) {
-    if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`; }
-    if (statusDot) statusDot.className = 'dot-status offline';
-    if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-muted);">Verifique sua conexão ou tente recarregar.</span></div>`;
-  }
-}
-
-async function carregarCruzamento() {
-  const statusDot = document.getElementById('statusDotCruzamento');
-  const statusText = document.getElementById('statusTextCruzamento');
-  const tbody = document.getElementById('cruzamentoTbody');
-  try {
-    if (statusDot) statusDot.className = 'dot-status loading';
-    if (statusText) { statusText.textContent = 'Carregando dados para cruzamento...'; statusText.style.color = 'var(--text-muted)'; }
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Carregando...</td></tr>`;
-    const [pacotes, inventario] = await Promise.all([ lerDados('pacotes'), lerDados('inventario') ]);
-    rawDataPacotes = pacotes; rawDataInventario = inventario;
-    processarPacotesComFiltro();
-    processedDataInventario = processarDadosInventario(inventario);
-    renderKPI_Inventario(processedDataInventario); renderGraficos_Inventario(processedDataInventario); renderZonas(processedDataInventario);
-    const footerTotalInventario = document.getElementById('footerTotalInventario');
-    if (footerTotalInventario) footerTotalInventario.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
-    let dadosFiltrados = rawDataPacotes;
-    if (usuarioTransportadora) {
-      const transportadoras = usuarioTransportadora.split(';').map(s=>s.trim()).filter(Boolean);
-      const upperTransps = transportadoras.map(t=>t.toUpperCase());
-      dadosFiltrados = rawDataPacotes.filter(row => {
-        let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
-        const normTransp = transp.trim().toUpperCase();
-        return upperTransps.some(t => { if (t === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA'); return normTransp === t; });
-      });
-    }
-    dadosCruzamento = realizarCruzamento(dadosFiltrados, inventario);
-    renderCruzamento(dadosCruzamento);
-    if (statusDot) statusDot.className = 'dot-status online';
-    if (statusText) { statusText.textContent = `✅ Cruzamento concluído: ${dadosCruzamento.emAmbos} em ambos, ${dadosCruzamento.responsabilidadeId} responsabilidade ID`; statusText.style.color = 'var(--success)'; }
-  } catch (error) {
-    if (statusDot) statusDot.className = 'dot-status offline';
-    if (statusText) { statusText.textContent = `❌ Erro no cruzamento: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:36px;">Erro: ${error.message}</td></tr>`;
-    console.error('Erro no cruzamento:', error);
-  }
-}
-
-async function carregarTodosOsDados() {
-  if (!isAuthenticated) {
-    carregarDadosExemplo();
-    return;
-  }
-  try {
-    await carregarDadosPacotes();
-    await carregarDadosInventario();
-    await carregarCruzamento();
-  } catch (error) {
-    console.error('Erro ao carregar dados:', error);
-    const statusText = document.getElementById('statusTextPacotes');
-    if (statusText) {
-      statusText.textContent = '❌ Erro ao carregar dados reais. Tente recarregar.';
-      statusText.style.color = 'var(--danger)';
-    }
-  }
-}
-
-function carregarDadosExemplo() {
-  rawDataPacotes = DADOS_EXEMPLO_PACOTES;
-  rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
-  descricaoMap = DADOS_EXEMPLO_DESCRICAO;
-  respostasSet = new Set(DADOS_EXEMPLO_RESPOSTAS);
-  let dadosPacotes = rawDataPacotes;
-  if (usuarioTransportadora) {
-    const transportadoras = usuarioTransportadora.split(';').map(s=>s.trim()).filter(Boolean);
-    const upperTransps = transportadoras.map(t=>t.toUpperCase());
-    dadosPacotes = rawDataPacotes.filter(row => {
-      let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
-      const normTransp = transp.trim().toUpperCase();
-      return upperTransps.some(t => { if (t === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA'); return normTransp === t; });
-    });
-  }
-  processedDataPacotes = processarDadosPacotes(dadosPacotes);
-  renderKPI_Pacotes(processedDataPacotes);
-  renderGraficosPacotes(processedDataPacotes, dadosPacotes);
-  renderSecaoTransportadoras(processedDataPacotes);
-  renderPreviewPacotes(dadosPacotes);
-  processedDataInventario = processarDadosInventario(rawDataInventario);
-  renderKPI_Inventario(processedDataInventario);
-  renderGraficos_Inventario(processedDataInventario);
-  renderZonas(processedDataInventario);
-  renderPreviewInventario(processedDataInventario, null);
-  dadosCruzamento = realizarCruzamento(dadosPacotes, rawDataInventario);
-  renderCruzamento(dadosCruzamento);
-  const st = document.getElementById('statusTextPacotes');
-  if (st) { st.textContent = '📊 Exibindo dados de exemplo (fallback)'; st.style.color = 'var(--warning)'; }
-  const statusDot = document.getElementById('statusDotPacotes');
-  if (statusDot) statusDot.className = 'dot-status offline';
-  aplicarRestricoesPorPerfil();
-}
-
-// ================================================================
-//  PERFIL E PERMISSÕES
-// ================================================================
-function aplicarRestricoesPorPerfil() {
-  const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
-  if (tabCruzamento) {
-    tabCruzamento.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-  }
-  const tabRespostas = document.querySelector('.tab-btn[data-tab="tabRespostas"]');
-  if (tabRespostas) {
-    tabRespostas.style.display = (currentUserRole === 'admin' || currentUserRole === 'assist-adm') ? 'block' : 'none';
-  }
-  const tabAdmin = document.querySelector('.tab-btn[data-tab="tabAdmin"]');
-  if (tabAdmin) {
-    tabAdmin.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
-  }
-  const tabContentCruz = document.getElementById('tabCruzamento');
-  if (tabContentCruz && tabContentCruz.classList.contains('active') && currentUserRole !== 'admin') {
-    const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
-    if (tabPacotes) tabPacotes.click();
-  }
-  const tabContentAdmin = document.getElementById('tabAdmin');
-  if (tabContentAdmin && tabContentAdmin.classList.contains('active') && currentUserRole !== 'admin') {
-    const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
-    if (tabPacotes) tabPacotes.click();
-  }
-  const tabContentRespostas = document.getElementById('tabRespostas');
-  if (tabContentRespostas && tabContentRespostas.classList.contains('active') && currentUserRole !== 'admin' && currentUserRole !== 'assist-adm') {
-    const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
-    if (tabPacotes) tabPacotes.click();
-  }
-  const originalAbrirResposta = window.abrirModalResposta || function() {};
-  window.abrirModalResposta = function() {
-    if (currentUserRole === 'viewer') {
-      Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Você não tem permissão para responder pacotes. Contate o administrador.', confirmButtonColor:'#C62828' });
-      return;
-    }
-    originalAbrirResposta();
-  };
-  const containers = [ document.getElementById('roleBadgeContainer'), document.getElementById('roleBadgeContainerInventario'), document.getElementById('roleBadgeContainerCruzamento') ];
-  const roleNames = { 'admin':'👑 Admin', 'assist-adm':'🛠️ Assist-ADM', 'editor':'📦 Operador', 'viewer':'👁️ Viewer' };
-  const roleClasses = { 'admin':'admin', 'assist-adm':'assist-adm', 'editor':'editor', 'viewer':'viewer' };
-  containers.forEach(container => {
-    if (!container) return;
-    container.innerHTML = '';
-    const badge = document.createElement('span');
-    badge.className = `role-badge ${roleClasses[currentUserRole] || 'viewer'}`;
-    badge.textContent = roleNames[currentUserRole] || '👁️ Viewer';
-    badge.title = currentUserEmail;
-    container.appendChild(badge);
-  });
-  const filterInfo = document.getElementById('filterInfoTransp');
-  if (filterInfo) {
-    if (usuarioTransportadora) { filterInfo.style.display = 'inline-block'; const nomes = usuarioTransportadora.split(';').map(s=>s.trim()).filter(Boolean).join(', '); filterInfo.innerHTML = `🚚 <strong>${nomes}</strong> (filtro automático)`; }
-    else filterInfo.style.display = 'none';
-  }
-  const debugBoxes = document.querySelectorAll('.debug-box');
-  if (usuarioTransportadora) debugBoxes.forEach(el => { if (el) el.style.display = 'none'; });
-  else debugBoxes.forEach(el => { if (el) el.style.display = 'block'; });
-  if (isAuthenticated && rawDataPacotes) processarPacotesComFiltro();
-  if (currentUserRole === 'admin') carregarUsuarios();
-}
-
-function processarPacotesComFiltro() {
-  if (!rawDataPacotes || rawDataPacotes.length === 0) return;
-  let dadosFiltrados = rawDataPacotes;
-  if (usuarioTransportadora) {
-    const transportadoras = usuarioTransportadora.split(';').map(s=>s.trim()).filter(Boolean);
-    const upperTransps = transportadoras.map(t=>t.toUpperCase());
-    dadosFiltrados = rawDataPacotes.filter(row => {
-      let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
-      const normTransp = transp.trim().toUpperCase();
-      return upperTransps.some(t => { if (t === 'ENVIOS EXTRA') return normTransp.includes('ENVIOS EXTRA'); return normTransp === t; });
-    });
-  }
-  window._dadosFiltradosCompletos = dadosFiltrados;
-  processedDataPacotes = processarDadosPacotes(dadosFiltrados);
-  renderKPI_Pacotes(processedDataPacotes);
-  renderGraficosPacotes(processedDataPacotes, dadosFiltrados);
-  renderSecaoTransportadoras(processedDataPacotes);
-  renderPreviewPacotes(dadosFiltrados);
-  const statusText = document.getElementById('statusTextPacotes');
-  if (statusText) { statusText.textContent = `✅ ${dadosFiltrados.length} pacotes · ${processedDataPacotes.transportadoras.length} transportadoras`; statusText.style.color = 'var(--success)'; }
-  const statusDot = document.getElementById('statusDotPacotes');
-  if (statusDot) statusDot.className = 'dot-status online';
-  const recordCount = document.getElementById('recordCountPacotes');
-  if (recordCount) recordCount.textContent = `📦 ${dadosFiltrados.length} registros`;
-  const footerTotal = document.getElementById('footerTotalPacotes');
-  if (footerTotal) footerTotal.textContent = `${dadosFiltrados.length} registros`;
-  if (rawDataInventario) {
-    dadosCruzamento = realizarCruzamento(dadosFiltrados, rawDataInventario);
-    renderCruzamento(dadosCruzamento);
-  }
-}
-
-// ================================================================
-//  ADMIN - GERENCIAMENTO DE USUÁRIOS
-// ================================================================
-let usuariosList = [];
-
-async function carregarUsuarios() {
-  const tbody = document.getElementById('adminUsuariosTbody');
-  if (!tbody) return;
-  try {
-    const response = await fetch('/api/admin/usuarios', { headers:{'x-user-role':currentUserRole} });
-    const data = await response.json();
-    if (data.success) { usuariosList = data.data; renderizarUsuarios(usuariosList); const footerTotal = document.getElementById('footerTotalAdmin'); if (footerTotal) footerTotal.textContent = `${usuariosList.length} usuários`; }
-    else tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--danger);">${data.error || 'Erro ao carregar'}</td></tr>`;
-  } catch (error) { console.error('Erro ao carregar usuários:', error); tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--danger);">Erro ao carregar usuários</td></tr>`; }
-}
-
-function renderizarUsuarios(usuarios) {
-  const tbody = document.getElementById('adminUsuariosTbody');
-  if (!tbody) return;
-  if (!usuarios || usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">Nenhum usuário cadastrado</td></tr>`; return; }
-  tbody.innerHTML = usuarios.map(u => `<tr><td style="padding:10px 16px; border-bottom:1px solid var(--border-color);">${u.email}</td><td style="padding:10px 16px; border-bottom:1px solid var(--border-color);"><select class="admin-role-select" data-email="${u.email}" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:4px; padding:6px 12px; font-family:'IBM Plex Mono',monospace; font-size:13px;"><option value="admin" ${u.role==='admin'?'selected':''}>Admin</option><option value="assist-adm" ${u.role==='assist-adm'?'selected':''}>Assist-ADM</option><option value="editor" ${u.role==='editor'?'selected':''}>Editor</option><option value="viewer" ${u.role==='viewer'?'selected':''}>Viewer</option></select></td><td style="padding:10px 16px; border-bottom:1px solid var(--border-color);"><input type="text" class="admin-transp-input" data-email="${u.email}" value="${u.transportadora||''}" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:4px; padding:6px 12px; font-size:13px; width:160px;"></td><td style="padding:10px 16px; border-bottom:1px solid var(--border-color);"><button class="btn-admin-salvar" data-email="${u.email}">Salvar</button><button class="btn-admin-excluir" data-email="${u.email}">Excluir</button></td></tr>`).join('');
-  document.querySelectorAll('.btn-admin-salvar').forEach(btn => {
-    btn.addEventListener('click', async function() {
-      const email = this.dataset.email;
-      const select = document.querySelector(`.admin-role-select[data-email="${email}"]`);
-      const input = document.querySelector(`.admin-transp-input[data-email="${email}"]`);
-      const role = select ? select.value : 'viewer';
-      const transportadora = input ? input.value : '';
-      await atualizarUsuario(email, { email, role, transportadora });
-    });
-  });
-  document.querySelectorAll('.btn-admin-excluir').forEach(btn => {
-    btn.addEventListener('click', async function() { const email = this.dataset.email; await excluirUsuario(email); });
-  });
-}
-
-async function atualizarUsuario(email, dados) {
-  try {
-    const response = await fetch('/api/admin/usuarios', { method:'PUT', headers:{'Content-Type':'application/json','x-user-role':currentUserRole}, body:JSON.stringify({ emailOriginal:email, email:dados.email, role:dados.role, transportadora:dados.transportadora }) });
-    const data = await response.json();
-    if (data.success) { Swal.fire({ icon:'success', title:'Atualizado!', text:'Usuário atualizado com sucesso.', timer:1500, showConfirmButton:false }); carregarUsuarios(); }
-    else Swal.fire({ icon:'error', title:'Erro', text:data.error || 'Erro ao atualizar' });
-  } catch (error) { Swal.fire({ icon:'error', title:'Erro', text:'Erro ao conectar ao servidor' }); }
-}
-
-async function excluirUsuario(email) {
-  const result = await Swal.fire({ title:'Confirmar exclusão', text:`Tem certeza que deseja excluir o usuário ${email}?`, icon:'warning', showCancelButton:true, confirmButtonColor:'#C62828', cancelButtonColor:'#4A6A8A', confirmButtonText:'Sim, excluir', cancelButtonText:'Cancelar' });
-  if (!result.isConfirmed) return;
-  try {
-    const response = await fetch(`/api/admin/usuarios?email=${encodeURIComponent(email)}`, { method:'DELETE', headers:{'x-user-role':currentUserRole} });
-    const data = await response.json();
-    if (data.success) { Swal.fire({ icon:'success', title:'Excluído!', text:'Usuário removido com sucesso.', timer:1500, showConfirmButton:false }); carregarUsuarios(); }
-    else Swal.fire({ icon:'error', title:'Erro', text:data.error || 'Erro ao excluir' });
-  } catch (error) { Swal.fire({ icon:'error', title:'Erro', text:'Erro ao conectar ao servidor' }); }
-}
-
-document.getElementById('btnAdicionarUsuario')?.addEventListener('click', async function() {
-  const { value: formValues } = await Swal.fire({
-    title:'Adicionar novo usuário',
-    html:`<input id="swal-email" class="swal2-input" placeholder="E-mail" type="email"><input id="swal-senha" class="swal2-input" placeholder="Senha" type="password"><select id="swal-role" class="swal2-input" style="padding:12px 16px;"><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="assist-adm">Assist-ADM</option><option value="admin">Admin</option></select><input id="swal-transp" class="swal2-input" placeholder="Transportadora (opcional)">`,
-    focusConfirm:false,
-    preConfirm:() => {
-      const email = document.getElementById('swal-email').value.trim();
-      const senha = document.getElementById('swal-senha').value.trim();
-      const role = document.getElementById('swal-role').value;
-      const transportadora = document.getElementById('swal-transp').value.trim();
-      if (!email||!senha) { Swal.showValidationMessage('E-mail e senha são obrigatórios'); return false; }
-      return { email, senha, role, transportadora };
-    }
-  });
-  if (formValues) {
-    try {
-      const response = await fetch('/api/admin/usuarios', { method:'POST', headers:{'Content-Type':'application/json','x-user-role':currentUserRole}, body:JSON.stringify(formValues) });
-      const data = await response.json();
-      if (data.success) { Swal.fire({ icon:'success', title:'Adicionado!', text:'Usuário adicionado com sucesso.', timer:1500, showConfirmButton:false }); carregarUsuarios(); }
-      else Swal.fire({ icon:'error', title:'Erro', text:data.error || 'Erro ao adicionar' });
-    } catch (error) { Swal.fire({ icon:'error', title:'Erro', text:'Erro ao conectar ao servidor' }); }
-  }
-});
-document.getElementById('refreshAdmin')?.addEventListener('click', carregarUsuarios);
-
-// ================================================================
-//  FILTROS E CRUZAMENTO (NOVA VERSÃO)
-// ================================================================
-// Renderiza os checkboxes de filtro no modal
-function renderFiltroTransportadoras(data) {
-  const container = document.getElementById('transpFilterContainer');
-  if (!container) return;
-  if (!data || data.transportadoraList.length === 0) {
-    container.innerHTML = `<span style="color:var(--text-primary); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`;
-    return;
-  }
-
-  // Inicializar filtros se estiverem vazios (selecionar todos por padrão)
-  if (filtroSVC.size === 0 && filtroTransportadora.size === 0) {
-    data.transportadoraList.forEach(t => {
-      filtroSVC.add(t.nome);
-      filtroTransportadora.add(t.nome);
-    });
-  }
-
-  container.innerHTML = data.transportadoraList.map(t => {
-    const checkedSVC = filtroSVC.has(t.nome) ? 'checked' : '';
-    const checkedTransp = filtroTransportadora.has(t.nome) ? 'checked' : '';
-    return `<div class="transp-filter-item">
-      <span class="transp-nome">${t.nome}</span>
-      <label class="filter-check-label svc-label">
-        <input type="checkbox" class="cb-svc" ${checkedSVC} onclick="window.toggleFiltro('${t.nome.replace(/'/g,"\\'")}','svc')"> 🔴 SVC
-      </label>
-      <label class="filter-check-label transp-label">
-        <input type="checkbox" class="cb-transp" ${checkedTransp} onclick="window.toggleFiltro('${t.nome.replace(/'/g,"\\'")}','transp')"> 🟢 Transportadora
-      </label>
-      <span class="transp-count">(${t.quantidade})</span>
-    </div>`;
-  }).join('');
-
-  atualizarContadoresFiltro();
-}
-
-// Atualiza os contadores do modal
-function atualizarContadoresFiltro() {
-  document.getElementById('filterCountSVC').textContent = filtroSVC.size;
-  document.getElementById('filterCountTransp').textContent = filtroTransportadora.size;
-  document.getElementById('filterFloatBadge').textContent = filtroSVC.size + filtroTransportadora.size;
-}
-
-// Toggle de filtro para uma transportadora e categoria
-window.toggleFiltro = function(nome, categoria) {
-  if (categoria === 'svc') {
-    if (filtroSVC.has(nome)) filtroSVC.delete(nome);
-    else filtroSVC.add(nome);
-  } else if (categoria === 'transp') {
-    if (filtroTransportadora.has(nome)) filtroTransportadora.delete(nome);
-    else filtroTransportadora.add(nome);
-  }
-
-  // Atualizar UI dos checkboxes
-  const container = document.getElementById('transpFilterContainer');
-  if (container) {
-    container.querySelectorAll('.transp-filter-item').forEach(item => {
-      const nomeItem = item.querySelector('.transp-nome')?.textContent?.trim() || '';
-      const cbSVC = item.querySelector('.cb-svc');
-      const cbTransp = item.querySelector('.cb-transp');
-      if (cbSVC) cbSVC.checked = filtroSVC.has(nomeItem);
-      if (cbTransp) cbTransp.checked = filtroTransportadora.has(nomeItem);
-    });
-  }
-
-  atualizarContadoresFiltro();
-  // Re-renderizar cruzamento se já houver dados
-  if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-};
-
-// Selecionar todas as transportadoras para ambas categorias
-window.selecionarTodas = function() {
-  const container = document.getElementById('transpFilterContainer');
-  if (!container) return;
-  container.querySelectorAll('.transp-filter-item').forEach(item => {
-    const nome = item.querySelector('.transp-nome')?.textContent?.trim() || '';
-    const cbSVC = item.querySelector('.cb-svc');
-    const cbTransp = item.querySelector('.cb-transp');
-    if (cbSVC) { cbSVC.checked = true; filtroSVC.add(nome); }
-    if (cbTransp) { cbTransp.checked = true; filtroTransportadora.add(nome); }
-  });
-  atualizarContadoresFiltro();
-  if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-};
-
-// Limpar todas as seleções
-window.limparTodas = function() {
-  const container = document.getElementById('transpFilterContainer');
-  if (!container) return;
-  container.querySelectorAll('.transp-filter-item').forEach(item => {
-    const cbSVC = item.querySelector('.cb-svc');
-    const cbTransp = item.querySelector('.cb-transp');
-    if (cbSVC) cbSVC.checked = false;
-    if (cbTransp) cbTransp.checked = false;
-  });
-  filtroSVC.clear();
-  filtroTransportadora.clear();
-  atualizarContadoresFiltro();
-  if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-};
-
-// Função principal de renderização do cruzamento com os novos filtros
-function renderCruzamento(data) {
-  const statsDiv = document.getElementById('cruzamentoStats');
-  const transpGrid = document.getElementById('cruzamentoTranspGrid');
-  const tbody = document.getElementById('cruzamentoTbody');
-  const countSpan = document.getElementById('cruzamentoCount');
-  const footerSpan = document.getElementById('footerTotalCruzamento');
-  const titulo = document.getElementById('cruzamentoTitulo');
-
-  // Renderizar filtros (checkboxes) no modal
-  renderFiltroTransportadoras(data);
-
-  // Filtrar dados com base nos filtros ativos
-  let dadosSVC = [];
-  let dadosTransp = [];
-  let totalSVC = 0, totalTransp = 0;
-
-  if (filtroSVC.size > 0) {
-    dadosSVC = data.dados.filter(row => filtroSVC.has(row.transportadora) && row.classificacao === 'SVC');
-    totalSVC = dadosSVC.length;
-  }
-  if (filtroTransportadora.size > 0) {
-    dadosTransp = data.dados.filter(row => filtroTransportadora.has(row.transportadora) && row.classificacao === 'Transportadora');
-    totalTransp = dadosTransp.length;
-  }
-
-  // Atualizar cards
-  if (statsDiv) {
-    statsDiv.innerHTML = `
-      <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div>
-      <div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">${data.emAmbos} em ambos</div></div>
-      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">${totalSVC}</div><div class="label">🔴 SVC (Filtrado)</div><div class="sub-label">${filtroSVC.size} transportadoras selecionadas</div></div>
-      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">${totalTransp}</div><div class="label">🟢 Transportadora (Filtrado)</div><div class="sub-label">${filtroTransportadora.size} transportadoras selecionadas</div></div>
-    `;
-  }
-
-  // Grid de transportadoras (agrupado por transportadora)
-  if (data.transportadoraList.length === 0) {
-    if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Nenhum pacote em ambos</div>`;
-  } else {
-    const totalEmAmbos = data.emAmbos;
-    if (transpGrid) {
-      transpGrid.innerHTML = data.transportadoraList.map(t => {
-        const pct = totalEmAmbos > 0 ? (t.quantidade / totalEmAmbos * 100) : 0;
-        // Mostrar também SVC e Transportadora dentro da transportadora
-        const svcCount = data.dados.filter(row => row.transportadora === t.nome && row.classificacao === 'SVC').length;
-        const transpCount = data.dados.filter(row => row.transportadora === t.nome && row.classificacao === 'Transportadora').length;
-        return `<div class="cruzamento-transp-card"><div class="nome">${t.nome}</div><div class="detalhes">
-          <span class="qtd">🔗 ${t.quantidade}</span>
-          <span class="pct">${pct.toFixed(1)}%</span>
-          <span class="svc">🔴 SVC ${svcCount}</span>
-          <span class="transp">🟢 Transp ${transpCount}</span>
-        </div></div>`;
-      }).join('');
-    }
-  }
-
-  // Tabela de detalhamento: mostra SVC ou Transportadora conforme os filtros ativos
-  let dadosParaTabela = [];
-  let tituloTabela = '📦 Detalhamento dos Pacotes';
-
-  if (filtroSVC.size > 0 && totalSVC > 0) {
-    dadosParaTabela = dadosSVC;
-    tituloTabela = '🔴 Pacotes de Responsabilidade SVC (Filtrados)';
-  } else if (filtroTransportadora.size > 0 && totalTransp > 0) {
-    dadosParaTabela = dadosTransp;
-    tituloTabela = '🟢 Pacotes de Responsabilidade Transportadora (Filtrados)';
-  } else {
-    dadosParaTabela = [];
-    tituloTabela = '📦 Nenhum pacote encontrado para os filtros selecionados';
-  }
-
-  if (titulo) titulo.textContent = tituloTabela;
-  if (countSpan) countSpan.textContent = `${dadosParaTabela.length} registros`;
-  if (footerSpan) footerSpan.textContent = `${dadosParaTabela.length} registros`;
-
-  if (dadosParaTabela.length === 0) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Nenhum registro encontrado</td></tr>`;
-  } else {
-    if (tbody) {
-      tbody.innerHTML = dadosParaTabela.map(row => {
-        const badgeClass = row.classificacao === 'SVC' ? 'svc' : 'transp';
-        return `<tr>
-          <td style="font-weight:500;">${row.id}</td>
-          <td>${row.transportadora}</td>
-          <td style="color:${row.status.includes('FALTANTE') ? 'var(--danger)' : 'var(--text-muted)'};">${row.status}</td>
-          <td>${row.zona}</td>
-          <td><span class="status-badge ${badgeClass}">${row.classificacao}</span></td>
-        </tr>`;
-      }).join('');
-    }
-  }
-}
-
-// ================================================================
-//  MODAIS E RESPOSTA
-// ================================================================
-function abrirModalPacotes(nome) {
-  if (currentUserRole === 'viewer') { Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Você não tem permissão para visualizar os IDs. Contate o administrador.', confirmButtonColor:'#C62828' }); return; }
-  if (!processedDataPacotes) return;
-  const t = processedDataPacotes.transportadoras.find(t => t.nome === nome);
-  if (!t) return;
-  modalTransportadora = t;
-  modalCurrentPage = 1;
-  document.getElementById('modalTitle').textContent = t.nome;
-  const hasSubs = t.subIds && Object.keys(t.subIds).length > 0;
-  const filterContainer = document.getElementById('filterContainer');
-  const filterSelect = document.getElementById('subTransportadoraFilter');
-  idsSelecionados.clear(); motoristasSelecionados = {};
-  if (hasSubs && nome === 'ENVIOS EXTRA') {
-    filterContainer.style.display = 'block';
-    const subKeys = Object.keys(t.subIds).sort();
-    filterSelect.innerHTML = `<option value="TODAS">📦 Todas as sub-transportadoras (${t.ids.length})</option>`;
-    subKeys.forEach(sub => { const count = t.subIds[sub].length; filterSelect.innerHTML += `<option value="${sub.replace(/"/g,'&quot;')}">${sub} (${count})</option>`; });
-    filterSelect.value = 'TODAS';
-    filterSelect.onchange = function() { modalCurrentPage = 1; atualizarModalFiltrado(); };
-    atualizarModalFiltrado();
-  } else {
-    filterContainer.style.display = 'none';
-    modalTotalIds = t.ids; modalTotalValores = t.valores || []; modalTotalMotoristas = t.motoristas || [];
-    window._idsFiltrados = modalTotalIds;
-    window._valoresFiltrados = modalTotalValores;
-    window._motoristasFiltrados = modalTotalMotoristas;
-    renderizarPaginaModal(t, 1);
-  }
-  document.getElementById('modalCopy').textContent = '📋 Copiar IDs';
-  document.getElementById('modalCopy').className = 'btn-copy';
-  document.getElementById('modalCopyAll').textContent = '📋 Copiar todos (com IDs)';
-  document.getElementById('modalCopyAll').className = 'btn-copy-all';
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
-function renderizarPaginaModal(t, page) {
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const end = Math.min(start + ITEMS_PER_PAGE, modalTotalIds.length);
-  const idsPagina = modalTotalIds.slice(start, end);
-  const valoresPagina = modalTotalValores.slice(start, end);
-  const motoristasPagina = modalTotalMotoristas.slice(start, end);
-  const idsComDetalhes = idsPagina.map((id,i) => ({ id, valor: valoresPagina[i]||0, motorista: motoristasPagina[i]||'N/A' }));
-  document.getElementById('modalStats').innerHTML = `<div class="stat"><div class="num">${t.quantidade}</div><div class="lbl">Pacotes</div></div><div class="stat"><div class="num">${t.valorFormatado}</div><div class="lbl">Valor Total</div></div><div class="stat"><div class="num">${t.ids.length}</div><div class="lbl">IDs</div></div>`;
-  const totalPaginas = Math.ceil(modalTotalIds.length / ITEMS_PER_PAGE);
-  const hasMore = end < modalTotalIds.length;
-  document.getElementById('modalIdsCount').textContent = `📋 Mostrando ${start+1} a ${end} de ${modalTotalIds.length} IDs (Página ${page} de ${totalPaginas})`;
-  let html = `<div class="selecao-bar" id="selecaoBar"><div class="info">📌 <span id="selecionadosCount">0</span> pacotes selecionados</div><button class="btn-resposta" id="btnAbrirResposta" disabled onclick="abrirModalResposta()">📝 Responder</button><button class="btn-selecionar" onclick="selecionarTodosPagina()">Selecionar todos</button><button class="btn-selecionar" onclick="limparSelecaoPagina()">Limpar</button></div>`;
-  html += idsComDetalhes.map((item, index) => {
-    const globalIndex = start + index;
-    return `<div class="id-item"><span class="id-checkbox"><input type="checkbox" class="id-checkbox-input" data-id="${item.id}" data-motorista="${item.motorista}" data-valor="${item.valor}" onchange="toggleSelecao('${item.id}','${item.motorista.replace(/'/g,"\\'")}')"></span><span class="id-index">#${globalIndex+1}</span><span class="id-num">${item.id}</span><span class="id-valor">R$ ${item.valor.toFixed(2)}</span><span class="id-motorista">${item.motorista !== 'N/A' ? item.motorista : ''}</span></div>`;
-  }).join('');
-  if (hasMore) { html += `<div style="text-align:center; padding:14px; border-top:1px solid var(--border-color);"><button class="btn-carregar-mais" onclick="carregarMaisPagina()">📥 Carregar mais ${Math.min(ITEMS_PER_PAGE, modalTotalIds.length - end)} IDs</button></div>`; }
-  document.getElementById('modalIds').innerHTML = html;
-  atualizarSelecao();
-}
-
-function selecionarTodosPagina() { document.querySelectorAll('.id-checkbox-input').forEach(cb => { cb.checked = true; const id = cb.dataset.id; const motorista = cb.dataset.motorista; idsSelecionados.add(id); motoristasSelecionados[id] = motorista; }); atualizarSelecao(); }
-function limparSelecaoPagina() { document.querySelectorAll('.id-checkbox-input').forEach(cb => { cb.checked = false; }); idsSelecionados.clear(); motoristasSelecionados = {}; atualizarSelecao(); }
-function carregarMaisPagina() { modalCurrentPage++; renderizarPaginaModal(modalTransportadora, modalCurrentPage); }
-function atualizarModalFiltrado() {
-  const t = modalTransportadora;
-  if (!t) return;
-  const filterSelect = document.getElementById('subTransportadoraFilter');
-  const selectedSub = filterSelect ? filterSelect.value : 'TODAS';
-  if (selectedSub === 'TODAS') {
-    modalTotalIds = t.ids;
-    modalTotalValores = t.valores || [];
-    modalTotalMotoristas = t.motoristas || [];
-  } else {
-    modalTotalIds = t.subIds[selectedSub] || [];
-    modalTotalValores = t.subValores[selectedSub] || [];
-    modalTotalMotoristas = t.subMotoristas[selectedSub] || [];
-  }
-  window._idsFiltrados = modalTotalIds;
-  window._valoresFiltrados = modalTotalValores;
-  window._motoristasFiltrados = modalTotalMotoristas;
-  modalCurrentPage = 1;
-  renderizarPaginaModal(t, 1);
-}
-function toggleSelecao(id, motorista) {
-  if (idsSelecionados.has(id)) { idsSelecionados.delete(id); delete motoristasSelecionados[id]; }
-  else { idsSelecionados.add(id); motoristasSelecionados[id] = motorista; }
-  atualizarSelecao();
-}
-function atualizarSelecao() {
-  const count = idsSelecionados.size;
-  document.getElementById('selecionadosCount').textContent = count;
-  const btn = document.getElementById('btnAbrirResposta');
-  if (btn) { btn.disabled = count === 0; btn.textContent = count > 0 ? `📝 Responder (${count})` : '📝 Responder'; }
-}
-
-const originalAbrirResposta = function() {
-  if (idsSelecionados.size === 0) { Swal.fire({ icon:'warning', title:'Nenhum pacote selecionado', text:'Selecione pelo menos um pacote para responder.', confirmButtonColor:'#F57F17' }); return; }
-  const ids = Array.from(idsSelecionados);
-  const motoristas = ids.map(id => motoristasSelecionados[id] || 'N/A');
-  document.getElementById('respostaCount').textContent = ids.length;
-  document.getElementById('respostaIdsList').innerHTML = ids.map(id => `<span>${id}</span>`).join('');
-  const motoristaUnico = motoristas.every(m => m === motoristas[0]);
-  const motoristaInput = document.getElementById('respostaMotorista');
-  if (motoristaInput) { motoristaInput.value = motoristaUnico ? motoristas[0] : ''; motoristaInput.placeholder = motoristaUnico ? motoristas[0] : 'Múltiplos motoristas - edite se necessário'; }
-  document.getElementById('respostaNome').value = '';
-  document.getElementById('respostaJustificativa').value = '';
-  document.getElementById('respostaStatus').textContent = '';
-  document.getElementById('respostaStatus').className = 'status-msg';
-  document.getElementById('respostaModalOverlay').classList.add('active');
-};
-window.abrirModalResposta = function() {
-  if (currentUserRole === 'viewer') { Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Você não tem permissão para responder pacotes. Contate o administrador.', confirmButtonColor:'#C62828' }); return; }
-  originalAbrirResposta();
-};
-
-document.getElementById('respostaEnviar')?.addEventListener('click', async function() {
-  const nome = document.getElementById('respostaNome')?.value?.trim() || '';
-  const justificativa = document.getElementById('respostaJustificativa')?.value?.trim() || '';
-  const motorista = document.getElementById('respostaMotorista')?.value?.trim() || '';
-  const statusEl = document.getElementById('respostaStatus');
-  if (!nome) { statusEl.textContent = '⚠️ Por favor, preencha seu nome.'; statusEl.className = 'status-msg error'; return; }
-  if (!justificativa) { statusEl.textContent = '⚠️ Por favor, preencha a justificativa.'; statusEl.className = 'status-msg error'; return; }
-  const ids = Array.from(idsSelecionados);
-  const transportadora = modalTransportadora ? modalTransportadora.nome : '';
-  const dataAtual = new Date().toLocaleString('pt-BR');
-  const dadosResposta = ids.map(id => ({ ID:id, Transportadora:transportadora, Motorista:motorista || motoristasSelecionados[id] || 'N/A', Nome_Responsavel:nome, Justificativa:justificativa, Data_Hora:dataAtual }));
-  statusEl.textContent = '⏳ Enviando dados para a planilha...';
-  statusEl.className = 'status-msg loading';
-  this.disabled = true;
-  try {
-    const rows = dadosResposta.map(d => [d.ID, d.Transportadora, d.Motorista, d.Nome_Responsavel, d.Justificativa, d.Data_Hora]);
-    let role = currentUserRole;
-    if (!role) { try { const saved = localStorage.getItem('wms_user'); if (saved) { const user = JSON.parse(saved); role = user.role || 'viewer'; } } catch (e) { role = 'viewer'; } }
-    console.log('[Enviar Resposta] Role sendo enviada:', role);
-    await fetch('/api/admin/respostas', { method:'POST', headers:{'Content-Type':'application/json','x-user-role':role}, body:JSON.stringify({ rows }) });
-    statusEl.textContent = '✅ Respostas enviadas com sucesso!';
-    statusEl.className = 'status-msg success';
-    setTimeout(() => { document.getElementById('respostaModalOverlay').classList.remove('active'); document.getElementById('modalOverlay').classList.remove('active'); idsSelecionados.clear(); motoristasSelecionados = {}; this.disabled = false; }, 1500);
-  } catch (error) { statusEl.textContent = `❌ Erro: ${error.message}`; statusEl.className = 'status-msg error'; this.disabled = false; console.error('Erro ao enviar respostas:', error); }
-});
-document.getElementById('respostaCancelar')?.addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
-document.getElementById('respostaModalClose')?.addEventListener('click', function() { document.getElementById('respostaModalOverlay').classList.remove('active'); });
-document.getElementById('respostaModalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-
-document.getElementById('modalCopy')?.addEventListener('click', function() {
-  const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
-  if (!ids || ids.length === 0) return;
-  const text = ids.join('\n');
-  navigator.clipboard.writeText(text).then(() => { this.textContent = '✅ Copiado!'; this.className = 'btn-copy copied'; setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000); }).catch(() => { const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea); this.textContent = '✅ Copiado!'; this.className = 'btn-copy copied'; setTimeout(() => { this.textContent = '📋 Copiar IDs'; this.className = 'btn-copy'; }, 2000); });
-});
-document.getElementById('modalCopyAll')?.addEventListener('click', function() {
-  const ids = window._idsFiltrados || (modalTransportadora ? modalTransportadora.ids : []);
-  const valores = window._valoresFiltrados || (modalTransportadora ? modalTransportadora.valores : []);
-  const motoristas = window._motoristasFiltrados || (modalTransportadora ? modalTransportadora.motoristas : []);
-  if (!ids || ids.length === 0) return;
-  const text = ids.map((id, index) => { const valor = valores[index] || 0; const motorista = motoristas[index] || 'N/A'; const motoristaStr = motorista !== 'N/A' ? ` - ${motorista}` : ''; return `${String(index+1).padStart(3,'0')} - ${id} - R$ ${valor.toFixed(2)}${motoristaStr}`; }).join('\n');
-  navigator.clipboard.writeText(text).then(() => { this.textContent = '✅ Copiado!'; this.className = 'btn-copy-all copied'; setTimeout(() => { this.textContent = '📋 Copiar todos (com IDs)'; this.className = 'btn-copy-all'; }, 2000); }).catch(() => { const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea); this.textContent = '✅ Copiado!'; this.className = 'btn-copy-all copied'; setTimeout(() => { this.textContent = '📋 Copiar todos (com IDs)'; this.className = 'btn-copy-all'; }, 2000); });
-});
-
-document.getElementById('modalClose')?.addEventListener('click', function() { document.getElementById('modalOverlay').classList.remove('active'); });
-document.getElementById('modalOverlay')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { ['modalOverlay','respostaModalOverlay','filterModalOverlay'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); }); } });
-
-// ================================================================
-//  TOGGLE STATUS (ADMIN) - CORRIGIDO COM PERSISTÊNCIA
-// ================================================================
-async function toggleStatus(id, transportadora, motorista) {
-  if (currentUserRole !== 'admin') {
-    Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Apenas administradores podem alternar o status.', confirmButtonColor:'#C62828' });
-    return;
-  }
-  if (!id) return;
-  try {
-    const isJustificado = respostasSet.has(id);
-    let response;
-    if (isJustificado) {
-      response = await fetch('/api/admin/respostas', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole },
-        body: JSON.stringify({ ids: [id] })
-      });
-    } else {
-      const dataAtual = new Date().toLocaleString('pt-BR');
-      const rows = [[id, transportadora, motorista || 'N/A', 'Admin (toggle)', 'Marcado manualmente', dataAtual]];
-      response = await fetch('/api/admin/respostas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole },
-        body: JSON.stringify({ rows })
-      });
-    }
-    const result = await response.json();
-    if (!result.success) throw new Error(result.error || 'Erro ao salvar na planilha');
-
-    if (isJustificado) respostasSet.delete(id);
-    else respostasSet.add(id);
-
-    Swal.fire({
-      icon: 'success',
-      title: isJustificado ? 'Pacote marcado como PENDENTE' : 'Pacote marcado como JUSTIFICADO',
-      text: `ID ${id} atualizado com sucesso.`,
-      confirmButtonColor: '#2E7D32'
-    });
-    if (usuarioTransportadora && rawDataPacotes) processarPacotesComFiltro();
-    else carregarTodosOsDados();
-  } catch (error) {
-    Swal.fire({ icon:'error', title:'Erro', text:`Falha ao atualizar: ${error.message}`, confirmButtonColor:'#C62828' });
-    console.error(error);
-  }
-}
-
-// ================================================================
-//  EVENT LISTENERS
-// ================================================================
-document.getElementById('refreshPacotes')?.addEventListener('click', function() {
-  if (isAuthenticated) { clearCache(); carregarDadosPacotes(); } else Swal.fire({ icon:'warning', title:'Não autenticado', text:'Faça login primeiro.', confirmButtonColor:'#F57F17' });
-});
-document.getElementById('refreshInventario')?.addEventListener('click', function() {
-  if (isAuthenticated) { clearCache(); carregarDadosInventario(); } else Swal.fire({ icon:'warning', title:'Não autenticado', text:'Faça login primeiro.', confirmButtonColor:'#F57F17' });
-});
-document.getElementById('refreshCruzamento')?.addEventListener('click', function() {
-  if (isAuthenticated) { clearCache(); carregarCruzamento(); } else Swal.fire({ icon:'warning', title:'Não autenticado', text:'Faça login primeiro.', confirmButtonColor:'#F57F17' });
-});
-document.getElementById('refreshAdmin')?.addEventListener('click', function() {
-  if (isAuthenticated && currentUserRole === 'admin') { clearCache(); carregarUsuarios(); } else Swal.fire({ icon:'warning', title:'Acesso negado', text:'Apenas administradores.' });
-});
-
-// ================================================================
-//  INICIALIZAÇÃO
-// ================================================================
-document.addEventListener('DOMContentLoaded', function() {
-  const loginBtn = document.createElement('button');
-  loginBtn.id = 'loginBtn';
-  loginBtn.textContent = '🔑 Login';
-  loginBtn.className = 'login-btn';
-  loginBtn.onclick = function() { if (isAuthenticated) logout(); else mostrarModalLogin(); };
-  document.body.appendChild(loginBtn);
-
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      this.classList.add('active');
-      const targetId = this.dataset.tab;
-      const targetContent = document.getElementById(targetId);
-      if (targetContent) targetContent.classList.add('active');
-      const filterBtn = document.getElementById('filterFloatBtn');
-      if (filterBtn) { if (targetId === 'tabCruzamento') filterBtn.classList.remove('hidden'); else filterBtn.classList.add('hidden'); }
-      if (targetId === 'tabRespostas') {
-        if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) {
-          carregarRespostas();
-        } else {
-          const tbody = document.getElementById('respostasTbody');
-          if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Apenas administradores e assistentes podem acessar esta aba.</td></tr>`; }
-          const statusText = document.getElementById('statusTextRespostas');
-          if (statusText) statusText.textContent = '🔒 Acesso restrito a administradores e assistentes';
-        }
-      }
-      setTimeout(() => { try { if (chartQuantidade && typeof chartQuantidade.resize === 'function') chartQuantidade.resize(); if (chartValor && typeof chartValor.resize === 'function') chartValor.resize(); if (chartZona && typeof chartZona.resize === 'function') chartZona.resize(); if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize(); } catch(e) {} }, 100);
-    });
-  });
-
-  renderKPI_Pacotes(null); renderGraficosPacotes(null, null); renderSecaoTransportadoras(null); renderPreviewPacotes(null);
-  renderKPI_Inventario(null); renderGraficos_Inventario(null); renderZonas(null); renderPreviewInventario(null, null);
-
-  const temSessao = verificarSessao();
-  if (!temSessao) carregarDadosExemplo();
-
-  setInterval(() => { if (isAuthenticated) { carregarDadosInventario(); carregarCruzamento(); } }, 300000);
-});
-
-// ================================================================
-//  EXPOR FUNÇÕES
-// ================================================================
-window.abrirModalResposta = abrirModalResposta;
-window.toggleStatus = toggleStatus;
-window.abrirModalPacotes = abrirModalPacotes;
-window.irParaPaginaIds = window.irParaPaginaIds;
-window.selecionarTodosIds = window.selecionarTodosIds;
-window.limparSelecaoIds = window.limparSelecaoIds;
-window.toggleSelecaoIds = window.toggleSelecaoIds;
-window.atualizarSelecaoIds = window.atualizarSelecaoIds;
-window.abrirRespostaIds = window.abrirRespostaIds;
-window.selecionarTodosPagina = selecionarTodosPagina;
-window.limparSelecaoPagina = limparSelecaoPagina;
-window.carregarMaisPagina = carregarMaisPagina;
-window.toggleSelecao = toggleSelecao;
-window.toggleFiltro = toggleFiltro;
-window.selecionarTodas = selecionarTodas;
-window.limparTodas = limparTodas;
-</script>
-</body>
-</html>
+      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date" id="filtro
