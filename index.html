@@ -1290,12 +1290,12 @@
           <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Carregando respostas...</td></tr></tbody>
         </table>
       </div>
-      <!-- PAGINAÇÃO CORRIGIDA COM ONCLICK -->
+      <!-- PAGINAÇÃO -->
       <div id="respostasPaginacao" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:10px;">
         <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);" id="respostasInfoPagina">Mostrando 0 a 0 de 0</span>
         <div style="display:flex; gap:10px;">
-          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('anterior')" disabled>◀ Anterior</button>
-          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('proximo')" disabled>Próximo ▶</button>
+          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>◀ Anterior</button>
+          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>Próximo ▶</button>
         </div>
       </div>
     </div>
@@ -2214,6 +2214,7 @@ function renderizarRespostas() {
     infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro';
   }
 
+  // Atualiza o estado dos botões ANTES de renderizar a tabela
   atualizarPaginacaoRespostas();
 
   if (paginaData.length === 0) {
@@ -2231,9 +2232,12 @@ function renderizarRespostas() {
     const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
     return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
   }).join('');
+
+  // Reaplica o estado dos botões (por segurança)
+  atualizarPaginacaoRespostas();
 }
 
-// PAGINAÇÃO DAS RESPOSTAS - VERSÃO ONCLICK
+// PAGINAÇÃO DAS RESPOSTAS - VERSÃO ONCLICK (mas com fallback para addEventListener)
 function atualizarPaginacaoRespostas() {
   const btnAnterior = document.getElementById('respostasPaginaAnterior');
   const btnProximo = document.getElementById('respostasPaginaProximo');
@@ -2291,6 +2295,32 @@ document.getElementById('btnExportarRespostas')?.addEventListener('click', funct
   link.href = URL.createObjectURL(blob);
   link.download = `respostas_${new Date().toISOString().slice(0,10)}.csv`;
   link.click();
+});
+
+// Garantir que os botões de paginação funcionem mesmo se o onclick falhar
+document.addEventListener('DOMContentLoaded', function() {
+  // Aguarda um pouco para garantir que os elementos existam
+  setTimeout(function() {
+    const btnAnterior = document.getElementById('respostasPaginaAnterior');
+    const btnProximo = document.getElementById('respostasPaginaProximo');
+    if (btnAnterior) {
+      btnAnterior.addEventListener('click', function() {
+        if (respostasPaginaAtual > 1) {
+          respostasPaginaAtual--;
+          renderizarRespostas();
+        }
+      });
+    }
+    if (btnProximo) {
+      btnProximo.addEventListener('click', function() {
+        const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
+        if (respostasPaginaAtual < totalPaginas) {
+          respostasPaginaAtual++;
+          renderizarRespostas();
+        }
+      });
+    }
+  }, 500);
 });
 
 // ================================================================
