@@ -1414,7 +1414,7 @@
         <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);" id="tituloSecaoTransportadoras">🚚 Transportadoras</h2>
         <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);" id="legendaSecaoTransportadoras">Clique em uma transportadora para ver os IDs</span>
       </div>
-      <div id="containerTransportadoras" class="transportadoras-grid"></div>
+      <div id="containerTransportadoras"></div>
     </div>
     <footer><span>FONTE — ANÁLISES DE INVENTÁRIO PEDRO SMG10</span><span id="footerTotalPacotes">0 registros</span></footer>
   </div>
@@ -1478,4 +1478,79 @@
       <div><label style="font-size:13px; color:var(--text-primary);">🔍 Filtrar por:</label><select id="filtroRespostasTransportadora" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"><option value="TODAS">Todas transportadoras</option></select></div>
       <div><label style="font-size:13px; color:var(--text-primary);">👤 Responsável:</label><input type="text" id="filtroRespostasResponsavel" placeholder="Nome..." style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px; width:160px;"></div>
       <div><label style="font-size:13px; color:var(--text-primary);">📅 Data inicial:</label><input type="date" id="filtroRespostasDataInicio" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
-      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date" id="filtro
+      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date" id="filtroRespostasDataFim" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
+      <button class="btn btn-success" id="btnFiltrarRespostas" style="padding:6px 20px; font-size:13px;">✅ Filtrar</button>
+      <button class="btn btn-danger" id="btnLimparFiltrosRespostas" style="padding:6px 20px; font-size:13px;">❌ Limpar</button>
+      <button class="btn btn-cruzamento" id="btnExportarRespostas" style="padding:6px 20px; font-size:13px;">📤 Exportar CSV</button>
+    </div>
+    <div class="ids-tabela-wrap">
+      <div class="header"><h3>📋 Histórico de Respostas</h3><span class="badge" id="respostasCount">0 registros</span></div>
+      <div class="ids-tabela">
+        <table>
+          <thead><tr><th>#</th><th>ID do Envio</th><th>Transportadora</th><th>Motorista</th><th>Responsável</th><th>Justificativa</th><th>Data/Hora</th></tr></thead>
+          <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:36px;">Carregando respostas...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (RESPOSTAS)</span><span id="footerTotalRespostas">0 registros</span></footer>
+  </div>
+
+  <!-- TAB ADMIN -->
+  <div class="tab-content" id="tabAdmin">
+    <div class="status-bar">
+      <div class="info"><span class="dot-status online" id="statusDotAdmin"></span><span id="statusTextAdmin">👑 Gerenciamento de Usuários</span></div>
+      <button class="btn btn-primary" id="refreshAdmin">🔄 Atualizar</button>
+    </div>
+    <div style="margin-top:24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+        <h3 style="font-family:'Oswald',sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);">📋 Lista de Usuários</h3>
+        <button class="btn btn-primary" id="btnAdicionarUsuario" style="background:var(--success);">➕ Adicionar Usuário</button>
+      </div>
+      <div style="overflow-x:auto; background:var(--bg-card); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.35); border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,0.14);">
+        <table style="width:100%; font-size:14px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;">
+          <thead><tr style="background:var(--bg-secondary); color:var(--text-primary);"><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">E-mail</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Role</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Transportadora</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Ações</th></tr></thead>
+          <tbody id="adminUsuariosTbody"><tr><td colspan="4" style="text-align:center; padding:36px; color:var(--text-muted);">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (USUARIOS)</span><span id="footerTotalAdmin">0 usuários</span></footer>
+  </div>
+
+  <!-- MODAIS -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header"><h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button></div>
+      <div class="modal-body">
+        <div id="filterContainer" style="display:none; margin-bottom:18px;"><div class="filter-container"><label>🔍 Filtrar por:</label><select id="subTransportadoraFilter"><option value="TODAS">📦 Todas as sub-transportadoras</option></select><span class="filter-badge" id="filterCount">0 IDs</span></div></div>
+        <div class="stats" id="modalStats"></div>
+        <span class="ids-count" id="modalIdsCount"></span>
+        <div class="ids-list" id="modalIds"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-copy-all" id="modalCopyAll">📋 Copiar todos (com IDs)</button>
+        <button class="btn-copy" id="modalCopy">📋 Copiar apenas IDs</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay resposta-modal" id="respostaModalOverlay">
+    <div class="modal">
+      <div class="modal-header"><h2>📝 Responder Pacotes</h2><button class="close-btn" id="respostaModalClose">✕</button></div>
+      <div class="modal-body">
+        <div class="resumo-selecao"><div class="label">📌 <span id="respostaCount">0</span> pacotes selecionados</div><div class="ids-list" id="respostaIdsList"></div></div>
+        <div class="campo"><label>👤 Seu Nome *</label><input type="text" id="respostaNome" placeholder="Digite seu nome"></div>
+        <div class="campo"><label>🚚 Motorista</label><input type="text" id="respostaMotorista" placeholder="Motorista do pacote"></div>
+        <div class="campo"><label>📝 Justificativa *</label><textarea id="respostaJustificativa" placeholder="Descreva a justificativa para estes pacotes..."></textarea></div>
+        <div class="status-msg" id="respostaStatus"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="respostaCancelar" style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); padding:10px 24px;">Cancelar</button>
+        <button class="btn-cruzamento" id="respostaEnviar" style="background:var(--cruzamento); color:#fff; border:none; padding:10px 24px;">📤 Enviar Respostas</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="filter-float-btn hidden" id="filterFloatBtn">🔍 Filtros <span class="badge-count" id="filterFloatBadge">0</span></button>
+  <div class="filter-modal-overlay" id="filterModalOverlay">
+    <div class="filter-modal">
+      <div class="filter-modal-header"><h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">
