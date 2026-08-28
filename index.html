@@ -57,7 +57,6 @@
     border-radius:0 0 12px 12px;
     margin-bottom:8px;
   }
-  /* ===== FAIXA SUPERIOR - OPÇÃO 4 ===== */
   .masthead::before{
     content:"";
     position:absolute; top:0; left:0; right:0; height:4px;
@@ -69,7 +68,7 @@
     font-size:13px;
     letter-spacing:.16em;
     color: var(--text-on-blue);
-    opacity:1; /* ← contraste máximo */
+    opacity:1;
     text-transform:uppercase;
     display:flex; gap:12px; align-items:center;
   }
@@ -86,7 +85,7 @@
   }
   .masthead p{
     color: var(--text-on-blue);
-    opacity:1; /* ← contraste máximo */
+    opacity:1;
     max-width:780px;
     margin-top:14px;
     font-size:16px;
@@ -169,7 +168,7 @@
   .status-bar .info{
     font-family:'IBM Plex Mono', monospace;
     font-size:14px;
-    color: var(--text-primary); /* ← mais escuro para melhor contraste */
+    color: var(--text-primary);
     display:flex;
     align-items:center;
     gap:14px;
@@ -204,7 +203,7 @@
   .btn-danger:hover{background: #B71C1C;}
   .kpi-strip{
     display:grid;
-    grid-template-columns:1fr 1fr 1fr;
+    grid-template-columns:repeat(7,1fr);
     gap:2px;
     background: var(--border-color);
     border:1px solid var(--border-color);
@@ -212,7 +211,6 @@
     border-radius:6px;
     overflow:hidden;
   }
-  .kpi-strip.kpi-5{grid-template-columns:repeat(5,1fr);}
   .kpi{
     background: var(--bg-white);
     padding:20px 20px 18px;
@@ -243,6 +241,14 @@
   .kpi .num.info{color:var(--info);}
   .kpi .num.purple{color:var(--purple);}
   .kpi .num.cruzamento{color:var(--cruzamento);}
+  .kpi .num.svc{color:var(--danger);}
+  .kpi .num.transp{color:var(--success);}
+  @media (max-width:860px){
+    .kpi-strip{grid-template-columns:repeat(3,1fr);}
+  }
+  @media (max-width:480px){
+    .kpi-strip{grid-template-columns:1fr 1fr;}
+  }
   .charts-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -374,6 +380,8 @@
   }
   .ids-tabela .status-badge.justificado{background:var(--success); color:#fff;}
   .ids-tabela .status-badge.pendente{background:var(--danger); color:#fff;}
+  .ids-tabela .status-badge.svc{background:var(--danger); color:#fff;}
+  .ids-tabela .status-badge.transp{background:var(--success); color:#fff;}
   .zona-grid{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -398,18 +406,19 @@
   }
   .zona-card .detalhes{
     display:flex;
-    justify-content:space-between;
-    margin-top:12px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:15px;
-    color: var(--text-muted);
     flex-wrap:wrap;
-    gap:6px;
+    gap:6px 16px;
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color: var(--text-muted);
   }
   .zona-card .detalhes .total{color:var(--text-primary); font-weight:600;}
   .zona-card .detalhes .inventariado{color:var(--success); font-weight:600;}
   .zona-card .detalhes .faltante{color:var(--danger); font-weight:600;}
   .zona-card .detalhes .intruso{color:var(--purple); font-weight:600;}
+  .zona-card .detalhes .svc{color:var(--danger); font-weight:600;}
+  .zona-card .detalhes .transp{color:var(--success); font-weight:600;}
   .zona-card .barra{
     margin-top:12px;
     height:10px;
@@ -491,14 +500,17 @@
   }
   .cruzamento-transp-card .detalhes{
     display:flex;
-    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:4px 16px;
     margin-top:8px;
     font-family:'IBM Plex Mono', monospace;
-    font-size:15px;
+    font-size:14px;
     color: var(--text-muted);
   }
   .cruzamento-transp-card .detalhes .qtd{color:var(--cruzamento); font-weight:600;}
   .cruzamento-transp-card .detalhes .pct{color:var(--text-muted);}
+  .cruzamento-transp-card .detalhes .svc{color:var(--danger); font-weight:600;}
+  .cruzamento-transp-card .detalhes .transp{color:var(--success); font-weight:600;}
   .cruzamento-tabela-wrap{
     border:1px solid var(--border-color);
     background: var(--bg-white);
@@ -566,9 +578,9 @@
     font-weight:600;
     text-transform:uppercase;
     letter-spacing:.04em;
-    background: var(--cruzamento);
-    color:#fff;
   }
+  .cruzamento-tabela .status-badge.svc{background:var(--danger); color:#fff;}
+  .cruzamento-tabela .status-badge.transp{background:var(--success); color:#fff;}
   .preview-box{
     border:1px solid var(--border-color);
     background: var(--bg-white);
@@ -1126,7 +1138,7 @@
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
     color: var(--text-on-blue);
-    opacity:1; /* ← contraste máximo */
+    opacity:1;
     letter-spacing:.04em;
   }
   .role-badge{
@@ -1155,7 +1167,7 @@
     margin-left:10px;
   }
   .filter-info-transp strong{color:var(--text-primary);}
-  /* --- Correções de contraste em elementos menores --- */
+  /* Correções de contraste */
   .record-count{
     color: var(--text-primary);
   }
@@ -1171,9 +1183,8 @@
   .cruzamento-stat .sub-label{
     color: var(--text-primary);
   }
-  /* -------------------------- */
   @media (max-width:860px){
-    .kpi-strip{grid-template-columns:1fr 1fr;}
+    .kpi-strip{grid-template-columns:repeat(3,1fr);}
     .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
     .cruzamento-stats{grid-template-columns:1fr 1fr;}
     .cruzamento-transp-grid{grid-template-columns:1fr 1fr;}
@@ -1192,7 +1203,7 @@
     .filter-float-btn{padding:14px 22px; font-size:14px; bottom:24px; right:24px;}
   }
   @media (max-width:480px){
-    .kpi-strip{grid-template-columns:1fr;}
+    .kpi-strip{grid-template-columns:1fr 1fr;}
     .kpi-strip.kpi-5{grid-template-columns:1fr;}
     .cruzamento-stats{grid-template-columns:1fr;}
     .cruzamento-transp-grid{grid-template-columns:1fr;}
@@ -1268,7 +1279,7 @@
     </div>
     <div class="preview-box" id="previewInventario"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
     <div class="debug-box" id="debugInventario"><div style="color:var(--text-primary);">Aguardando autenticação...</div></div>
-    <div class="kpi-strip kpi-5" id="kpiStripInventario"></div>
+    <div class="kpi-strip" id="kpiStripInventario"></div>
     <div class="charts-grid">
       <div class="chart-card"><h3>📊 Status por Zona</h3><div class="chart-container"><canvas id="chartZona"></canvas></div></div>
       <div class="chart-card"><h3>📊 Visão Geral do Inventário</h3><div class="chart-container"><canvas id="chartOverview"></canvas></div></div>
@@ -1304,7 +1315,7 @@
     </div>
     <div class="cruzamento-tabela-wrap">
       <div class="header"><h3>🔗 Detalhamento dos Pacotes em Ambos</h3><span class="badge" id="cruzamentoCount">0 registros</span></div>
-      <div class="cruzamento-tabela"><table><thead><tr><th>ID do Envio</th><th>Transportadora</th><th>Status Inventário</th><th>Zona</th><th>Situação</th></tr></thead><tbody id="cruzamentoTbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Aguardando autenticação...</td></tr></tbody></table></div>
+      <div class="cruzamento-tabela"><table><thead><tr><th>ID do Envio</th><th>Transportadora</th><th>Status Inventário</th><th>Zona</th><th>Classificação</th><th>Situação</th></tr></thead><tbody id="cruzamentoTbody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:36px;">Aguardando autenticação...</td></tr></tbody></table></div>
     </div>
     <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
   </div>
@@ -1406,7 +1417,7 @@
 
 <script>
 // ================================================================
-//  CONFIGURAÇÃO (JAVASCRIPT COMPLETO - MANTIDO INTEGRALMENTE)
+//  CONFIGURAÇÃO
 // ================================================================
 const CACHE_DURATION = 5 * 60 * 1000;
 const MAX_CACHE_SIZE = 5 * 1024 * 1024;
@@ -1472,7 +1483,9 @@ const DADOS_EXEMPLO_PACOTES = [
 ];
 const DADOS_EXEMPLO_INVENTARIO = [
   { 'SHIPMENT':'47766750140','CLASIFICACION':'FALTANTE EN INVENTARIO','SHP_ZONE_NAME':'problem_solving' },
-  { 'SHIPMENT':'47755039490','CLASIFICACION':'INVENTARIADO PLANIFICADO','SHP_ZONE_NAME':'dispatch' }
+  { 'SHIPMENT':'47755039490','CLASIFICACION':'INVENTARIADO PLANIFICADO','SHP_ZONE_NAME':'dispatch' },
+  { 'SHIPMENT':'47753274288','CLASIFICACION':'INVENTARIADO NO PLANIFICADO','SHP_ZONE_NAME':'receiving' },
+  { 'SHIPMENT':'47740732761','CLASIFICACION':'INTRUSO','SHP_ZONE_NAME':'storage' }
 ];
 const DADOS_EXEMPLO_DESCRICAO = { '47766750140':'Chinelo Alfa Nuvem Ortopédica Unissex Sandália Macia','47755039490':'Kit Sandália Infantil Papete + Bolsa Trançada Margarida Baby Rosa Bebê 29/30 Trançado','47753274288':'Mecanismo Reparo Saída Caixa Acoplada Universal Duplo','47740732761':'Espelho Redondo 60cm Diam Multiuso Fita Dupla Face Lapidado' };
 const DADOS_EXEMPLO_RESPOSTAS = ['47755039490'];
@@ -1722,6 +1735,7 @@ function processarDadosPacotes(data) {
 function processarDadosInventario(data) {
   const zonas = {};
   let totalInventariado = 0, totalFaltante = 0, totalIntruso = 0, totalNaoClassificado = 0;
+  let totalSVC = 0, totalTransportadora = 0;
   data.forEach(row => {
     const statusRaw = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim();
     const zona = String(row['SHP_ZONE_NAME'] || row['shp_zone_name'] || '').trim() || 'Não especificado';
@@ -1729,11 +1743,15 @@ function processarDadosInventario(data) {
     const isInventariado = status === 'INVENTARIADO PLANIFICADO' || status === 'INVENTARIADO NO PLANIFICADO';
     const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
     const isIntruso = status === 'INTRUSO';
-    if (!zonas[zona]) zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, total: 0 };
+    const isSVC = isFaltante || (zona.toLowerCase() === 'problem_solving');
+    const isTransportadora = !isSVC;
+    if (!zonas[zona]) zonas[zona] = { nome: zona, inventariado: 0, faltante: 0, intruso: 0, svc: 0, transp: 0, total: 0 };
     if (isInventariado) { zonas[zona].inventariado++; totalInventariado++; }
     else if (isFaltante) { zonas[zona].faltante++; totalFaltante++; }
     else if (isIntruso) { zonas[zona].intruso++; totalIntruso++; }
     else { totalNaoClassificado++; }
+    if (isSVC) { zonas[zona].svc++; totalSVC++; }
+    else { zonas[zona].transp++; totalTransportadora++; }
     zonas[zona].total++;
   });
   const totalGeral = totalInventariado + totalFaltante;
@@ -1742,42 +1760,61 @@ function processarDadosInventario(data) {
     taxaInventariado: z.total > 0 ? (z.inventariado / z.total * 100) : 0,
     taxaFaltante: z.total > 0 ? (z.faltante / z.total * 100) : 0,
     taxaIntruso: z.total > 0 ? (z.intruso / z.total * 100) : 0,
-    taxaAcuracia: (z.inventariado + z.faltante) > 0 ? (z.inventariado / (z.inventariado + z.faltante) * 100) : 0
+    taxaAcuracia: (z.inventariado + z.faltante) > 0 ? (z.inventariado / (z.inventariado + z.faltante) * 100) : 0,
+    taxaSVC: z.total > 0 ? (z.svc / z.total * 100) : 0,
+    taxaTransp: z.total > 0 ? (z.transp / z.total * 100) : 0
   })).sort((a,b) => b.total - a.total);
   const totalParaAcuracia = totalInventariado + totalFaltante;
   const taxaAcuraciaGeral = totalParaAcuracia > 0 ? (totalInventariado / totalParaAcuracia * 100) : 0;
-  return { totalGeral, totalInventariado, totalFaltante, totalIntruso, totalNaoClassificado, taxaAcuraciaGeral, zonas: zonaList };
+  return { totalGeral, totalInventariado, totalFaltante, totalIntruso, totalNaoClassificado, totalSVC, totalTransportadora, taxaAcuraciaGeral, zonas: zonaList };
 }
 
 function realizarCruzamento(dadosPacotes, dadosInventario) {
+  // Mapa de informações do inventário: shipment -> { status, zona, classificacao }
+  const invMap = {};
+  dadosInventario.forEach(row => {
+    const shipment = String(row['SHIPMENT'] || '').trim();
+    if (shipment) {
+      const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
+      const zona = String(row['SHP_ZONE_NAME'] || row['shp_zone_name'] || '').trim();
+      const isFaltante = status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO';
+      const isSVC = isFaltante || (zona && zona.toLowerCase() === 'problem_solving');
+      invMap[shipment] = { status, zona, isFaltante, isSVC };
+    }
+  });
+
+  // Faltantes (para o cálculo de em ambos)
   const faltantesSet = new Set();
-  const faltantesInfo = {};
   dadosInventario.forEach(row => {
     const status = String(row['CLASIFICACION'] || row['clasificacion'] || '').trim().toUpperCase();
     if (status === 'FALTANTE EN INVENTARIO' || status === 'ZONA FALTANTE DE INVENTARIO') {
       const shipment = String(row['SHIPMENT'] || '').trim();
-      if (shipment) { faltantesSet.add(shipment); faltantesInfo[shipment] = { status: row['CLASIFICACION'] || 'FALTANTE', zona: row['SHP_ZONE_NAME'] || 'Não especificado' }; }
+      if (shipment) faltantesSet.add(shipment);
     }
   });
+
   const resultado = [], transportadoraCount = {};
   dadosPacotes.forEach(row => {
     let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || 'Não especificado';
     if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
     const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
     if (id && faltantesSet.has(id)) {
-      const info = faltantesInfo[id] || { status: 'FALTANTE EN INVENTARIO', zona: 'Não especificado' };
-      resultado.push({ id, transportadora: transp, status: info.status, zona: info.zona, situacao: '🔗 Em ambos' });
-      if (!transportadoraCount[transp]) transportadoraCount[transp] = 0;
-      transportadoraCount[transp]++;
+      const info = invMap[id] || { status: 'FALTANTE EN INVENTARIO', zona: 'Não especificado', isFaltante: true, isSVC: true };
+      const classificacao = info.isSVC ? 'Responsabilidade SVC' : 'Transportadora';
+      resultado.push({ id, transportadora: transp, status: info.status, zona: info.zona, classificacao, situacao: '🔗 Em ambos' });
+      if (!transportadoraCount[transp]) transportadoraCount[transp] = { total: 0, svc: 0, transp: 0 };
+      transportadoraCount[transp].total++;
+      if (info.isSVC) transportadoraCount[transp].svc++;
+      else transportadoraCount[transp].transp++;
     }
   });
   resultado.sort((a,b) => a.id.localeCompare(b.id));
-  const transportadoraList = Object.entries(transportadoraCount).map(([nome, quantidade]) => ({ nome, quantidade })).sort((a,b) => b.quantidade - a.quantidade);
+  const transportadoraList = Object.entries(transportadoraCount).map(([nome, counts]) => ({ nome, quantidade: counts.total, svc: counts.svc, transp: counts.transp })).sort((a,b) => b.quantidade - a.quantidade);
   const totalComTransportadora = dadosPacotes.filter(r => String(r['ID do envio']||'').trim()).length;
   const totalFaltantes = faltantesSet.size;
   const emAmbos = resultado.length;
   const responsabilidadeId = totalComTransportadora - emAmbos;
-  return { dados: resultado, totalComTransportadora, totalFaltantes, emAmbos, responsabilidadeId, transportadoraList };
+  return { dados: resultado, totalComTransportadora, totalFaltantes, emAmbos, responsabilidadeId, transportadoraList, invMap };
 }
 
 // ================================================================
@@ -1795,14 +1832,19 @@ function renderKPI_Pacotes(data) {
 function renderKPI_Inventario(data) {
   const grid = document.getElementById('kpiStripInventario');
   if (!grid) return;
-  if (!data) { grid.innerHTML = `<div class="kpi"><div class="tag">📦 Total</div><div class="num">0</div></div><div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">0</div></div><div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">0</div></div><div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">0</div></div><div class="kpi"><div class="tag">📊 Acurácia</div><div class="num warning">0%</div></div>`; return; }
+  if (!data) {
+    grid.innerHTML = `<div class="kpi"><div class="tag">📦 Total</div><div class="num">0</div></div><div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">0</div></div><div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">0</div></div><div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">0</div></div><div class="kpi"><div class="tag">📊 Acurácia</div><div class="num warning">0%</div></div><div class="kpi"><div class="tag">🔴 SVC</div><div class="num svc">0</div></div><div class="kpi"><div class="tag">🟢 Transportadora</div><div class="num transp">0</div></div>`;
+    return;
+  }
   const totalBase = data.totalGeral;
   grid.innerHTML = `
     <div class="kpi"><div class="tag">📦 Total de Itens</div><div class="num">${totalBase}</div><div class="sub">${data.zonas.length} zonas</div></div>
-    <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">${data.totalInventariado}</div><div class="sub">${(totalBase > 0 ? (data.totalInventariado / totalBase * 100) : 0).toFixed(1)}% do total</div></div>
-    <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">${data.totalFaltante}</div><div class="sub">${(totalBase > 0 ? (data.totalFaltante / totalBase * 100) : 0).toFixed(1)}% do total</div></div>
-    <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${data.totalIntruso > 0 ? `+ ${data.totalIntruso} itens não contabilizados` : '✅ Nenhum intruso'}</div></div>
-    <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.totalNaoClassificado > 0 ? `⚠️ ${data.totalNaoClassificado} não classificados` : '✅ OK'}</div></div>
+    <div class="kpi"><div class="tag">✅ Inventariados</div><div class="num success">${data.totalInventariado}</div><div class="sub">${(totalBase > 0 ? (data.totalInventariado / totalBase * 100) : 0).toFixed(1)}%</div></div>
+    <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">${data.totalFaltante}</div><div class="sub">${(totalBase > 0 ? (data.totalFaltante / totalBase * 100) : 0).toFixed(1)}%</div></div>
+    <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${data.totalIntruso > 0 ? `+ ${data.totalIntruso}` : '✅ Nenhum'}</div></div>
+    <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.totalNaoClassificado > 0 ? `⚠️ ${data.totalNaoClassificado} NC` : '✅ OK'}</div></div>
+    <div class="kpi"><div class="tag">🔴 SVC</div><div class="num svc">${data.totalSVC}</div><div class="sub">${(totalBase > 0 ? (data.totalSVC / totalBase * 100) : 0).toFixed(1)}%</div></div>
+    <div class="kpi"><div class="tag">🟢 Transportadora</div><div class="num transp">${data.totalTransportadora}</div><div class="sub">${(totalBase > 0 ? (data.totalTransportadora / totalBase * 100) : 0).toFixed(1)}%</div></div>
   `;
   const footerTotal = document.getElementById('footerTotalInventario');
   if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
@@ -1908,8 +1950,17 @@ function renderZonas(data) {
   if (!grid) return;
   if (!data || data.zonas.length === 0) { grid.innerHTML = `<div class="no-data" style="grid-column:1/-1;">Nenhuma zona encontrada</div>`; return; }
   grid.innerHTML = data.zonas.map(z => {
-    const pctInv = z.taxaInventariado, pctFalt = z.taxaFaltante, pctInt = z.taxaIntruso, pctAcuracia = z.taxaAcuracia;
-    return `<div class="zona-card"><div class="nome">${z.nome}</div><div class="detalhes"><span class="total">📦 ${z.total}</span><span class="inventariado">✅ ${z.inventariado}</span><span class="faltante">❌ ${z.faltante}</span><span class="intruso">🟣 ${z.intruso}</span></div><div class="barra"><div class="fill-success" style="width:${pctInv}%;"></div><div class="fill-danger" style="width:${pctFalt}%;"></div><div class="fill-intruso" style="width:${pctInt}%;"></div></div><div class="status-labels"><span>✅ ${pctInv.toFixed(1)}%</span><span>❌ ${pctFalt.toFixed(1)}%</span><span>🟣 ${pctInt.toFixed(1)}%</span><span style="color:${pctAcuracia >= 95 ? 'var(--success)' : pctAcuracia >= 80 ? 'var(--warning)' : 'var(--danger)'};">🎯 ${pctAcuracia.toFixed(1)}%</span></div></div>`;
+    const pctInv = z.taxaInventariado, pctFalt = z.taxaFaltante, pctInt = z.taxaIntruso;
+    return `<div class="zona-card"><div class="nome">${z.nome}</div><div class="detalhes">
+      <span class="total">📦 ${z.total}</span>
+      <span class="inventariado">✅ ${z.inventariado}</span>
+      <span class="faltante">❌ ${z.faltante}</span>
+      <span class="intruso">🟣 ${z.intruso}</span>
+      <span class="svc">🔴 SVC ${z.svc}</span>
+      <span class="transp">🟢 Transp ${z.transp}</span>
+    </div>
+    <div class="barra"><div class="fill-success" style="width:${pctInv}%;"></div><div class="fill-danger" style="width:${pctFalt}%;"></div><div class="fill-intruso" style="width:${pctInt}%;"></div></div>
+    <div class="status-labels"><span>✅ ${pctInv.toFixed(1)}%</span><span>❌ ${pctFalt.toFixed(1)}%</span><span>🟣 ${pctInt.toFixed(1)}%</span><span style="color:${z.taxaAcuracia >= 95 ? 'var(--success)' : z.taxaAcuracia >= 80 ? 'var(--warning)' : 'var(--danger)'};">🎯 ${z.taxaAcuracia.toFixed(1)}%</span></div></div>`;
   }).join('');
 }
 
@@ -2457,7 +2508,7 @@ async function carregarCruzamento() {
   try {
     if (statusDot) statusDot.className = 'dot-status loading';
     if (statusText) { statusText.textContent = 'Carregando dados para cruzamento...'; statusText.style.color = 'var(--text-muted)'; }
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Carregando...</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:36px;">Carregando...</td></tr>`;
     const [pacotes, inventario] = await Promise.all([ lerDados('pacotes'), lerDados('inventario') ]);
     rawDataPacotes = pacotes; rawDataInventario = inventario;
     processarPacotesComFiltro();
@@ -2482,7 +2533,7 @@ async function carregarCruzamento() {
   } catch (error) {
     if (statusDot) statusDot.className = 'dot-status offline';
     if (statusText) { statusText.textContent = `❌ Erro no cruzamento: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:36px;">Erro: ${error.message}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:36px;">Erro: ${error.message}</td></tr>`;
     console.error('Erro no cruzamento:', error);
   }
 }
@@ -2859,16 +2910,13 @@ function renderCruzamento(data) {
   let dadosFiltradosResponsabilidade = [];
   let totalPacotesResp = 0;
   if (filtroTransportadorasResp.size > 0) {
-    // Pega todos os IDs que estão faltantes
     const faltantesSet = new Set(data.dados.map(row => row.id));
-    // Filtra os pacotes que têm transportadora mas NÃO estão faltantes
     const todosPacotesComTransp = rawDataPacotes.filter(row => {
       let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
       if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
       const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
       return id && filtroTransportadorasResp.has(transp);
     });
-    // Converte para o formato esperado
     dadosFiltradosResponsabilidade = todosPacotesComTransp
       .filter(row => {
         const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
@@ -2878,7 +2926,8 @@ function renderCruzamento(data) {
         const id = String(row['ID do envio'] || row['id_do_envio'] || row['ID'] || '').trim();
         let transp = row['TRANSPORTADORA'] || row['transportadora'] || row['Transportadora'] || '';
         if (transp.toUpperCase().includes('ENVIOS EXTRA')) transp = 'ENVIOS EXTRA';
-        return { id, transportadora: transp, situacao: '📦 Responsabilidade ID' };
+        // Para responsabilidade ID, não temos info de inventário, então são Transportadora
+        return { id, transportadora: transp, status: '—', zona: '—', classificacao: 'Transportadora', situacao: '📦 Responsabilidade ID' };
       });
     totalPacotesResp = dadosFiltradosResponsabilidade.length;
   }
@@ -2892,7 +2941,7 @@ function renderCruzamento(data) {
     `;
   }
 
-  // Grid de transportadoras (Em Ambos)
+  // Grid de transportadoras (Em Ambos) com SVC e Transportadora
   if (dadosFiltradosEmAmbos.transportadoraList.length === 0) {
     if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Nenhum pacote em ambos para as transportadoras selecionadas</div>`;
   } else {
@@ -2900,7 +2949,16 @@ function renderCruzamento(data) {
     if (transpGrid) {
       transpGrid.innerHTML = dadosFiltradosEmAmbos.transportadoraList.map(t => {
         const pct = totalEmAmbos > 0 ? (t.quantidade / totalEmAmbos * 100) : 0;
-        return `<div class="cruzamento-transp-card"><div class="nome">${t.nome}</div><div class="detalhes"><span class="qtd">🔗 ${t.quantidade}</span><span class="pct">${pct.toFixed(1)}%</span></div></div>`;
+        // Buscar as contagens de SVC e Transportadora para esta transportadora a partir dos dados originais
+        const transpData = data.transportadoraList.find(item => item.nome === t.nome);
+        const svc = transpData ? transpData.svc : 0;
+        const transp = transpData ? transpData.transp : 0;
+        return `<div class="cruzamento-transp-card"><div class="nome">${t.nome}</div><div class="detalhes">
+          <span class="qtd">🔗 ${t.quantidade}</span>
+          <span class="pct">${pct.toFixed(1)}%</span>
+          <span class="svc">🔴 SVC ${svc}</span>
+          <span class="transp">🟢 Transp ${transp}</span>
+        </div></div>`;
       }).join('');
     }
   }
@@ -2925,15 +2983,15 @@ function renderCruzamento(data) {
   if (footerSpan) footerSpan.textContent = `${dadosParaTabela.length} registros`;
 
   if (dadosParaTabela.length === 0) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Nenhum registro encontrado para os filtros selecionados</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:36px;">Nenhum registro encontrado para os filtros selecionados</td></tr>`;
   } else {
     if (tbody) {
       tbody.innerHTML = dadosParaTabela.map(row => {
-        const status = row.status || 'Responsabilidade SVC';
-        const zona = row.zona || '—';
-        const classe = row.situacao === '📦 Responsabilidade ID' ? 'status-badge' : 'status-badge';
-        const icone = row.situacao === '📦 Responsabilidade ID' ? '📦' : '🔗';
-        return `<tr><td style="font-weight:500;">${row.id}</td><td>${row.transportadora}</td><td style="color:${row.status ? 'var(--danger)' : 'var(--info)'};">${status}</td><td>${zona}</td><td><span class="${classe}">${icone} ${row.situacao}</span></td></tr>`;
+        const classificacao = row.classificacao || 'Transportadora';
+        const badgeClass = classificacao === 'Responsabilidade SVC' ? 'svc' : 'transp';
+        const statusDisplay = row.status || '—';
+        const zonaDisplay = row.zona || '—';
+        return `<tr><td style="font-weight:500;">${row.id}</td><td>${row.transportadora}</td><td style="color:${statusDisplay !== '—' && statusDisplay.includes('FALTANTE') ? 'var(--danger)' : 'var(--text-muted)'};">${statusDisplay}</td><td>${zonaDisplay}</td><td><span class="status-badge ${badgeClass}">${classificacao}</span></td><td>${row.situacao}</td></tr>`;
       }).join('');
     }
   }
