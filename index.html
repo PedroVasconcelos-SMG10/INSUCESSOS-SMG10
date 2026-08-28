@@ -1461,9 +1461,21 @@ async function fazerLogin(email, senha) {
     const response = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, senha }) });
     const data = await response.json();
     if (data.success) {
-      currentUserEmail = data.email; currentUserRole = data.role; usuarioTransportadora = data.transportadora; isAuthenticated = true;
+      currentUserEmail = data.email;
+      currentUserRole = data.role;
+      usuarioTransportadora = data.transportadora;
+      isAuthenticated = true;
       localStorage.setItem('wms_user', JSON.stringify({ email:data.email, role:data.role, transportadora:data.transportadora, timestamp:Date.now() }));
-      atualizarUIposLogin(); carregarTodosOsDados();
+      // --- CORREÇÃO: limpeza completa ao logar ---
+      clearCache();
+      rawDataPacotes = null;
+      rawDataInventario = null;
+      processedDataPacotes = null;
+      processedDataInventario = null;
+      dadosCruzamento = null;
+      // -------------------------------------------
+      atualizarUIposLogin();
+      carregarTodosOsDados();
       return true;
     } else {
       Swal.fire({ icon:'error', title:'Falha no login', text:data.error || 'E-mail ou senha incorretos.', confirmButtonColor:'#e8593f' });
@@ -2368,9 +2380,8 @@ async function carregarDadosPacotes() {
     if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`; }
     if (statusDot) statusDot.className = 'dot-status offline';
     if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
-    rawDataPacotes = DADOS_EXEMPLO_PACOTES;
-    processarPacotesComFiltro();
+    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-faint);">Verifique sua conexão ou tente recarregar.</span></div>`;
+    // Não sobrescreve com dados de exemplo
   }
 }
 
@@ -2402,17 +2413,7 @@ async function carregarDadosInventario() {
     if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`; }
     if (statusDot) statusDot.className = 'dot-status offline';
     if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-faint);">Usando dados de exemplo</span></div>`;
-    rawDataInventario = DADOS_EXEMPLO_INVENTARIO;
-    processedDataInventario = processarDadosInventario(rawDataInventario);
-    let weeklyStats = null;
-    try { weeklyStats = await carregarBackupsSemanais(); } catch (e) { weeklyStats = null; }
-    renderPreviewInventario(processedDataInventario, weeklyStats);
-    renderKPI_Inventario(processedDataInventario);
-    renderGraficos_Inventario(processedDataInventario);
-    renderZonas(processedDataInventario);
-    const footerTotal = document.getElementById('footerTotalInventario');
-    if (footerTotal) footerTotal.textContent = `${processedDataInventario.totalGeral} registros (${processedDataInventario.totalIntruso} intrusos excluídos)`;
+    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-faint);">Verifique sua conexão ou tente recarregar.</span></div>`;
   }
 }
 
@@ -2454,9 +2455,23 @@ async function carregarCruzamento() {
 }
 
 async function carregarTodosOsDados() {
-  if (!isAuthenticated) { carregarDadosExemplo(); return; }
-  try { await carregarDadosPacotes(); await carregarDadosInventario(); await carregarCruzamento(); }
-  catch (error) { console.error('Erro ao carregar dados:', error); carregarDadosExemplo(); }
+  if (!isAuthenticated) {
+    carregarDadosExemplo();
+    return;
+  }
+  try {
+    await carregarDadosPacotes();
+    await carregarDadosInventario();
+    await carregarCruzamento();
+  } catch (error) {
+    console.error('Erro ao carregar dados:', error);
+    // Não carrega dados de exemplo automaticamente; mostra mensagem de erro
+    const statusText = document.getElementById('statusTextPacotes');
+    if (statusText) {
+      statusText.textContent = '❌ Erro ao carregar dados reais. Tente recarregar.';
+      statusText.style.color = 'var(--danger)';
+    }
+  }
 }
 
 function carregarDadosExemplo() {
@@ -2903,6 +2918,10 @@ function abrirModalPacotes(nome) {
   } else {
     filterContainer.style.display = 'none';
     modalTotalIds = t.ids; modalTotalValores = t.valores || []; modalTotalMotoristas = t.motoristas || [];
+    // Sincroniza variáveis globais
+    window._idsFiltrados = modalTotalIds;
+    window._valoresFiltrados = modalTotalValores;
+    window._motoristasFiltrados = modalTotalMotoristas;
     renderizarPaginaModal(t, 1);
   }
   document.getElementById('modalCopy').textContent = '📋 Copiar IDs';
@@ -2941,9 +2960,21 @@ function atualizarModalFiltrado() {
   if (!t) return;
   const filterSelect = document.getElementById('subTransportadoraFilter');
   const selectedSub = filterSelect ? filterSelect.value : 'TODAS';
-  if (selectedSub === 'TODAS') { modalTotalIds = t.ids; modalTotalValores = t.valores || []; modalTotalMotoristas = t.motoristas || []; }
-  else { modalTotalIds = t.subIds[selectedSub] || []; modalTotalValores = t.subValores[selectedSub] || []; modalTotalMotoristas = t.subMotoristas[selectedSub] || []; }
-  modalCurrentPage = 1; renderizarPaginaModal(t, 1);
+  if (selectedSub === 'TODAS') {
+    modalTotalIds = t.ids;
+    modalTotalValores = t.valores || [];
+    modalTotalMotoristas = t.motoristas || [];
+  } else {
+    modalTotalIds = t.subIds[selectedSub] || [];
+    modalTotalValores = t.subValores[selectedSub] || [];
+    modalTotalMotoristas = t.subMotoristas[selectedSub] || [];
+  }
+  // CORREÇÃO: atualiza variáveis globais para cópia
+  window._idsFiltrados = modalTotalIds;
+  window._valoresFiltrados = modalTotalValores;
+  window._motoristasFiltrados = modalTotalMotoristas;
+  modalCurrentPage = 1;
+  renderizarPaginaModal(t, 1);
 }
 function toggleSelecao(id, motorista) {
   if (idsSelecionados.has(id)) { idsSelecionados.delete(id); delete motoristasSelecionados[id]; }
@@ -3026,18 +3057,54 @@ document.getElementById('modalOverlay')?.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { ['modalOverlay','respostaModalOverlay','filterModalOverlay'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); }); } });
 
 // ================================================================
-//  TOGGLE STATUS (ADMIN)
+//  TOGGLE STATUS (ADMIN) - CORRIGIDO COM PERSISTÊNCIA
 // ================================================================
 async function toggleStatus(id, transportadora, motorista) {
-  if (currentUserRole !== 'admin') { Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Apenas administradores podem alternar o status.', confirmButtonColor:'#e8593f' }); return; }
+  if (currentUserRole !== 'admin') {
+    Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Apenas administradores podem alternar o status.', confirmButtonColor:'#e8593f' });
+    return;
+  }
   if (!id) return;
   try {
     const isJustificado = respostasSet.has(id);
-    if (isJustificado) { respostasSet.delete(id); Swal.fire({ icon:'success', title:'Status alterado!', text:`Pacote ${id} marcado como PENDENTE.`, confirmButtonColor:'#4fae7c' }); }
-    else { respostasSet.add(id); Swal.fire({ icon:'success', title:'Status alterado!', text:`Pacote ${id} marcado como JUSTIFICADO.`, confirmButtonColor:'#4fae7c' }); }
+    let response;
+    if (isJustificado) {
+      // Remove da planilha
+      response = await fetch('/api/admin/respostas', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole },
+        body: JSON.stringify({ ids: [id] })
+      });
+    } else {
+      // Adiciona à planilha (com dados básicos)
+      const dataAtual = new Date().toLocaleString('pt-BR');
+      const rows = [[id, transportadora, motorista || 'N/A', 'Admin (toggle)', 'Marcado manualmente', dataAtual]];
+      response = await fetch('/api/admin/respostas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole },
+        body: JSON.stringify({ rows })
+      });
+    }
+    const result = await response.json();
+    if (!result.success) throw new Error(result.error || 'Erro ao salvar na planilha');
+
+    // Atualiza o conjunto local após sucesso
+    if (isJustificado) respostasSet.delete(id);
+    else respostasSet.add(id);
+
+    Swal.fire({
+      icon: 'success',
+      title: isJustificado ? 'Pacote marcado como PENDENTE' : 'Pacote marcado como JUSTIFICADO',
+      text: `ID ${id} atualizado com sucesso.`,
+      confirmButtonColor: '#4fae7c'
+    });
+    // Recarrega a lista para refletir a mudança
     if (usuarioTransportadora && rawDataPacotes) processarPacotesComFiltro();
     else carregarTodosOsDados();
-  } catch (error) { Swal.fire({ icon:'error', title:'Erro', text:'Ocorreu um erro ao alternar status.', confirmButtonColor:'#e8593f' }); console.error(error); }
+  } catch (error) {
+    Swal.fire({ icon:'error', title:'Erro', text:`Falha ao atualizar: ${error.message}`, confirmButtonColor:'#e8593f' });
+    console.error(error);
+  }
 }
 
 // ================================================================
