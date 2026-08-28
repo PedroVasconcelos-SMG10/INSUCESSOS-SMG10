@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - WMS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     /* ===== NOVA PALETA DE CORES — GRADIENTE ID LOGISTICS × MERCADO LIVRE ===== */
-    :root{
+    :root {
       --grad-blue: #0F2A5C;
       --grad-wine: #5C1E3C;
       --grad-red: #C62828;
@@ -23,8 +26,8 @@
       --bg-primary: #123A6B;
       --bg-secondary: #EEF3FB;
       --bg-white: #FFFFFF;
-      --bg-card: rgba(255,255,255,0.95);
-      --bg-panel: rgba(245,249,255,0.92);
+      --bg-card: rgba(255, 255, 255, 0.95);
+      --bg-panel: rgba(245, 249, 255, 0.92);
       --text-primary: #123A6B;
       --text-on-blue: #FFFFFF;
       --text-muted: #4A6A8A;
@@ -43,1514 +46,2557 @@
       --naoplan: var(--warning);
       --plan: var(--success);
     }
-    *{box-sizing:border-box; margin:0; padding:0;}
-    body{
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-on-blue);
-      font-family:'Inter', sans-serif;
-      font-size:16px;
-      padding:0 0 80px 0;
-      min-height:100vh;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      padding: 0 0 80px 0;
+      min-height: 100vh;
     }
-    .wrap{
-      max-width:1400px;
-      margin:0 auto;
-      padding:0 32px;
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 32px;
     }
+
     /* ===== BARRA DE LOGOS ===== */
-    .brand-bar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:34px;
-      gap:16px;
-      flex-wrap:wrap;
+    .brand-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 34px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
-    .logo-id{display:flex; align-items:center; gap:12px; text-decoration:none;}
-    .logo-id .logo-id-main{
-      font-family:'Oswald', sans-serif;
-      font-size:32px;
-      font-weight:700;
-      font-style:italic;
-      color:#1F5FA8;
-      background:#FFFFFF;
-      padding:6px 16px;
-      border-radius:8px;
-      letter-spacing:.02em;
-      line-height:1;
-      display:flex;
-      align-items:center;
-      gap:2px;
-      box-shadow:0 4px 14px rgba(0,0,0,0.25);
+
+    .logo-id {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
     }
-    .logo-id .logo-id-main .arrow{color:#E63312; font-size:30px; font-weight:700; transform:translateY(-3px);}
-    .logo-id .logo-id-sub{
-      font-family:'Oswald', sans-serif;
-      font-size:12px;
-      font-weight:500;
-      color:#FFFFFF;
-      letter-spacing:.32em;
-      text-transform:uppercase;
-      opacity:.95;
-      text-shadow:0 1px 4px rgba(0,0,0,0.4);
+
+    .logo-id .logo-id-main {
+      font-family: 'Oswald', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      font-style: italic;
+      color: #1F5FA8;
+      background: #FFFFFF;
+      padding: 6px 16px;
+      border-radius: 8px;
+      letter-spacing: .02em;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     }
-    .logo-meli{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      background:#FFE600;
-      padding:8px 20px 8px 10px;
-      border-radius:10px;
-      box-shadow:0 4px 14px rgba(0,0,0,0.25);
-      text-decoration:none;
+
+    .logo-id .logo-id-main .arrow {
+      color: #E63312;
+      font-size: 30px;
+      font-weight: 700;
+      transform: translateY(-3px);
     }
-    .logo-meli .handshake{
-      width:38px; height:38px;
-      border-radius:50%;
-      background:#2D3277;
-      display:flex; align-items:center; justify-content:center;
-      font-size:18px;
-      flex-shrink:0;
+
+    .logo-id .logo-id-sub {
+      font-family: 'Oswald', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #FFFFFF;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      opacity: .95;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }
-    .logo-meli .meli-text{
-      font-family:'Inter', sans-serif;
-      font-size:18px;
-      font-weight:700;
-      color:#2D3277;
-      line-height:1.05;
-      letter-spacing:-.01em;
+
+    .logo-meli {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #FFE600;
+      padding: 8px 20px 8px 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      text-decoration: none;
     }
-    .logo-meli .meli-text small{display:block; font-size:11px; font-weight:600;}
-    .masthead{
+
+    .logo-meli .handshake {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #2D3277;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .logo-meli .meli-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #2D3277;
+      line-height: 1.05;
+      letter-spacing: -.01em;
+    }
+
+    .logo-meli .meli-text small {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .masthead {
       background: var(--bg-gradient-dark);
-      border-bottom:2px solid rgba(255,255,255,0.18);
-      padding:36px 32px 30px 32px;
-      position:relative;
-      overflow:hidden;
-      border-radius:12px;
-      margin-bottom:8px;
-      margin-top:18px;
-      box-shadow:0 12px 40px rgba(0,0,0,0.35);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.18);
+      padding: 36px 32px 30px 32px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      margin-top: 18px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     }
-    .masthead::before{
-      content:"";
-      position:absolute; top:0; left:0; right:0; height:4px;
+
+    .masthead::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
       background: linear-gradient(90deg, #FFD600 0%, #F57F17 25%, #E65100 45%, #C62828 70%, #FFD600 100%);
-      opacity:1;
+      opacity: 1;
     }
-    .eyebrow{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
-      letter-spacing:.16em;
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      letter-spacing: .16em;
       color: var(--text-on-blue);
-      opacity:1;
-      text-transform:uppercase;
-      display:flex; gap:12px; align-items:center;
+      opacity: 1;
+      text-transform: uppercase;
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
-    .eyebrow .dot{width:8px; height:8px; background:var(--grad-yellow); border-radius:50%; display:inline-block; box-shadow:0 0 10px rgba(255,214,0,0.8);}
-    h1{
-      font-family:'Oswald', sans-serif;
-      font-weight:700;
-      font-size:clamp(40px, 5.5vw, 62px);
-      letter-spacing:.01em;
-      text-transform:uppercase;
-      line-height:1.02;
-      margin-top:12px;
+
+    .eyebrow .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--grad-yellow);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(255, 214, 0, 0.8);
+    }
+
+    h1 {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: clamp(40px, 5.5vw, 62px);
+      letter-spacing: .01em;
+      text-transform: uppercase;
+      line-height: 1.02;
+      margin-top: 12px;
       color: var(--text-on-blue);
-      text-shadow:0 2px 12px rgba(0,0,0,0.35);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
     }
-    .masthead p{
+
+    .masthead p {
       color: var(--text-on-blue);
-      opacity:.92;
-      max-width:780px;
-      margin-top:14px;
-      font-size:16px;
-      line-height:1.6;
+      opacity: .92;
+      max-width: 780px;
+      margin-top: 14px;
+      font-size: 16px;
+      line-height: 1.6;
     }
-    .masthead p b{color: var(--grad-yellow); font-weight:600;}
-    .login-btn{
-      position:fixed;
-      top:20px;
-      right:20px;
-      z-index:9999;
-      padding:14px 28px;
+
+    .masthead p b {
+      color: var(--grad-yellow);
+      font-weight: 600;
+    }
+
+    .login-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      padding: 14px 28px;
       background: var(--btn-gradient);
       color: #fff;
-      border:none;
-      border-radius:4px;
-      cursor:pointer;
-      font-family:'Oswald', sans-serif;
-      font-size:16px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      box-shadow:0 4px 16px rgba(198,40,40,0.45);
-      transition:all .3s;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      box-shadow: 0 4px 16px rgba(198, 40, 40, 0.45);
+      transition: all .3s;
     }
-    .login-btn:hover{background: var(--btn-gradient-hover); transform:scale(1.03);}
-    .login-btn.logged{background: var(--success); cursor:default; opacity:1; box-shadow:0 4px 16px rgba(46,125,50,0.4);}
-    .login-btn.error{background: var(--danger); cursor:default; opacity:1;}
-    .tabs{
-      display:flex;
-      gap:4px;
+
+    .login-btn:hover {
+      background: var(--btn-gradient-hover);
+      transform: scale(1.03);
+    }
+
+    .login-btn.logged {
+      background: var(--success);
+      cursor: default;
+      opacity: 1;
+      box-shadow: 0 4px 16px rgba(46, 125, 50, 0.4);
+    }
+
+    .login-btn.error {
+      background: var(--danger);
+      cursor: default;
+      opacity: 1;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      padding:4px;
-      margin-top:30px;
-      border-radius:6px;
-      flex-wrap:wrap;
-      border:1px solid rgba(255,255,255,0.35);
-      box-shadow:0 4px 18px rgba(0,0,0,0.18);
+      padding: 4px;
+      margin-top: 30px;
+      border-radius: 6px;
+      flex-wrap: wrap;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
     }
-    .tab-btn{
-      flex:1;
-      padding:16px 24px;
-      font-family:'Oswald', sans-serif;
-      font-size:17px;
-      font-weight:600;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      border:none;
-      cursor:pointer;
+
+    .tab-btn {
+      flex: 1;
+      padding: 16px 24px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border: none;
+      cursor: pointer;
       background: transparent;
       color: var(--text-muted);
-      transition:all .3s;
-      border-radius:4px;
-      min-width:140px;
+      transition: all .3s;
+      border-radius: 4px;
+      min-width: 140px;
     }
-    .tab-btn:hover{color: var(--text-primary); background: var(--bg-secondary);}
-    .tab-btn.active{
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    .tab-btn.active {
       background: var(--bg-gradient-dark);
       color: var(--text-on-blue);
-      box-shadow:inset 0 -3px 0 var(--grad-yellow);
+      box-shadow: inset 0 -3px 0 var(--grad-yellow);
     }
-    .tab-btn.tab-cruzamento.active{box-shadow:inset 0 -3px 0 var(--cruzamento);}
-    .tab-btn.tab-admin.active{box-shadow:inset 0 -3px 0 var(--purple);}
-    .tab-btn.tab-respostas.active{box-shadow:inset 0 -3px 0 var(--info);}
-    .tab-content{display:none; animation:fadeIn .4s ease;}
-    .tab-content.active{display:block;}
-    @keyframes fadeIn{0%{opacity:0; transform:translateY(8px);} 100%{opacity:1; transform:translateY(0);}}
-    .status-bar{
+
+    .tab-btn.tab-cruzamento.active {
+      box-shadow: inset 0 -3px 0 var(--cruzamento);
+    }
+
+    .tab-btn.tab-admin.active {
+      box-shadow: inset 0 -3px 0 var(--purple);
+    }
+
+    .tab-btn.tab-respostas.active {
+      box-shadow: inset 0 -3px 0 var(--info);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn .4s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .status-bar {
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border:1px solid rgba(255,255,255,0.35);
-      padding:18px 28px;
-      margin-top:28px;
-      border-radius:6px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:14px;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding: 18px 28px;
+      margin-top: 28px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
-    .status-bar .info{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:14px;
+
+    .status-bar .info {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
       color: var(--text-primary);
-      display:flex;
-      align-items:center;
-      gap:14px;
-      flex-wrap:wrap;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
     }
-    .status-bar .info .dot-status{width:12px; height:12px; border-radius:50%; display:inline-block;}
-    .status-bar .info .dot-status.online{background:var(--success);}
-    .status-bar .info .dot-status.offline{background:var(--danger);}
-    .status-bar .info .dot-status.loading{background:var(--warning); animation: pulse 1s infinite;}
-    @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
-    .btn{
-      padding:10px 24px;
-      font-family:'Oswald', sans-serif;
-      font-size:15px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      border:none;
-      cursor:pointer;
-      transition:all .2s;
-      font-weight:600;
-      border-radius:4px;
+
+    .status-bar .info .dot-status {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
     }
-    .btn-primary{background: var(--info); color:#fff;}
-    .btn-primary:hover{background: #0D47A1;}
-    .btn-cruzamento{background: var(--cruzamento); color:#fff;}
-    .btn-cruzamento:hover{background: #BF360C;}
-    .btn-secondary{background:transparent; color:var(--text-primary); border:1px solid var(--border-color);}
-    .btn-secondary:hover{background:var(--bg-secondary); color:var(--text-primary);}
-    .btn-success{background: var(--success); color:#fff;}
-    .btn-success:hover{background: #1B5E20;}
-    .btn-danger{background: var(--danger); color:#fff;}
-    .btn-danger:hover{background: #B71C1C;}
-    .kpi-strip{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:2px;
-      background: rgba(255,255,255,0.35);
-      border:1px solid rgba(255,255,255,0.35);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
-    }
-    .kpi{
-      background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding:20px 20px 18px;
-      position:relative;
-    }
-    .kpi .tag{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
-      letter-spacing:.1em;
-      text-transform:uppercase;
-      color: var(--text-muted);
-      display:flex; align-items:center; gap:8px;
-    }
-    .kpi .num{
-      font-family:'Oswald', sans-serif;
-      font-size:38px;
-      font-weight:600;
-      margin-top:8px;
-      color: var(--text-primary);
-    }
-    .kpi .pct{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--text-muted); margin-top:4px;}
-    .kpi .sub{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-muted); margin-top:4px;}
-    .kpi.total{background: var(--bg-panel);}
-    .kpi.total .num{font-size:42px;}
-    .kpi .num.success{color:var(--success);}
-    .kpi .num.danger{color:var(--danger);}
-    .kpi .num.warning{color:var(--warning);}
-    .kpi .num.info{color:var(--info);}
-    .kpi .num.purple{color:var(--purple);}
-    .kpi .num.cruzamento{color:var(--cruzamento);}
-    .kpi .num.svc{color:var(--danger);}
-    .kpi .num.transp{color:var(--success);}
-    @media (max-width:860px){
-      .kpi-strip{grid-template-columns:repeat(3,1fr);}
-    }
-    @media (max-width:480px){
-      .kpi-strip{grid-template-columns:1fr 1fr;}
-    }
-    .charts-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:2px;
-      background: rgba(255,255,255,0.35);
-      border:1px solid rgba(255,255,255,0.35);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
-    }
-    .chart-card{
-      background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding:24px;
-    }
-    .chart-card h3{
-      font-family:'Oswald', sans-serif;
-      font-size:16px;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-      color: var(--text-muted);
-      font-weight:500;
-      margin-bottom:18px;
-    }
-    .chart-card .chart-container{height:240px; position:relative;}
-    .transportadoras-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:2px;
-      background: rgba(255,255,255,0.35);
-      border:1px solid rgba(255,255,255,0.35);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
-    }
-    .transportadora-card{
-      background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding:20px 18px;
-      transition:background .2s;
-      cursor:pointer;
-    }
-    .transportadora-card:hover{background: var(--bg-secondary);}
-    .transportadora-card.blocked{cursor:not-allowed; opacity:0.7;}
-    .transportadora-card.blocked:hover{background: var(--bg-card);}
-    .transportadora-card .nome{
-      font-family:'Oswald', sans-serif;
-      font-size:18px;
-      font-weight:500;
-      color: var(--text-primary);
-    }
-    .transportadora-card .detalhes{
-      display:flex;
-      justify-content:space-between;
-      margin-top:10px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:14px;
-      color: var(--text-muted);
-    }
-    .transportadora-card .detalhes .qtd{color:var(--warning); font-weight:600;}
-    .transportadora-card .detalhes .valor{color:var(--success); font-weight:600;}
-    .ids-tabela-wrap{
-      border:1px solid rgba(255,255,255,0.35);
-      background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      width:100%;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
-    }
-    .ids-tabela-wrap .header{
-      padding:18px 24px;
-      background: var(--bg-secondary);
-      border-bottom:1px solid var(--border-color);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-    .ids-tabela-wrap .header h3{
-      font-family:'Oswald', sans-serif;
-      font-size:18px;
-      text-transform:uppercase;
-      letter-spacing:.03em;
-      color: var(--text-primary);
-    }
-    .ids-tabela-wrap .header .badge{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
-      color: var(--text-primary);
-      background: var(--bg-white);
-      padding:6px 16px;
-      border:1px solid var(--border-color);
-      border-radius:4px;
-    }
-    .ids-tabela{overflow-x:auto; width:100%;}
-    .ids-tabela table{
-      width:100%;
-      font-size:15px;
-      border-collapse:collapse;
-      font-family:'IBM Plex Mono', monospace;
-    }
-    .ids-tabela table th{
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      padding:14px 18px;
-      text-align:left;
-      position:sticky;
-      top:0;
-      border-bottom:2px solid var(--border-color);
-      font-weight:600;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-    .ids-tabela table td{
-      padding:12px 18px;
-      border-bottom:1px solid var(--border-color);
-      color: var(--text-primary);
-      vertical-align:middle;
-    }
-    .ids-tabela table tr:hover td{background: var(--bg-secondary);}
-    .ids-tabela .status-badge{
-      display:inline-block;
-      padding:4px 14px;
-      border-radius:4px;
-      font-size:11px;
-      font-weight:600;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-    .ids-tabela .status-badge.justificado{background:var(--success); color:#fff;}
-    .ids-tabela .status-badge.pendente{background:var(--danger); color:#fff;}
-    .ids-tabela .status-badge.svc{background:var(--danger); color:#fff;}
-    .ids-tabela .status-badge.transp{background:var(--success); color:#fff;}
-    .btn-toggle{
-      padding:5px 12px;
-      font-size:11px;
+
+    .status-bar .info .dot-status.online {
       background: var(--success);
-      color:#fff;
-      border:none;
-      border-radius:4px;
-      cursor:pointer;
-      font-family:'Inter', sans-serif;
-      font-weight:600;
-      transition:all .2s;
     }
-    .btn-toggle:hover{opacity:.85;}
-    .btn-toggle.remover{background:var(--danger);}
-    .zona-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:2px;
-      background: rgba(255,255,255,0.35);
-      border:1px solid rgba(255,255,255,0.35);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
+
+    .status-bar .info .dot-status.offline {
+      background: var(--danger);
     }
-    .zona-card{
-      background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding:20px 22px;
-      transition:background .2s;
+
+    .status-bar .info .dot-status.loading {
+      background: var(--warning);
+      animation: pulse 1s infinite;
     }
-    .zona-card:hover{background: var(--bg-secondary);}
-    .zona-card .nome{
-      font-family:'Oswald', sans-serif;
-      font-size:20px;
-      font-weight:500;
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .btn {
+      padding: 10px 24px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border: none;
+      cursor: pointer;
+      transition: all .2s;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .btn-primary {
+      background: var(--info);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0D47A1;
+    }
+
+    .btn-cruzamento {
+      background: var(--cruzamento);
+      color: #fff;
+    }
+
+    .btn-cruzamento:hover {
+      background: #BF360C;
+    }
+
+    .btn-secondary {
+      background: transparent;
       color: var(--text-primary);
+      border: 1px solid var(--border-color);
     }
-    .zona-card .detalhes{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px 16px;
-      margin-top:10px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:14px;
-      color: var(--text-muted);
-    }
-    .zona-card .detalhes .total{color:var(--text-primary); font-weight:600;}
-    .zona-card .detalhes .inventariado{color:var(--success); font-weight:600;}
-    .zona-card .detalhes .faltante{color:var(--danger); font-weight:600;}
-    .zona-card .detalhes .intruso{color:var(--purple); font-weight:600;}
-    .zona-card .detalhes .svc{color:var(--danger); font-weight:600;}
-    .zona-card .detalhes .transp{color:var(--success); font-weight:600;}
-    .zona-card .barra{
-      margin-top:12px;
-      height:10px;
+
+    .btn-secondary:hover {
       background: var(--bg-secondary);
-      border-radius:4px;
-      overflow:hidden;
-      display:flex;
+      color: var(--text-primary);
     }
-    .zona-card .barra .fill-success{background:var(--success); height:100%; transition:width .8s ease;}
-    .zona-card .barra .fill-danger{background:var(--danger); height:100%; transition:width .8s ease;}
-    .zona-card .barra .fill-intruso{background:var(--purple); height:100%; transition:width .8s ease;}
-    .zona-card .status-labels{
-      display:flex;
-      justify-content:space-between;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
-      color: var(--text-muted);
-      margin-top:6px;
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
     }
-    .cruzamento-stats{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr 1fr;
-      gap:2px;
-      background: rgba(255,255,255,0.35);
-      border:1px solid rgba(255,255,255,0.35);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
+
+    .btn-success:hover {
+      background: #1B5E20;
     }
-    .cruzamento-stat{
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: #B71C1C;
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .kpi {
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      padding:24px;
-      text-align:center;
+      padding: 20px 20px 18px;
+      position: relative;
     }
-    .cruzamento-stat .num{
-      font-family:'Oswald', sans-serif;
-      font-size:40px;
-      font-weight:600;
-      color: var(--text-primary);
-    }
-    .cruzamento-stat .label{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+
+    .kpi .tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
       color: var(--text-muted);
-      margin-top:6px;
-      text-transform:uppercase;
-      letter-spacing:.04em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .cruzamento-stat .sub-label{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:11px;
+
+    .kpi .num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 38px;
+      font-weight: 600;
+      margin-top: 8px;
       color: var(--text-primary);
-      margin-top:4px;
     }
-    .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
-    .cruzamento-stat .num.success{color:var(--success);}
-    .cruzamento-stat .num.responsabilidade{color:var(--info);}
-    .cruzamento-transp-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr 1fr;
-      gap:2px;
-      background: rgba(255,255,255,0.35);
-      border:1px solid rgba(255,255,255,0.35);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
+
+    .kpi .pct {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
     }
-    .cruzamento-transp-card{
+
+    .kpi .sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .kpi.total {
+      background: var(--bg-panel);
+    }
+
+    .kpi.total .num {
+      font-size: 42px;
+    }
+
+    .kpi .num.success {
+      color: var(--success);
+    }
+
+    .kpi .num.danger {
+      color: var(--danger);
+    }
+
+    .kpi .num.warning {
+      color: var(--warning);
+    }
+
+    .kpi .num.info {
+      color: var(--info);
+    }
+
+    .kpi .num.purple {
+      color: var(--purple);
+    }
+
+    .kpi .num.cruzamento {
+      color: var(--cruzamento);
+    }
+
+    .kpi .num.svc {
+      color: var(--danger);
+    }
+
+    .kpi .num.transp {
+      color: var(--success);
+    }
+
+    @media (max-width:860px) {
+      .kpi-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width:480px) {
+      .kpi-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .chart-card {
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      padding:18px 20px;
-      transition:background .2s;
+      padding: 24px;
     }
-    .cruzamento-transp-card:hover{background: var(--bg-secondary);}
-    .cruzamento-transp-card .nome{
-      font-family:'Oswald', sans-serif;
-      font-size:17px;
-      font-weight:500;
-      color: var(--text-primary);
-    }
-    .cruzamento-transp-card .detalhes{
-      display:flex;
-      flex-wrap:wrap;
-      gap:4px 16px;
-      margin-top:8px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:14px;
+
+    .chart-card h3 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
       color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 18px;
     }
-    .cruzamento-transp-card .detalhes .qtd{color:var(--cruzamento); font-weight:600;}
-    .cruzamento-transp-card .detalhes .pct{color:var(--text-muted);}
-    .cruzamento-transp-card .detalhes .svc{color:var(--danger); font-weight:600;}
-    .cruzamento-transp-card .detalhes .transp{color:var(--success); font-weight:600;}
-    .cruzamento-tabela-wrap{
-      border:1px solid rgba(255,255,255,0.35);
+
+    .chart-card .chart-container {
+      height: 240px;
+      position: relative;
+    }
+
+    .transportadoras-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .transportadora-card {
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      margin-top:28px;
-      border-radius:6px;
-      overflow:hidden;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
+      padding: 20px 18px;
+      transition: background .2s;
+      cursor: pointer;
     }
-    .cruzamento-tabela-wrap .header{
-      padding:18px 24px;
+
+    .transportadora-card:hover {
       background: var(--bg-secondary);
-      border-bottom:1px solid var(--border-color);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:10px;
     }
-    .cruzamento-tabela-wrap .header h3{
-      font-family:'Oswald', sans-serif;
-      font-size:18px;
-      text-transform:uppercase;
-      letter-spacing:.03em;
+
+    .transportadora-card.blocked {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .transportadora-card.blocked:hover {
+      background: var(--bg-card);
+    }
+
+    .transportadora-card .nome {
+      font-family: 'Oswald', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
       color: var(--text-primary);
     }
-    .cruzamento-tabela-wrap .header .badge{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
+
+    .transportadora-card .detalhes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .transportadora-card .detalhes .qtd {
+      color: var(--warning);
+      font-weight: 600;
+    }
+
+    .transportadora-card .detalhes .valor {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .ids-tabela-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .ids-tabela-wrap .header {
+      padding: 18px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ids-tabela-wrap .header h3 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--text-primary);
+    }
+
+    .ids-tabela-wrap .header .badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
       color: var(--text-primary);
       background: var(--bg-white);
-      padding:6px 16px;
-      border:1px solid var(--border-color);
-      border-radius:4px;
+      padding: 6px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
     }
-    .cruzamento-tabela{overflow-x:auto; max-height:500px; overflow-y:auto;}
-    .cruzamento-tabela table{
-      width:100%;
-      font-size:15px;
-      border-collapse:collapse;
-      font-family:'IBM Plex Mono', monospace;
+
+    .ids-tabela {
+      overflow-x: auto;
+      width: 100%;
     }
-    .cruzamento-tabela table th{
+
+    .ids-tabela table {
+      width: 100%;
+      font-size: 15px;
+      border-collapse: collapse;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .ids-tabela table th {
       background: var(--bg-secondary);
       color: var(--text-primary);
-      padding:14px 18px;
-      text-align:left;
-      position:sticky;
-      top:0;
-      border-bottom:2px solid var(--border-color);
-      font-weight:600;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.04em;
+      padding: 14px 18px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      border-bottom: 2px solid var(--border-color);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
     }
-    .cruzamento-tabela table td{
-      padding:12px 18px;
-      border-bottom:1px solid var(--border-color);
+
+    .ids-tabela table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-color);
       color: var(--text-primary);
+      vertical-align: middle;
     }
-    .cruzamento-tabela table tr:hover td{background: var(--bg-secondary);}
-    .cruzamento-tabela .status-badge{
-      display:inline-block;
-      padding:4px 14px;
-      border-radius:4px;
-      font-size:11px;
-      font-weight:600;
-      text-transform:uppercase;
-      letter-spacing:.04em;
+
+    .ids-tabela table tr:hover td {
+      background: var(--bg-secondary);
     }
-    .cruzamento-tabela .status-badge.svc{background:var(--danger); color:#fff;}
-    .cruzamento-tabela .status-badge.transp{background:var(--success); color:#fff;}
-    .preview-box{
-      border:1px solid rgba(255,255,255,0.35);
+
+    .ids-tabela .status-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .ids-tabela .status-badge.justificado {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .ids-tabela .status-badge.pendente {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .ids-tabela .status-badge.svc {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .ids-tabela .status-badge.transp {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-toggle {
+      padding: 5px 12px;
+      font-size: 11px;
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      transition: all .2s;
+    }
+
+    .btn-toggle:hover {
+      opacity: .85;
+    }
+
+    .btn-toggle.remover {
+      background: var(--danger);
+    }
+
+    .zona-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .zona-card {
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      padding:16px;
-      min-height:100px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      max-height:260px;
-      overflow:auto;
-      margin-top:18px;
-      border-radius:6px;
-      box-shadow:0 4px 18px rgba(0,0,0,0.14);
+      padding: 20px 22px;
+      transition: background .2s;
     }
-    .preview-box .empty-message{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+
+    .zona-card:hover {
+      background: var(--bg-secondary);
+    }
+
+    .zona-card .nome {
+      font-family: 'Oswald', sans-serif;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .zona-card .detalhes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-top: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
       color: var(--text-muted);
-      text-align:center;
     }
-    .preview-box table{width:100%; font-size:12px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;}
-    .preview-box table th{background:var(--bg-secondary); color:var(--text-primary); padding:6px 8px; text-align:left; position:sticky; top:0; border-bottom:1px solid var(--border-color);}
-    .preview-box table td{padding:4px 8px; border-bottom:1px solid var(--border-color); color:var(--text-primary); white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;}
-    .preview-box table tr:hover td{background:var(--bg-secondary);}
-    .preview-box .col-destaque{background:var(--warning); color:var(--text-primary); font-weight:600;}
-    .badge{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
+
+    .zona-card .detalhes .total {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .zona-card .detalhes .inventariado {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .zona-card .detalhes .faltante {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .zona-card .detalhes .intruso {
+      color: var(--purple);
+      font-weight: 600;
+    }
+
+    .zona-card .detalhes .svc {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .zona-card .detalhes .transp {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .zona-card .barra {
+      margin-top: 12px;
+      height: 10px;
+      background: var(--bg-secondary);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .zona-card .barra .fill-success {
+      background: var(--success);
+      height: 100%;
+      transition: width .8s ease;
+    }
+
+    .zona-card .barra .fill-danger {
+      background: var(--danger);
+      height: 100%;
+      transition: width .8s ease;
+    }
+
+    .zona-card .barra .fill-intruso {
+      background: var(--purple);
+      height: 100%;
+      transition: width .8s ease;
+    }
+
+    .zona-card .status-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .cruzamento-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .cruzamento-stat {
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .cruzamento-stat .num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 40px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .cruzamento-stat .label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .cruzamento-stat .sub-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-primary);
+      margin-top: 4px;
+    }
+
+    .cruzamento-stat .num.cruzamento {
+      color: var(--cruzamento);
+    }
+
+    .cruzamento-stat .num.success {
+      color: var(--success);
+    }
+
+    .cruzamento-stat .num.responsabilidade {
+      color: var(--info);
+    }
+
+    .cruzamento-transp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .cruzamento-transp-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 18px 20px;
+      transition: background .2s;
+    }
+
+    .cruzamento-transp-card:hover {
+      background: var(--bg-secondary);
+    }
+
+    .cruzamento-transp-card .nome {
+      font-family: 'Oswald', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .cruzamento-transp-card .detalhes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      margin-top: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .cruzamento-transp-card .detalhes .qtd {
+      color: var(--cruzamento);
+      font-weight: 600;
+    }
+
+    .cruzamento-transp-card .detalhes .pct {
+      color: var(--text-muted);
+    }
+
+    .cruzamento-transp-card .detalhes .svc {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .cruzamento-transp-card .detalhes .transp {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .cruzamento-tabela-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      margin-top: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .cruzamento-tabela-wrap .header {
+      padding: 18px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cruzamento-tabela-wrap .header h3 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--text-primary);
+    }
+
+    .cruzamento-tabela-wrap .header .badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
       color: var(--text-primary);
       background: var(--bg-white);
-      padding:6px 16px;
-      border:1px solid var(--border-color);
-      border-radius:4px;
+      padding: 6px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
     }
-    .filter-float-btn{
-      position:fixed;
-      bottom:30px;
-      right:30px;
-      z-index:900;
-      padding:16px 28px;
+
+    .cruzamento-tabela {
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .cruzamento-tabela table {
+      width: 100%;
+      font-size: 15px;
+      border-collapse: collapse;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .cruzamento-tabela table th {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 14px 18px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      border-bottom: 2px solid var(--border-color);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .cruzamento-tabela table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .cruzamento-tabela table tr:hover td {
+      background: var(--bg-secondary);
+    }
+
+    .cruzamento-tabela .status-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .cruzamento-tabela .status-badge.svc {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .cruzamento-tabela .status-badge.transp {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .preview-box {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 16px;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      max-height: 260px;
+      overflow: auto;
+      margin-top: 18px;
+      border-radius: 6px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .preview-box .empty-message {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .preview-box table {
+      width: 100%;
+      font-size: 12px;
+      border-collapse: collapse;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .preview-box table th {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 6px 8px;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .preview-box table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+      white-space: nowrap;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preview-box table tr:hover td {
+      background: var(--bg-secondary);
+    }
+
+    .preview-box .col-destaque {
+      background: var(--warning);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+      background: var(--bg-white);
+      padding: 6px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    .filter-float-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 900;
+      padding: 16px 28px;
       background: var(--btn-gradient);
-      color:#fff;
-      border:none;
-      border-radius:50px;
-      font-family:'Oswald', sans-serif;
-      font-size:16px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      cursor:pointer;
-      box-shadow:0 4px 24px rgba(198,40,40,0.45);
-      transition:all .3s;
-      display:flex;
-      align-items:center;
-      gap:12px;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(198, 40, 40, 0.45);
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .filter-float-btn:hover{transform:scale(1.05); background: var(--btn-gradient-hover); box-shadow:0 6px 36px rgba(198,40,40,0.6);}
-    .filter-float-btn .badge-count{
-      background:rgba(255,255,255,0.25);
-      padding:4px 14px;
-      border-radius:20px;
-      font-size:14px;
+
+    .filter-float-btn:hover {
+      transform: scale(1.05);
+      background: var(--btn-gradient-hover);
+      box-shadow: 0 6px 36px rgba(198, 40, 40, 0.6);
     }
-    .filter-float-btn.hidden{display:none;}
-    .filter-modal-overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(15,42,92,0.88);
-      z-index:1001;
-      justify-content:center;
-      align-items:center;
-      padding:24px;
-      backdrop-filter:blur(6px);
+
+    .filter-float-btn .badge-count {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 14px;
     }
-    .filter-modal-overlay.active{display:flex;}
-    .filter-modal{
+
+    .filter-float-btn.hidden {
+      display: none;
+    }
+
+    .filter-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 42, 92, 0.88);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+    }
+
+    .filter-modal-overlay.active {
+      display: flex;
+    }
+
+    .filter-modal {
       background: var(--bg-white);
-      border:1px solid var(--border-color);
-      max-width:800px;
-      width:100%;
-      max-height:85vh;
-      display:flex;
-      flex-direction:column;
-      border-radius:10px;
-      box-shadow:0 8px 48px rgba(0,0,0,0.25);
+      border: 1px solid var(--border-color);
+      max-width: 800px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      box-shadow: 0 8px 48px rgba(0, 0, 0, 0.25);
     }
-    .filter-modal-header{
-      padding:20px 28px;
-      border-bottom:1px solid var(--border-color);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:10px;
+
+    .filter-modal-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
       background: var(--bg-secondary);
-      border-radius:10px 10px 0 0;
+      border-radius: 10px 10px 0 0;
     }
-    .filter-modal-header h2{font-family:'Oswald', sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);}
-    .filter-modal-header .close-btn{
-      background:transparent;
-      border:1px solid var(--border-color);
-      color:var(--text-primary);
-      width:36px;
-      height:36px;
-      font-size:20px;
-      cursor:pointer;
-      transition:all .2s;
-      border-radius:4px;
-    }
-    .filter-modal-header .close-btn:hover{border-color:var(--danger); color:var(--danger);}
-    .filter-modal-body{
-      padding:24px 28px;
-      overflow-y:auto;
-      flex:1;
-    }
-    .filter-modal-body .filter-info{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:14px;
-      margin-bottom:18px;
-      padding-bottom:14px;
-      border-bottom:1px solid var(--border-color);
-    }
-    .filter-modal-body .filter-info .counts{
-      display:flex;
-      gap:20px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:14px;
+
+    .filter-modal-header h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
       color: var(--text-primary);
     }
-    .filter-modal-body .filter-info .counts span{color:var(--text-primary); font-weight:600;}
-    .filter-modal-body .filter-actions{display:flex; gap:10px; flex-wrap:wrap;}
-    .filter-modal-body .filter-actions .btn-sm{
-      padding:6px 18px;
-      font-size:13px;
-      font-family:'Oswald', sans-serif;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      border:none;
-      cursor:pointer;
-      border-radius:4px;
-      font-weight:600;
-      transition:all .2s;
+
+    .filter-modal-header .close-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all .2s;
+      border-radius: 4px;
     }
-    .filter-modal-body .filter-actions .btn-sm:hover{opacity:.8;}
-    .filter-modal-body .filter-actions .btn-sm.btn-select-all{background:var(--success); color:#fff;}
-    .filter-modal-body .filter-actions .btn-sm.btn-clear-all{background:var(--danger); color:#fff;}
-    .filter-modal-body .transp-filter-container{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      max-height:320px;
-      overflow-y:auto;
-      padding:6px 0;
+
+    .filter-modal-header .close-btn:hover {
+      border-color: var(--danger);
+      color: var(--danger);
     }
-    .filter-modal-body .transp-filter-item{
-      display:flex;
-      align-items:center;
-      gap:6px;
+
+    .filter-modal-body {
+      padding: 24px 28px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .filter-modal-body .filter-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .filter-modal-body .filter-info .counts {
+      display: flex;
+      gap: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .filter-modal-body .filter-info .counts span {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .filter-modal-body .filter-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-modal-body .filter-actions .btn-sm {
+      padding: 6px 18px;
+      font-size: 13px;
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: all .2s;
+    }
+
+    .filter-modal-body .filter-actions .btn-sm:hover {
+      opacity: .8;
+    }
+
+    .filter-modal-body .filter-actions .btn-sm.btn-select-all {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .filter-modal-body .filter-actions .btn-sm.btn-clear-all {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .filter-modal-body .transp-filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    .filter-modal-body .transp-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       background: var(--bg-secondary);
-      padding:6px 14px 6px 10px;
-      border:1px solid var(--border-color);
-      border-radius:4px;
-      flex-wrap:wrap;
+      padding: 6px 14px 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      flex-wrap: wrap;
     }
-    .filter-modal-body .transp-filter-item .transp-nome{
-      font-family:'Inter', sans-serif;
-      font-size:13px;
+
+    .filter-modal-body .transp-filter-item .transp-nome {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
       color: var(--text-primary);
-      min-width:100px;
-      white-space:nowrap;
+      min-width: 100px;
+      white-space: nowrap;
     }
-    .filter-modal-body .transp-filter-item .filter-check-label{
-      display:flex;
-      align-items:center;
-      gap:4px;
-      font-size:12px;
+
+    .filter-modal-body .transp-filter-item .filter-check-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
       color: var(--text-primary);
-      cursor:pointer;
+      cursor: pointer;
     }
-    .filter-modal-body .transp-filter-item .filter-check-label input[type="checkbox"]{
-      width:16px;
-      height:16px;
-      cursor:pointer;
+
+    .filter-modal-body .transp-filter-item .filter-check-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
       accent-color: var(--accent);
     }
-    .filter-modal-body .transp-filter-item .filter-check-label.svc-label input[type="checkbox"]{accent-color: var(--danger);}
-    .filter-modal-body .transp-filter-item .filter-check-label.transp-label input[type="checkbox"]{accent-color: var(--success);}
-    .filter-modal-body .transp-filter-item .transp-count{
+
+    .filter-modal-body .transp-filter-item .filter-check-label.svc-label input[type="checkbox"] {
+      accent-color: var(--danger);
+    }
+
+    .filter-modal-body .transp-filter-item .filter-check-label.transp-label input[type="checkbox"] {
+      accent-color: var(--success);
+    }
+
+    .filter-modal-body .transp-filter-item .transp-count {
       color: var(--text-muted);
-      font-size:11px;
-      font-family:'IBM Plex Mono', monospace;
-      margin-left:4px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      margin-left: 4px;
     }
-    .filter-modal-footer{
-      padding:16px 28px;
-      border-top:1px solid var(--border-color);
-      display:flex;
-      justify-content:flex-end;
-      gap:12px;
-      flex-wrap:wrap;
+
+    .filter-modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
       background: var(--bg-secondary);
-      border-radius:0 0 10px 10px;
+      border-radius: 0 0 10px 10px;
     }
-    .filter-modal-footer .btn-apply{
+
+    .filter-modal-footer .btn-apply {
       background: var(--btn-gradient);
-      color:#fff;
-      border:none;
-      padding:10px 28px;
-      font-family:'Oswald', sans-serif;
-      font-size:15px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      cursor:pointer;
-      border-radius:4px;
-      font-weight:600;
-      transition:all .2s;
+      color: #fff;
+      border: none;
+      padding: 10px 28px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: all .2s;
     }
-    .filter-modal-footer .btn-apply:hover{background: var(--btn-gradient-hover);}
-    .modal-overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background:rgba(15,42,92,0.88);
-      z-index:1000;
-      justify-content:center;
-      align-items:center;
-      padding:24px;
-      backdrop-filter:blur(4px);
+
+    .filter-modal-footer .btn-apply:hover {
+      background: var(--btn-gradient-hover);
     }
-    .modal-overlay.active{display:flex;}
-    .modal{
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 42, 92, 0.88);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
       background: var(--bg-white);
-      border:1px solid var(--border-color);
-      max-width:1200px;
-      width:100%;
-      max-height:92vh;
-      display:flex;
-      flex-direction:column;
-      border-radius:6px;
-      box-shadow:0 8px 48px rgba(0,0,0,0.25);
+      border: 1px solid var(--border-color);
+      max-width: 1200px;
+      width: 100%;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 6px;
+      box-shadow: 0 8px 48px rgba(0, 0, 0, 0.25);
     }
-    .modal-header{
-      padding:20px 28px;
-      border-bottom:1px solid var(--border-color);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:10px;
+
+    .modal-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
       background: var(--bg-secondary);
     }
-    .modal-header h2{font-family:'Oswald', sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);}
-    .modal-header .close-btn{
-      background:transparent;
-      border:1px solid var(--border-color);
-      color:var(--text-primary);
-      width:36px;
-      height:36px;
-      font-size:20px;
-      cursor:pointer;
-      transition:all .2s;
-      border-radius:4px;
-    }
-    .modal-header .close-btn:hover{border-color:var(--danger); color:var(--danger);}
-    .filter-container{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-    .filter-container label{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+
+    .modal-header h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
       color: var(--text-primary);
-      text-transform:uppercase;
-      letter-spacing:.04em;
     }
-    .filter-container select{
-      padding:8px 14px;
+
+    .modal-header .close-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all .2s;
+      border-radius: 4px;
+    }
+
+    .modal-header .close-btn:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .filter-container {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .filter-container label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .filter-container select {
+      padding: 8px 14px;
       background: var(--bg-secondary);
       color: var(--text-primary);
-      border:1px solid var(--border-color);
-      border-radius:4px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
-      cursor:pointer;
-      outline:none;
-      min-width:220px;
-      max-width:400px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      min-width: 220px;
+      max-width: 400px;
     }
-    .filter-container select:hover{border-color:var(--text-primary);}
-    .filter-container select:focus{border-color:var(--accent);}
-    .filter-container select option{background:var(--bg-white); color:var(--text-primary);}
-    .filter-badge{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
+
+    .filter-container select:hover {
+      border-color: var(--text-primary);
+    }
+
+    .filter-container select:focus {
+      border-color: var(--accent);
+    }
+
+    .filter-container select option {
+      background: var(--bg-white);
+      color: var(--text-primary);
+    }
+
+    .filter-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
       color: var(--text-primary);
       background: var(--bg-white);
-      padding:4px 14px;
-      border:1px solid var(--border-color);
-      border-radius:4px;
+      padding: 4px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
     }
-    .modal-body{
-      padding:24px 28px;
-      overflow-y:auto;
-      flex:1;
+
+    .modal-body {
+      padding: 24px 28px;
+      overflow-y: auto;
+      flex: 1;
     }
-    .modal-body .stats{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:14px;
-      margin-bottom:18px;
+
+    .modal-body .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
     }
-    .modal-body .stats .stat{
+
+    .modal-body .stats .stat {
       background: var(--bg-secondary);
-      padding:14px 18px;
-      text-align:center;
-      border:1px solid var(--border-color);
-      border-radius:4px;
+      padding: 14px 18px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
     }
-    .modal-body .stats .stat .num{
-      font-family:'Oswald', sans-serif;
-      font-size:24px;
-      font-weight:600;
+
+    .modal-body .stats .stat .num {
+      font-family: 'Oswald', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
       color: var(--text-primary);
     }
-    .modal-body .stats .stat .lbl{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:11px;
+
+    .modal-body .stats .stat .lbl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
       color: var(--text-muted);
-      text-transform:uppercase;
-      letter-spacing:.06em;
+      text-transform: uppercase;
+      letter-spacing: .06em;
     }
-    .modal-body .ids-list{
+
+    .modal-body .ids-list {
       background: var(--bg-secondary);
-      border:1px solid var(--border-color);
-      padding:14px 18px;
-      max-height:420px;
-      overflow-y:auto;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:14px;
+      border: 1px solid var(--border-color);
+      padding: 14px 18px;
+      max-height: 420px;
+      overflow-y: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
       color: var(--text-primary);
     }
-    .modal-body .ids-list .id-item{
-      padding:8px 10px;
-      border-bottom:1px solid var(--border-color);
-      display:grid;
-      grid-template-columns:36px 36px 1fr 120px 180px 36px;
-      gap:8px;
-      align-items:center;
-      font-size:14px;
+
+    .modal-body .ids-list .id-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-color);
+      display: grid;
+      grid-template-columns: 36px 36px 1fr 120px 180px 36px;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
     }
-    .modal-body .ids-list .id-item:last-child{border-bottom:none;}
-    .modal-body .ids-list .id-item .id-checkbox{display:flex; align-items:center; justify-content:center;}
-    .modal-body .ids-list .id-item .id-checkbox input[type="checkbox"]{width:18px; height:18px; accent-color:var(--accent); cursor:pointer;}
-    .modal-body .ids-list .id-item .id-index{color:var(--text-muted); font-size:12px; text-align:right;}
-    .modal-body .ids-list .id-item .id-num{color:var(--text-primary); font-weight:500; letter-spacing:.5px; font-size:15px;}
-    .modal-body .ids-list .id-item .id-valor{color:var(--success); font-size:13px; font-weight:600; text-align:right;}
-    .modal-body .ids-list .id-item .id-motorista{color:var(--text-muted); font-size:12px; font-family:'Inter', sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .modal-body .ids-count{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
+
+    .modal-body .ids-list .id-item:last-child {
+      border-bottom: none;
+    }
+
+    .modal-body .ids-list .id-item .id-checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-body .ids-list .id-item .id-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .modal-body .ids-list .id-item .id-index {
       color: var(--text-muted);
-      margin-bottom:10px;
-      display:block;
+      font-size: 12px;
+      text-align: right;
     }
-    .selecao-bar{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:10px 14px;
+
+    .modal-body .ids-list .id-item .id-num {
+      color: var(--text-primary);
+      font-weight: 500;
+      letter-spacing: .5px;
+      font-size: 15px;
+    }
+
+    .modal-body .ids-list .id-item .id-valor {
+      color: var(--success);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .modal-body .ids-list .id-item .id-motorista {
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .modal-body .ids-count {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .selecao-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
       background: var(--bg-secondary);
-      border:1px solid var(--border-color);
-      border-radius:6px;
-      margin-bottom:14px;
-      flex-wrap:wrap;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
     }
-    .selecao-bar .info{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+
+    .selecao-bar .info {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
       color: var(--text-primary);
     }
-    .selecao-bar .info span{color:var(--text-primary); font-weight:600;}
-    .selecao-bar .btn-resposta{
+
+    .selecao-bar .info span {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .selecao-bar .btn-resposta {
       background: var(--cruzamento);
-      color:#fff;
-      border:none;
-      padding:8px 20px;
-      font-family:'Oswald', sans-serif;
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      cursor:pointer;
-      border-radius:4px;
-      font-weight:600;
-      transition:opacity .2s;
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: 600;
+      transition: opacity .2s;
     }
-    .selecao-bar .btn-resposta:hover{opacity:.8;}
-    .selecao-bar .btn-resposta:disabled{opacity:.4; cursor:not-allowed;}
-    .selecao-bar .btn-selecionar{
-      padding:6px 16px;
-      font-size:12px;
-      background:transparent;
-      color:var(--text-primary);
-      border:1px solid var(--border-color);
-      cursor:pointer;
-      border-radius:4px;
-      font-family:'Inter', sans-serif;
-      transition:all .2s;
+
+    .selecao-bar .btn-resposta:hover {
+      opacity: .8;
     }
-    .selecao-bar .btn-selecionar:hover{border-color:var(--text-primary); color:var(--text-primary);}
-    .btn-carregar-mais{
-      display:block;
-      width:100%;
-      padding:14px;
-      text-align:center;
-      background: var(--bg-secondary);
+
+    .selecao-bar .btn-resposta:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .selecao-bar .btn-selecionar {
+      padding: 6px 16px;
+      font-size: 12px;
+      background: transparent;
       color: var(--text-primary);
-      border:1px solid var(--border-color);
-      border-radius:6px;
-      cursor:pointer;
-      font-family:'Oswald', sans-serif;
-      font-size:15px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      transition:all .2s;
-      margin-top:10px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
     }
-    .btn-carregar-mais:hover{background: var(--bg-white); border-color: var(--text-primary);}
-    .modal-footer{
-      padding:16px 28px;
-      border-top:1px solid var(--border-color);
-      display:flex;
-      gap:12px;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-      background: var(--bg-secondary);
-    }
-    .modal-footer .btn-copy{
-      background: var(--info);
-      color:#fff;
-      border:none;
-      padding:10px 24px;
-      font-family:'Oswald', sans-serif;
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      cursor:pointer;
-      transition:opacity .2s;
-      font-weight:600;
-      border-radius:4px;
-    }
-    .modal-footer .btn-copy:hover{opacity:.8;}
-    .modal-footer .btn-copy.copied{background:var(--success);}
-    .modal-footer .btn-copy-all{
-      background:var(--warning);
-      color:#fff;
-      border:none;
-      padding:10px 24px;
-      font-family:'Oswald', sans-serif;
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:.06em;
-      cursor:pointer;
-      transition:opacity .2s;
-      font-weight:600;
-      border-radius:4px;
-    }
-    .modal-footer .btn-copy-all:hover{opacity:.8;}
-    .resposta-modal .modal{max-width:680px;}
-    .resposta-modal .modal-body .campo{margin-bottom:16px;}
-    .resposta-modal .modal-body .campo label{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
-      color: var(--text-primary);
-      display:block;
-      margin-bottom:6px;
-    }
-    .resposta-modal .modal-body .campo input,
-    .resposta-modal .modal-body .campo textarea{
-      width:100%;
-      padding:12px 16px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      border:1px solid var(--border-color);
-      border-radius:6px;
-      font-family:'Inter', sans-serif;
-      font-size:15px;
-      outline:none;
-      transition:border-color .2s;
-    }
-    .resposta-modal .modal-body .campo input:focus,
-    .resposta-modal .modal-body .campo textarea:focus{border-color: var(--accent);}
-    .resposta-modal .modal-body .campo textarea{resize:vertical; min-height:100px;}
-    .resposta-modal .modal-body .resumo-selecao{
-      background: var(--bg-secondary);
-      padding:16px;
-      border-radius:6px;
-      border:1px solid var(--border-color);
-      margin-bottom:18px;
-    }
-    .resposta-modal .modal-body .resumo-selecao .label{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+
+    .selecao-bar .btn-selecionar:hover {
+      border-color: var(--text-primary);
       color: var(--text-primary);
     }
-    .resposta-modal .modal-body .resumo-selecao .label span{color:var(--text-primary); font-weight:600;}
-    .resposta-modal .modal-body .resumo-selecao .ids-list{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
-      color: var(--text-muted);
-      max-height:70px;
-      overflow-y:auto;
-      margin-top:6px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
+
+    .btn-carregar-mais {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      text-align: center;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Oswald', sans-serif;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      transition: all .2s;
+      margin-top: 10px;
     }
-    .resposta-modal .modal-body .resumo-selecao .ids-list span{
+
+    .btn-carregar-mais:hover {
       background: var(--bg-white);
-      padding:4px 10px;
-      border-radius:4px;
-      border:1px solid var(--border-color);
+      border-color: var(--text-primary);
     }
-    .resposta-modal .modal-body .status-msg{
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
-      margin-top:14px;
-      min-height:24px;
+
+    .modal-footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      background: var(--bg-secondary);
     }
-    .resposta-modal .modal-body .status-msg.success{color:var(--success);}
-    .resposta-modal .modal-body .status-msg.error{color:var(--danger);}
-    .resposta-modal .modal-body .status-msg.loading{color:var(--warning);}
-    .no-data{color:var(--text-muted); font-family:'IBM Plex Mono', monospace; font-size:13px; text-align:center; padding:24px 0;}
-    .loading-spinner{display:flex; align-items:center; justify-content:center; gap:14px; padding:14px;}
-    .spinner{width:24px; height:24px; border:3px solid var(--border-color); border-top:3px solid var(--accent); border-radius:50%; animation:spin .8s linear infinite;}
-    @keyframes spin{0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
-    .debug-box{
+
+    .modal-footer .btn-copy {
+      background: var(--info);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      cursor: pointer;
+      transition: opacity .2s;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .modal-footer .btn-copy:hover {
+      opacity: .8;
+    }
+
+    .modal-footer .btn-copy.copied {
+      background: var(--success);
+    }
+
+    .modal-footer .btn-copy-all {
+      background: var(--warning);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      cursor: pointer;
+      transition: opacity .2s;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .modal-footer .btn-copy-all:hover {
+      opacity: .8;
+    }
+
+    .resposta-modal .modal {
+      max-width: 680px;
+    }
+
+    .resposta-modal .modal-body .campo {
+      margin-bottom: 16px;
+    }
+
+    .resposta-modal .modal-body .campo label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .resposta-modal .modal-body .campo input,
+    .resposta-modal .modal-body .campo textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .resposta-modal .modal-body .campo input:focus,
+    .resposta-modal .modal-body .campo textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .resposta-modal .modal-body .campo textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .resposta-modal .modal-body .resumo-selecao {
+      background: var(--bg-secondary);
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 18px;
+    }
+
+    .resposta-modal .modal-body .resumo-selecao .label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .resposta-modal .modal-body .resumo-selecao .label span {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .resposta-modal .modal-body .resumo-selecao .ids-list {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      max-height: 70px;
+      overflow-y: auto;
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .resposta-modal .modal-body .resumo-selecao .ids-list span {
+      background: var(--bg-white);
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .resposta-modal .modal-body .status-msg {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      margin-top: 14px;
+      min-height: 24px;
+    }
+
+    .resposta-modal .modal-body .status-msg.success {
+      color: var(--success);
+    }
+
+    .resposta-modal .modal-body .status-msg.error {
+      color: var(--danger);
+    }
+
+    .resposta-modal .modal-body .status-msg.loading {
+      color: var(--warning);
+    }
+
+    .no-data {
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-color);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .debug-box {
       background: var(--bg-card);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border:1px solid rgba(255,255,255,0.35);
-      padding:14px 18px;
-      margin-top:14px;
-      border-radius:6px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding: 14px 18px;
+      margin-top: 14px;
+      border-radius: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
       color: var(--text-primary);
-      max-height:220px;
-      overflow-y:auto;
+      max-height: 220px;
+      overflow-y: auto;
     }
-    .debug-box .debug-item{padding:4px 0; border-bottom:1px solid var(--border-color);}
-    .debug-box .debug-item .key{color:var(--text-primary); font-weight:600;}
-    .debug-box .debug-item .value{color:var(--text-muted);}
-    footer{
-      margin-top:60px;
-      padding-top:20px;
-      border-top:2px solid rgba(255,255,255,0.35);
-      display:flex;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      gap:10px;
-      font-family:'IBM Plex Mono', monospace;
-      font-size:12px;
+
+    .debug-box .debug-item {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .debug-box .debug-item .key {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .debug-box .debug-item .value {
+      color: var(--text-muted);
+    }
+
+    footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 2px solid rgba(255, 255, 255, 0.35);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
       color: var(--text-on-blue);
-      opacity:1;
-      letter-spacing:.04em;
-      text-shadow:0 1px 3px rgba(0,0,0,0.3);
+      opacity: 1;
+      letter-spacing: .04em;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
-    footer span{
-      background:rgba(15,42,92,0.45);
-      padding:6px 14px;
-      border-radius:6px;
-      backdrop-filter:blur(4px);
+
+    footer span {
+      background: rgba(15, 42, 92, 0.45);
+      padding: 6px 14px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
     }
-    .role-badge{
-      margin-left:12px;
-      padding:4px 16px;
-      border-radius:16px;
-      font-size:12px;
-      font-weight:bold;
-      text-transform:uppercase;
-      letter-spacing:0.04em;
-      display:inline-block;
+
+    .role-badge {
+      margin-left: 12px;
+      padding: 4px 16px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: inline-block;
     }
-    .role-badge.admin{background:var(--success); color:#fff;}
-    .role-badge.assist-adm{background:var(--cruzamento); color:#fff;}
-    .role-badge.editor{background:var(--warning); color:#fff;}
-    .role-badge.viewer{background:var(--text-muted); color:#fff;}
-    .filter-info-transp{
+
+    .role-badge.admin {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .role-badge.assist-adm {
+      background: var(--cruzamento);
+      color: #fff;
+    }
+
+    .role-badge.editor {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .role-badge.viewer {
+      background: var(--text-muted);
+      color: #fff;
+    }
+
+    .filter-info-transp {
       background: var(--bg-secondary);
-      border-left:4px solid var(--cruzamento);
-      padding:8px 16px;
-      border-radius:4px;font-family:'IBM Plex Mono', monospace;
-      font-size:13px;
+      border-left: 4px solid var(--cruzamento);
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
       color: var(--text-primary);
-      display:inline-block;
-      margin-left:10px;
+      display: inline-block;
+      margin-left: 10px;
     }
-    .filter-info-transp strong{color:var(--text-primary);}
-    .record-count{
+
+    .filter-info-transp strong {
       color: var(--text-primary);
     }
+
+    .record-count {
+      color: var(--text-primary);
+    }
+
     .status-bar .info #recordCountPacotes,
     .status-bar .info #recordCountInventario,
     .status-bar .info #recordCountCruzamento,
-    .status-bar .info #recordCountRespostas{
+    .status-bar .info #recordCountRespostas {
       color: var(--text-primary);
     }
-    .preview-box .empty-message .loading-spinner span{
+
+    .preview-box .empty-message .loading-spinner span {
       color: var(--text-primary);
     }
-    @media (max-width:860px){
-      .kpi-strip{grid-template-columns:repeat(3,1fr);}
-      .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
-      .cruzamento-stats{grid-template-columns:1fr 1fr;}
-      .cruzamento-transp-grid{grid-template-columns:1fr 1fr;}
-      .charts-grid{grid-template-columns:1fr;}
-      .transportadoras-grid{grid-template-columns:1fr 1fr;}
-      .zona-grid{grid-template-columns:1fr 1fr;}
-      .modal-body .stats{grid-template-columns:1fr;}
-      .modal{max-width:95%;}
-      .filter-container select{min-width:160px; max-width:260px;}
-      .modal-body .ids-list .id-item{
-        grid-template-columns:28px 28px 1fr 90px 120px 28px;
-        gap:6px;
-        font-size:12px;
+
+    @media (max-width:860px) {
+      .kpi-strip {
+        grid-template-columns: repeat(3, 1fr);
       }
-      .filter-modal-body .transp-filter-item .transp-nome{min-width:90px; font-size:12px;}
-      .filter-float-btn{padding:14px 22px; font-size:14px; bottom:24px; right:24px;}
-      .brand-bar{flex-direction:column; align-items:flex-start; gap:14px;}
+
+      .kpi-strip.kpi-5 {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      .cruzamento-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .cruzamento-transp-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .transportadoras-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .zona-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .modal-body .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .modal {
+        max-width: 95%;
+      }
+
+      .filter-container select {
+        min-width: 160px;
+        max-width: 260px;
+      }
+
+      .modal-body .ids-list .id-item {
+        grid-template-columns: 28px 28px 1fr 90px 120px 28px;
+        gap: 6px;
+        font-size: 12px;
+      }
+
+      .filter-modal-body .transp-filter-item .transp-nome {
+        min-width: 90px;
+        font-size: 12px;
+      }
+
+      .filter-float-btn {
+        padding: 14px 22px;
+        font-size: 14px;
+        bottom: 24px;
+        right: 24px;
+      }
+
+      .brand-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
     }
-    @media (max-width:480px){
-      .kpi-strip{grid-template-columns:1fr 1fr;}
-      .kpi-strip.kpi-5{grid-template-columns:1fr;}
-      .cruzamento-stats{grid-template-columns:1fr;}
-      .cruzamento-transp-grid{grid-template-columns:1fr;}
-      .transportadoras-grid{grid-template-columns:1fr;}
-      .zona-grid{grid-template-columns:1fr;}
-      .tab-btn{font-size:14px; padding:12px 14px;}
-      .filter-container select{min-width:130px; max-width:200px;}
-      .modal-body .ids-list .id-item{
-        grid-template-columns:22px 22px 1fr 70px 1fr 22px;
-        gap:4px;
-        font-size:10px;
-        padding:6px 4px;
+
+    @media (max-width:480px) {
+      .kpi-strip {
+        grid-template-columns: 1fr 1fr;
       }
-      .modal-body .ids-list .id-item .id-num{font-size:11px;}
-      .modal-body .ids-list .id-item .id-valor{font-size:10px;}
-      .modal-body .ids-list .id-item .id-motorista{font-size:9px;}
-      .filter-modal-body .transp-filter-item{flex-wrap:wrap; padding:6px 8px;}
-      .filter-modal-body .transp-filter-item .transp-nome{min-width:70px; font-size:10px;}
-      .filter-float-btn{padding:12px 18px; font-size:13px; bottom:16px; right:16px; gap:8px;}
-      .filter-float-btn .badge-count{font-size:11px; padding:2px 10px;}
-      .filter-modal{max-width:100%; max-height:92vh;}
-      .selecao-bar{gap:8px; padding:8px 12px;}
-      .selecao-bar .info{font-size:11px;}
-      .selecao-bar .btn-resposta{font-size:11px; padding:6px 14px;}
-      .resposta-modal .modal{max-width:100%;}
-      .logo-id .logo-id-main{font-size:24px;}
-      .logo-meli .meli-text{font-size:15px;}
+
+      .kpi-strip.kpi-5 {
+        grid-template-columns: 1fr;
+      }
+
+      .cruzamento-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .cruzamento-transp-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .transportadoras-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .zona-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tab-btn {
+        font-size: 14px;
+        padding: 12px 14px;
+      }
+
+      .filter-container select {
+        min-width: 130px;
+        max-width: 200px;
+      }
+
+      .modal-body .ids-list .id-item {
+        grid-template-columns: 22px 22px 1fr 70px 1fr 22px;
+        gap: 4px;
+        font-size: 10px;
+        padding: 6px 4px;
+      }
+
+      .modal-body .ids-list .id-item .id-num {
+        font-size: 11px;
+      }
+
+      .modal-body .ids-list .id-item .id-valor {
+        font-size: 10px;
+      }
+
+      .modal-body .ids-list .id-item .id-motorista {
+        font-size: 9px;
+      }
+
+      .filter-modal-body .transp-filter-item {
+        flex-wrap: wrap;
+        padding: 6px 8px;
+      }
+
+      .filter-modal-body .transp-filter-item .transp-nome {
+        min-width: 70px;
+        font-size: 10px;
+      }
+
+      .filter-float-btn {
+        padding: 12px 18px;
+        font-size: 13px;
+        bottom: 16px;
+        right: 16px;
+        gap: 8px;
+      }
+
+      .filter-float-btn .badge-count {
+        font-size: 11px;
+        padding: 2px 10px;
+      }
+
+      .filter-modal {
+        max-width: 100%;
+        max-height: 92vh;
+      }
+
+      .selecao-bar {
+        gap: 8px;
+        padding: 8px 12px;
+      }
+
+      .selecao-bar .info {
+        font-size: 11px;
+      }
+
+      .selecao-bar .btn-resposta {
+        font-size: 11px;
+        padding: 6px 14px;
+      }
+
+      .resposta-modal .modal {
+        max-width: 100%;
+      }
+
+      .logo-id .logo-id-main {
+        font-size: 24px;
+      }
+
+      .logo-meli .meli-text {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="masthead">
-    <div class="brand-bar">
-      <a class="logo-id" href="#" title="ID Logistics">
-        <span class="logo-id-main">ID<span class="arrow">↗</span></span>
-        <span class="logo-id-sub">LOGISTICS</span>
-      </a>
-      <a class="logo-meli" href="#" title="Mercado Livre">
-        <span class="handshake">🤝</span>
-        <span class="meli-text">mercado<small>livre</small></span>
-      </a>
+  <div class="wrap">
+    <div class="masthead">
+      <div class="brand-bar">
+        <a class="logo-id" href="#" title="ID Logistics">
+          <span class="logo-id-main">ID<span class="arrow">↗</span></span>
+          <span class="logo-id-sub">LOGISTICS</span>
+        </a>
+        <a class="logo-meli" href="#" title="Mercado Livre">
+          <span class="handshake">🤝</span>
+          <span class="meli-text">mercado<small>livre</small></span>
+        </a>
+      </div>
+      <div class="eyebrow"><span class="dot"></span>WMS DASHBOARD</div>
+      <h1>Análise de Pacotes Pendentes & Inventário</h1>
+      <p>Dashboards integrados para análise de <b>pacotes pendentes por transportadora</b>, <b>status do inventário por
+          zona</b> e <b>cruzamento</b> entre as duas bases.</p>
     </div>
-    <div class="eyebrow"><span class="dot"></span>WMS DASHBOARD</div>
-    <h1>Análise de Pacotes Pendentes & Inventário</h1>
-    <p>Dashboards integrados para análise de <b>pacotes pendentes por transportadora</b>, <b>status do inventário por zona</b> e <b>cruzamento</b> entre as duas bases.</p>
-  </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes</button>
-    <button class="tab-btn" data-tab="tabInventario">📊 Inventário</button>
-    <button class="tab-btn tab-cruzamento" data-tab="tabCruzamento">🔗 Cruzamento</button>
-    <button class="tab-btn tab-respostas" data-tab="tabRespostas">📝 Respostas</button>
-    <button class="tab-btn tab-admin" data-tab="tabAdmin" style="display:none;">👑 Admin</button>
-  </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tabPacotes">📦 Pacotes</button>
+      <button class="tab-btn" data-tab="tabInventario">📊 Inventário</button>
+      <button class="tab-btn tab-cruzamento" data-tab="tabCruzamento">🔗 Cruzamento</button>
+      <button class="tab-btn tab-respostas" data-tab="tabRespostas">📝 Respostas</button>
+      <button class="tab-btn tab-admin" data-tab="tabAdmin" style="display:none;">👑 Admin</button>
+    </div>
 
-  <!-- TAB PACOTES -->
-  <div class="tab-content active" id="tabPacotes">
-    <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotPacotes"></span><span id="statusTextPacotes">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountPacotes" style="color:var(--text-primary);"></span><span id="roleBadgeContainer"></span><span id="filterInfoTransp" class="filter-info-transp" style="display:none;"></span></div>
-      <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
-    </div>
-    <div class="preview-box" id="previewPacotes"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
-    <div class="debug-box" id="debugPacotes"><div style="color:var(--text-primary);">Aguardando autenticação...</div></div>
-    <div class="kpi-strip" id="kpiStripPacotes"></div>
-    <div class="charts-grid">
-      <div class="chart-card"><h3>📊 Pacotes por Transportadora</h3><div class="chart-container"><canvas id="chartQuantidade"></canvas></div></div>
-      <div class="chart-card"><h3>💰 Valor Total por Transportadora</h3><div class="chart-container"><canvas id="chartValor"></canvas></div></div>
-    </div>
-    <div style="margin-top:32px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);" id="tituloSecaoTransportadoras">🚚 Transportadoras</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);" id="legendaSecaoTransportadoras">Clique em uma transportadora para ver os IDs</span>
+    <!-- TAB PACOTES -->
+    <div class="tab-content active" id="tabPacotes">
+      <div class="status-bar">
+        <div class="info"><span class="dot-status loading" id="statusDotPacotes"></span><span id="statusTextPacotes">🔑
+            Clique em "Login" para acessar os dados</span><span id="recordCountPacotes"
+            style="color:var(--text-primary);"></span><span id="roleBadgeContainer"></span><span id="filterInfoTransp"
+            class="filter-info-transp" style="display:none;"></span></div>
+        <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
       </div>
-      <div id="containerTransportadoras"></div>
+      <div class="preview-box" id="previewPacotes">
+        <div class="empty-message">
+          <div class="loading-spinner">
+            <div class="spinner"></div><span>Aguardando autenticação...</span>
+          </div>
+        </div>
+      </div>
+      <div class="debug-box" id="debugPacotes">
+        <div style="color:var(--text-primary);">Aguardando autenticação...</div>
+      </div>
+      <div class="kpi-strip" id="kpiStripPacotes"></div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>📊 Pacotes por Transportadora</h3>
+          <div class="chart-container"><canvas id="chartQuantidade"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>💰 Valor Total por Transportadora</h3>
+          <div class="chart-container"><canvas id="chartValor"></canvas></div>
+        </div>
+      </div>
+      <div style="margin-top:32px;">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+          <h2
+            style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);"
+            id="tituloSecaoTransportadoras">🚚 Transportadoras</h2>
+          <span
+            style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);"
+            id="legendaSecaoTransportadoras">Clique em uma transportadora para ver os IDs</span>
+        </div>
+        <div id="containerTransportadoras"></div>
+      </div>
+      <footer><span>FONTE — ANÁLISES DE INVENTÁRIO PEDRO SMG10</span><span id="footerTotalPacotes">0 registros</span>
+      </footer>
     </div>
-    <footer><span>FONTE — ANÁLISES DE INVENTÁRIO PEDRO SMG10</span><span id="footerTotalPacotes">0 registros</span></footer>
-  </div>
 
-  <!-- TAB INVENTÁRIO -->
-  <div class="tab-content" id="tabInventario">
-    <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotInventario"></span><span id="statusTextInventario">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountInventario" style="color:var(--text-primary);"></span><span id="roleBadgeContainerInventario"></span></div>
-      <button class="btn btn-primary" id="refreshInventario">🔄 Atualizar</button>
-    </div>
-    <div class="preview-box" id="previewInventario"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
-    <div class="debug-box" id="debugInventario"><div style="color:var(--text-primary);">Aguardando autenticação...</div></div>
-    <div class="kpi-strip" id="kpiStripInventario"></div>
-    <div class="charts-grid">
-      <div class="chart-card"><h3>📊 Status por Zona</h3><div class="chart-container"><canvas id="chartZona"></canvas></div></div>
-      <div class="chart-card"><h3>📊 Visão Geral do Inventário</h3><div class="chart-container"><canvas id="chartOverview"></canvas></div></div>
-    </div>
-    <div style="margin-top:32px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);">📍 Zonas</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Status de inventário por zona</span>
+    <!-- TAB INVENTÁRIO -->
+    <div class="tab-content" id="tabInventario">
+      <div class="status-bar">
+        <div class="info"><span class="dot-status loading" id="statusDotInventario"></span><span
+            id="statusTextInventario">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountInventario"
+            style="color:var(--text-primary);"></span><span id="roleBadgeContainerInventario"></span></div>
+        <button class="btn btn-primary" id="refreshInventario">🔄 Atualizar</button>
       </div>
-      <div class="zona-grid" id="zonaGrid"></div>
+      <div class="preview-box" id="previewInventario">
+        <div class="empty-message">
+          <div class="loading-spinner">
+            <div class="spinner"></div><span>Aguardando autenticação...</span>
+          </div>
+        </div>
+      </div>
+      <div class="debug-box" id="debugInventario">
+        <div style="color:var(--text-primary);">Aguardando autenticação...</div>
+      </div>
+      <div class="kpi-strip" id="kpiStripInventario"></div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>📊 Status por Zona</h3>
+          <div class="chart-container"><canvas id="chartZona"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>📊 Visão Geral do Inventário</h3>
+          <div class="chart-container"><canvas id="chartOverview"></canvas></div>
+        </div>
+      </div>
+      <div style="margin-top:32px;">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+          <h2
+            style="font-family:'Oswald',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);">
+            📍 Zonas</h2>
+          <span
+            style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Status
+            de inventário por zona</span>
+        </div>
+        <div class="zona-grid" id="zonaGrid"></div>
+      </div>
+      <footer><span>FONTE — PLANILHA GOOGLE SHEETS (INVENTÁRIO)</span><span id="footerTotalInventario">0
+          registros</span></footer>
     </div>
-    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (INVENTÁRIO)</span><span id="footerTotalInventario">0 registros</span></footer>
-  </div>
 
-  <!-- TAB CRUZAMENTO -->
-  <div class="tab-content" id="tabCruzamento">
-    <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotCruzamento"></span><span id="statusTextCruzamento">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountCruzamento" style="color:var(--text-primary);"></span><span id="roleBadgeContainerCruzamento"></span></div>
-      <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
-    </div>
-    <div class="cruzamento-stats" id="cruzamentoStats">
-      <div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 pacotes</div></div>
-      <div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 pacotes</div></div>
-      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">0</div><div class="label">🔴 SVC (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
-      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">0</div><div class="label">🟢 Transportadora (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div>
-    </div>
-    <div style="margin-top:28px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
-        <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);">🚚 Total por Transportadora (Em Ambos)</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Pacotes que estão com transportadora E faltantes no inventário</span>
+    <!-- TAB CRUZAMENTO -->
+    <div class="tab-content" id="tabCruzamento">
+      <div class="status-bar">
+        <div class="info"><span class="dot-status loading" id="statusDotCruzamento"></span><span
+            id="statusTextCruzamento">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountCruzamento"
+            style="color:var(--text-primary);"></span><span id="roleBadgeContainerCruzamento"></span></div>
+        <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
       </div>
-      <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid"><div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;background:var(--bg-card);">Aguardando autenticação...</div></div>
+      <div class="cruzamento-stats" id="cruzamentoStats">
+        <div class="cruzamento-stat">
+          <div class="num">0</div>
+          <div class="label">📦 Total com Transportadora</div>
+          <div class="sub-label">0 pacotes</div>
+        </div>
+        <div class="cruzamento-stat">
+          <div class="num">0</div>
+          <div class="label">❌ Total Faltantes no Inventário</div>
+          <div class="sub-label">0 pacotes</div>
+        </div>
+        <div class="cruzamento-stat">
+          <div class="num cruzamento" style="font-size:36px;">0</div>
+          <div class="label">🔴 SVC (Filtrado)</div>
+          <div class="sub-label">0 transportadoras selecionadas</div>
+        </div>
+        <div class="cruzamento-stat">
+          <div class="num responsabilidade" style="font-size:36px;">0</div>
+          <div class="label">🟢 Transportadora (Filtrado)</div>
+          <div class="sub-label">0 transportadoras selecionadas</div>
+        </div>
+      </div>
+      <div style="margin-top:28px;">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.35);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+          <h2
+            style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.35);">
+            🚚 Total por Transportadora (Em Ambos)</h2>
+          <span
+            style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#FFFFFF;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Pacotes
+            que estão com transportadora E faltantes no inventário</span>
+        </div>
+        <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid">
+          <div
+            style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;background:var(--bg-card);">
+            Aguardando autenticação...</div>
+        </div>
+      </div>
+      <div class="cruzamento-tabela-wrap">
+        <div class="header">
+          <h3 id="cruzamentoTitulo">🔗 Detalhamento dos Pacotes</h3><span class="badge" id="cruzamentoCount">0
+            registros</span>
+        </div>
+        <div class="cruzamento-tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>ID do Envio</th>
+                <th>Transportadora</th>
+                <th>Status Inventário</th>
+                <th>Zona</th>
+                <th>Classificação</th>
+              </tr>
+            </thead>
+            <tbody id="cruzamentoTbody">
+              <tr>
+                <td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Aguardando
+                  autenticação...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span>
+      </footer>
     </div>
-    <div class="cruzamento-tabela-wrap">
-      <div class="header"><h3 id="cruzamentoTitulo">🔗 Detalhamento dos Pacotes</h3><span class="badge" id="cruzamentoCount">0 registros</span></div>
-      <div class="cruzamento-tabela"><table><thead><tr><th>ID do Envio</th><th>Transportadora</th><th>Status Inventário</th><th>Zona</th><th>Classificação</th></tr></thead><tbody id="cruzamentoTbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:36px;">Aguardando autenticação...</td></tr></tbody></table></div>
-    </div>
-    <footer><span>FONTE — CRUZAMENTO Página1 × INVENTÁRIO</span><span id="footerTotalCruzamento">0 registros</span></footer>
-  </div>
 
-  <!-- TAB RESPOSTAS -->
-  <div class="tab-content" id="tabRespostas">
-    <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotRespostas"></span><span id="statusTextRespostas">📥 Carregando respostas...</span><span id="recordCountRespostas" style="color:var(--text-primary);"></span><span id="roleBadgeContainerRespostas"></span></div>
-      <button class="btn btn-primary" id="refreshRespostas">🔄 Atualizar</button>
-    </div>
-    <div style="display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; background:var(--bg-card); backdrop-filter:blur(8px); padding:14px 20px; border:1px solid rgba(255,255,255,0.35); border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,0.14);">
-      <div><label style="font-size:13px; color:var(--text-primary);">🔍 Filtrar por:</label><select id="filtroRespostasTransportadora" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"><option value="TODAS">Todas transportadoras</option></select></div>
-      <div><label style="font-size:13px; color:var(--text-primary);">👤 Responsável:</label><input type="text" id="filtroRespostasResponsavel" placeholder="Nome..." style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px; width:160px;"></div>
-      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data inicial:</label><input type="date" id="filtroRespostasDataInicio" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
-      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date" id="filtroRespostasDataFim" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
-      <button class="btn btn-success" id="btnFiltrarRespostas" style="padding:6px 20px; font-size:13px;">✅ Filtrar</button>
-      <button class="btn btn-danger" id="btnLimparFiltrosRespostas" style="padding:6px 20px; font-size:13px;">❌ Limpar</button>
-      <button class="btn btn-cruzamento" id="btnExportarRespostas" style="padding:6px 20px; font-size:13px;">📤 Exportar CSV</button>
-    </div>
-    <div class="ids-tabela-wrap">
-      <div class="header"><h3>📋 Histórico de Respostas</h3><span class="badge" id="respostasCount">0 registros</span></div>
-      <div class="ids-tabela">
-        <table>
-          <thead><tr><th>#</th><th>ID do Envio</th><th>Transportadora</th><th>Motorista</th><th>Responsável</th><th>Justificativa</th><th>Data/Hora</th></tr></thead>
-          <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:36px;">Carregando respostas...</td></tr></tbody>
-        </table>
+    <!-- TAB RESPOSTAS -->
+    <div class="tab-content" id="tabRespostas">
+      <div class="status-bar">
+        <div class="info"><span class="dot-status loading" id="statusDotRespostas"></span><span
+            id="statusTextRespostas">📥 Carregando respostas...</span><span id="recordCountRespostas"
+            style="color:var(--text-primary);"></span><span id="roleBadgeContainerRespostas"></span></div>
+        <button class="btn btn-primary" id="refreshRespostas">🔄 Atualizar</button>
       </div>
+      <div
+        style="display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; background:var(--bg-card); backdrop-filter:blur(8px); padding:14px 20px; border:1px solid rgba(255,255,255,0.35); border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,0.14);">
+        <div><label style="font-size:13px; color:var(--text-primary);">🔍 Filtrar por:</label><select
+            id="filtroRespostasTransportadora"
+            style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;">
+            <option value="TODAS">Todas transportadoras</option>
+          </select></div>
+        <div><label style="font-size:13px; color:var(--text-primary);">👤 Responsável:</label><input type="text"
+            id="filtroRespostasResponsavel" placeholder="Nome..."
+            style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px; width:160px;">
+        </div>
+        <div><label style="font-size:13px; color:var(--text-primary);">📅 Data inicial:</label><input type="date"
+            id="filtroRespostasDataInicio"
+            style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;">
+        </div>
+        <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date"
+            id="filtroRespostasDataFim"
+            style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;">
+        </div>
+        <button class="btn btn-success" id="btnFiltrarRespostas" style="padding:6px 20px; font-size:13px;">✅
+          Filtrar</button>
+        <button class="btn btn-danger" id="btnLimparFiltrosRespostas" style="padding:6px 20px; font-size:13px;">❌
+          Limpar</button>
+        <button class="btn btn-cruzamento" id="btnExportarRespostas" style="padding:6px 20px; font-size:13px;">📤
+          Exportar CSV</button>
+      </div>
+      <div class="ids-tabela-wrap">
+        <div class="header">
+          <h3>📋 Histórico de Respostas</h3><span class="badge" id="respostasCount">0 registros</span>
+        </div>
+        <div class="ids-tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID do Envio</th>
+                <th>Transportadora</th>
+                <th>Motorista</th>
+                <th>Responsável</th>
+                <th>Justificativa</th>
+                <th>Data/Hora</th>
+              </tr>
+            </thead>
+            <tbody id="respostasTbody">
+              <tr>
+                <td colspan="7" style="text-align:center; color:var(--text-muted); padding:36px;">Carregando
+                  respostas...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <footer><span>FONTE — PLANILHA GOOGLE SHEETS (RESPOSTAS)</span><span id="footerTotalRespostas">0 registros</span>
+      </footer>
     </div>
-    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (RESPOSTAS)</span><span id="footerTotalRespostas">0 registros</span></footer>
-  </div>
 
-  <!-- TAB ADMIN -->
-  <div class="tab-content" id="tabAdmin">
-    <div class="status-bar">
-      <div class="info"><span class="dot-status online" id="statusDotAdmin"></span><span id="statusTextAdmin">👑 Gerenciamento de Usuários</span></div>
-      <button class="btn btn-primary" id="refreshAdmin">🔄 Atualizar</button>
-    </div>
-    <div style="margin-top:24px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
-        <h3 style="font-family:'Oswald',sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);">📋 Lista de Usuários</h3>
-        <button class="btn btn-primary" id="btnAdicionarUsuario" style="background:var(--success);">➕ Adicionar Usuário</button>
+    <!-- TAB ADMIN -->
+    <div class="tab-content" id="tabAdmin">
+      <div class="status-bar">
+        <div class="info"><span class="dot-status online" id="statusDotAdmin"></span><span id="statusTextAdmin">👑
+            Gerenciamento de Usuários</span></div>
+        <button class="btn btn-primary" id="refreshAdmin">🔄 Atualizar</button>
       </div>
-      <div style="overflow-x:auto; background:var(--bg-card); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.35); border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,0.14);">
-        <table style="width:100%; font-size:14px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;">
-          <thead><tr style="background:var(--bg-secondary); color:var(--text-primary);"><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">E-mail</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Role</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Transportadora</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Ações</th></tr></thead>
-          <tbody id="adminUsuariosTbody"><tr><td colspan="4" style="text-align:center; padding:36px; color:var(--text-muted);">Carregando...</td></tr></tbody>
-        </table>
+      <div style="margin-top:24px;">
+        <div
+          style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+          <h3
+            style="font-family:'Oswald',sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-primary);">
+            📋 Lista de Usuários</h3>
+          <button class="btn btn-primary" id="btnAdicionarUsuario" style="background:var(--success);">➕ Adicionar
+            Usuário</button>
+        </div>
+        <div
+          style="overflow-x:auto; background:var(--bg-card); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.35); border-radius:6px; box-shadow:0 4px 18px rgba(0,0,0,0.14);">
+          <table style="width:100%; font-size:14px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;">
+            <thead>
+              <tr style="background:var(--bg-secondary); color:var(--text-primary);">
+                <th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">E-mail</th>
+                <th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Role</th>
+                <th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">
+                  Transportadora</th>
+                <th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsuariosTbody">
+              <tr>
+                <td colspan="4" style="text-align:center; padding:36px; color:var(--text-muted);">Carregando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+      <footer><span>FONTE — PLANILHA GOOGLE SHEETS (USUARIOS)</span><span id="footerTotalAdmin">0 usuários</span>
+      </footer>
     </div>
-    <footer><span>FONTE — PLANILHA GOOGLE SHEETS (USUARIOS)</span><span id="footerTotalAdmin">0 usuários</span></footer>
-  </div>
 
-  <!-- MODAIS -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-header"><h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button></div>
-      <div class="modal-body">
-        <div id="filterContainer" style="display:none; margin-bottom:18px;"><div class="filter-container"><label>🔍 Filtrar por:</label><select id="subTransportadoraFilter"><option value="TODAS">📦 Todas as sub-transportadoras</option></select><span class="filter-badge" id="filterCount">0 IDs</span></div></div>
-        <div class="stats" id="modalStats"></div>
-        <span class="ids-count" id="modalIdsCount"></span>
-        <div class="ids-list" id="modalIds"></div>
+    <!-- MODAIS -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modalTitle">Detalhes</h2><button class="close-btn" id="modalClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="filterContainer" style="display:none; margin-bottom:18px;">
+            <div class="filter-container"><label>🔍 Filtrar por:</label><select id="subTransportadoraFilter">
+                <option value="TODAS">📦 Todas as sub-transportadoras</option>
+              </select><span class="filter-badge" id="filterCount">0 IDs</span></div>
+          </div>
+          <div class="stats" id="modalStats"></div>
+          <span class="ids-count" id="modalIdsCount"></span>
+          <div class="ids-list" id="modalIds"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-copy-all" id="modalCopyAll">📋 Copiar todos (com IDs)</button>
+          <button class="btn-copy" id="modalCopy">📋 Copiar apenas IDs</button>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-copy-all" id="modalCopyAll">📋 Copiar todos (com IDs)</button>
-        <button class="btn-copy" id="modalCopy">📋 Copiar apenas IDs</button>
+    </div>
+
+    <div class="modal-overlay resposta-modal" id="respostaModalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>📝 Responder Pacotes</h2><button class="close-btn" id="respostaModalClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="resumo-selecao">
+            <div class="label">📌 <span id="respostaCount">0</span> pacotes selecionados</div>
+            <div class="ids-list" id="respostaIdsList"></div>
+          </div>
+          <div class="campo"><label>👤 Seu Nome *</label><input type="text" id="respostaNome"
+              placeholder="Digite seu nome"></div>
+          <div class="campo"><label>🚚 Motorista</label><input type="text" id="respostaMotorista"
+              placeholder="Motorista do pacote"></div>
+          <div class="campo"><label>📝 Justificativa *</label><textarea id="respostaJustificativa"
+              placeholder="Descreva a justificativa para estes pacotes..."></textarea></div>
+          <div class="status-msg" id="respostaStatus"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="respostaCancelar"
+            style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); padding:10px 24px;">Cancelar</button>
+          <button class="btn-cruzamento" id="respostaEnviar"
+            style="background:var(--cruzamento); color:#fff; border:none; padding:10px 24px;">📤 Enviar
+            Respostas</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="filter-float-btn hidden" id="filterFloatBtn">🔍 Filtros <span class="badge-count"
+        id="filterFloatBadge">0</span></button>
+    <div class="filter-modal-overlay" id="filterModalOverlay">
+      <div class="filter-modal">
+        <div class="filter-modal-header">
+          <h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">✕</button>
+        </div>
+        <div class="filter-modal-body">
+          <div class="filter-info">
+            <div class="counts">
+              <span>🔴 SVC: <span id="filterCountSVC">0</span> transportadoras</span>
+              <span>🟢 Transportadora: <span id="filterCountTransp">0</span> transportadoras</span>
+            </div>
+            <div class="filter-actions">
+              <button class="btn-sm btn-select-all" id="filterSelectAll">✅ Selecionar todas</button>
+              <button class="btn-sm btn-clear-all" id="filterClearAll">❌ Limpar todas</button>
+            </div>
+          </div>
+          <div class="transp-filter-container" id="transpFilterContainer"><span
+              style="color:var(--text-primary);">Aguardando autenticação...</span></div>
+        </div>
+        <div class="filter-modal-footer"><button class="btn-apply" id="filterApplyBtn">✅ Aplicar Filtros</button></div>
       </div>
     </div>
   </div>
+</body>
 
-  <div class="modal-overlay resposta-modal" id="respostaModalOverlay">
-    <div class="modal">
-      <div class="modal-header"><h2>📝 Responder Pacotes</h2><button class="close-btn" id="respostaModalClose">✕</button></div>
-      <div class="modal-body">
-        <div class="resumo-selecao"><div class="label">📌 <span id="respostaCount">0</span> pacotes selecionados</div><div class="ids-list" id="respostaIdsList"></div></div>
-        <div class="campo"><label>👤 Seu Nome *</label><input type="text" id="respostaNome" placeholder="Digite seu nome"></div>
-        <div class="campo"><label>🚚 Motorista</label><input type="text" id="respostaMotorista" placeholder="Motorista do pacote"></div>
-        <div class="campo"><label>📝 Justificativa *</label><textarea id="respostaJustificativa" placeholder="Descreva a justificativa para estes pacotes..."></textarea></div>
-        <div class="status-msg" id="respostaStatus"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" id="respostaCancelar" style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); padding:10px 24px;">Cancelar</button>
-        <button class="btn-cruzamento" id="respostaEnviar" style="background:var(--cruzamento); color:#fff; border:none; padding:10px 24px;">📤 Enviar Respostas</button>
-      </div>
-    </div>
-  </div>
-
-  <button class="filter-float-btn hidden" id="filterFloatBtn">🔍 Filtros <span class="badge-count" id="filterFloatBadge">0</span></button>
-  <div class="filter-modal-overlay" id="filterModalOverlay">
-    <div class="filter-modal">
-      <div class="filter-modal-header"><h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">
+</html>
