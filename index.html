@@ -1290,11 +1290,12 @@
           <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Carregando respostas...</td></tr></tbody>
         </table>
       </div>
+      <!-- PAGINAÇÃO CORRIGIDA COM ONCLICK -->
       <div id="respostasPaginacao" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:10px;">
         <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);" id="respostasInfoPagina">Mostrando 0 a 0 de 0</span>
         <div style="display:flex; gap:10px;">
-          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>◀ Anterior</button>
-          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>Próximo ▶</button>
+          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('anterior')" disabled>◀ Anterior</button>
+          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('proximo')" disabled>Próximo ▶</button>
         </div>
       </div>
     </div>
@@ -2213,7 +2214,6 @@ function renderizarRespostas() {
     infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro';
   }
 
-  // Atualiza estado dos botões
   atualizarPaginacaoRespostas();
 
   if (paginaData.length === 0) {
@@ -2233,7 +2233,7 @@ function renderizarRespostas() {
   }).join('');
 }
 
-// Funções de paginação
+// PAGINAÇÃO DAS RESPOSTAS - VERSÃO ONCLICK
 function atualizarPaginacaoRespostas() {
   const btnAnterior = document.getElementById('respostasPaginaAnterior');
   const btnProximo = document.getElementById('respostasPaginaProximo');
@@ -2245,34 +2245,18 @@ function atualizarPaginacaoRespostas() {
   if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
 }
 
-function configurarBotoesRespostas() {
-  const btnAnterior = document.getElementById('respostasPaginaAnterior');
-  const btnProximo = document.getElementById('respostasPaginaProximo');
-
-  // Remove listeners antigos clonando e substituindo (seguro)
-  const novoAnterior = btnAnterior.cloneNode(true);
-  const novoProximo = btnProximo.cloneNode(true);
-  btnAnterior.parentNode.replaceChild(novoAnterior, btnAnterior);
-  btnProximo.parentNode.replaceChild(novoProximo, btnProximo);
-
-  document.getElementById('respostasPaginaAnterior').addEventListener('click', function() {
-    if (respostasPaginaAtual > 1) {
-      respostasPaginaAtual--;
-      renderizarRespostas();
-    }
-  });
-
-  document.getElementById('respostasPaginaProximo').addEventListener('click', function() {
+window.respostasIrParaPagina = function(direcao) {
+  if (direcao === 'anterior' && respostasPaginaAtual > 1) {
+    respostasPaginaAtual--;
+    renderizarRespostas();
+  } else if (direcao === 'proximo') {
     const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
     if (respostasPaginaAtual < totalPaginas) {
       respostasPaginaAtual++;
       renderizarRespostas();
     }
-  });
-
-  // Estado inicial
-  atualizarPaginacaoRespostas();
-}
+  }
+};
 
 // Eventos da aba Respostas
 document.getElementById('btnFiltrarRespostas')?.addEventListener('click', aplicarFiltrosRespostas);
@@ -3145,8 +3129,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (targetId === 'tabRespostas') {
         if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) {
           carregarRespostas();
-          // Configura os botões após carregar os dados
-          setTimeout(function() { configurarBotoesRespostas(); }, 100);
         } else {
           const tbody = document.getElementById('respostasTbody');
           if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Apenas administradores e assistentes podem acessar esta aba.</td></tr>`; }
@@ -3163,11 +3145,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const temSessao = verificarSessao();
   if (!temSessao) carregarDadosExemplo();
-
-  // Configurar botões de paginação das respostas após um pequeno delay
-  setTimeout(function() {
-    configurarBotoesRespostas();
-  }, 500);
 
   setInterval(() => { if (isAuthenticated) { carregarDadosInventario(); carregarCruzamento(); } }, 300000);
 });
@@ -3191,6 +3168,7 @@ window.toggleSelecao = toggleSelecao;
 window.toggleTransportadora = toggleTransportadora;
 window.selecionarTodasTransportadoras = selecionarTodasTransportadoras;
 window.limparTodasTransportadoras = limparTodasTransportadoras;
+window.respostasIrParaPagina = respostasIrParaPagina;
 </script>
 </body>
 </html>
