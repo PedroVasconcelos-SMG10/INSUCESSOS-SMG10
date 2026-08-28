@@ -57,18 +57,19 @@
     border-radius:0 0 12px 12px;
     margin-bottom:8px;
   }
+  /* ===== FAIXA SUPERIOR - OPÇÃO 4 ===== */
   .masthead::before{
     content:"";
     position:absolute; top:0; left:0; right:0; height:4px;
-    background: repeating-linear-gradient(90deg, var(--danger) 0 40px, var(--info) 40px 80px, var(--warning) 80px 120px, var(--success) 120px 160px);
-    opacity:.85;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 40px, var(--bg-primary) 40px 80px, #FFFFFF 80px 120px, var(--bg-secondary) 120px 160px);
+    opacity:1;
   }
   .eyebrow{
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
     letter-spacing:.16em;
     color: var(--text-on-blue);
-    opacity:0.8;
+    opacity:1; /* ← contraste máximo */
     text-transform:uppercase;
     display:flex; gap:12px; align-items:center;
   }
@@ -85,7 +86,7 @@
   }
   .masthead p{
     color: var(--text-on-blue);
-    opacity:0.85;
+    opacity:1; /* ← contraste máximo */
     max-width:780px;
     margin-top:14px;
     font-size:16px;
@@ -168,7 +169,7 @@
   .status-bar .info{
     font-family:'IBM Plex Mono', monospace;
     font-size:14px;
-    color: var(--text-muted);
+    color: var(--text-primary); /* ← mais escuro para melhor contraste */
     display:flex;
     align-items:center;
     gap:14px;
@@ -195,7 +196,7 @@
   .btn-primary:hover{background: #0D47A1;}
   .btn-cruzamento{background: var(--cruzamento); color:#fff;}
   .btn-cruzamento:hover{background: #BF360C;}
-  .btn-secondary{background:transparent; color:var(--text-muted); border:1px solid var(--border-color);}
+  .btn-secondary{background:transparent; color:var(--text-primary); border:1px solid var(--border-color);}
   .btn-secondary:hover{background:var(--bg-secondary); color:var(--text-primary);}
   .btn-success{background: var(--success); color:#fff;}
   .btn-success:hover{background: #1B5E20;}
@@ -329,7 +330,7 @@
   .ids-tabela-wrap .header .badge{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     background: var(--bg-white);
     padding:6px 16px;
     border:1px solid var(--border-color);
@@ -344,7 +345,7 @@
   }
   .ids-tabela table th{
     background: var(--bg-secondary);
-    color: var(--text-muted);
+    color: var(--text-primary);
     padding:14px 18px;
     text-align:left;
     position:sticky;
@@ -425,7 +426,7 @@
     justify-content:space-between;
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
-    color: var(--text-faint);
+    color: var(--text-muted);
     margin-top:6px;
   }
   .cruzamento-stats{
@@ -460,7 +461,7 @@
   .cruzamento-stat .sub-label{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
-    color: var(--text-faint);
+    color: var(--text-muted);
     margin-top:4px;
   }
   .cruzamento-stat .num.cruzamento{color:var(--cruzamento);}
@@ -497,7 +498,7 @@
     color: var(--text-muted);
   }
   .cruzamento-transp-card .detalhes .qtd{color:var(--cruzamento); font-weight:600;}
-  .cruzamento-transp-card .detalhes .pct{color:var(--text-faint);}
+  .cruzamento-transp-card .detalhes .pct{color:var(--text-muted);}
   .cruzamento-tabela-wrap{
     border:1px solid var(--border-color);
     background: var(--bg-white);
@@ -525,7 +526,7 @@
   .cruzamento-tabela-wrap .header .badge{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     background: var(--bg-white);
     padding:6px 16px;
     border:1px solid var(--border-color);
@@ -540,7 +541,7 @@
   }
   .cruzamento-tabela table th{
     background: var(--bg-secondary);
-    color: var(--text-muted);
+    color: var(--text-primary);
     padding:14px 18px;
     text-align:left;
     position:sticky;
@@ -589,14 +590,14 @@
     text-align:center;
   }
   .preview-box table{width:100%; font-size:12px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;}
-  .preview-box table th{background:var(--bg-secondary); color:var(--text-muted); padding:6px 8px; text-align:left; position:sticky; top:0; border-bottom:1px solid var(--border-color);}
+  .preview-box table th{background:var(--bg-secondary); color:var(--text-primary); padding:6px 8px; text-align:left; position:sticky; top:0; border-bottom:1px solid var(--border-color);}
   .preview-box table td{padding:4px 8px; border-bottom:1px solid var(--border-color); color:var(--text-primary); white-space:nowrap; max-width:120px; overflow:hidden; text-overflow:ellipsis;}
   .preview-box table tr:hover td{background:var(--bg-secondary);}
   .preview-box .col-destaque{background:var(--warning); color:var(--text-primary); font-weight:600;}
   .badge{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     background: var(--bg-white);
     padding:6px 16px;
     border:1px solid var(--border-color);
@@ -669,7 +670,7 @@
   .filter-modal-header .close-btn{
     background:transparent;
     border:1px solid var(--border-color);
-    color:var(--text-muted);
+    color:var(--text-primary);
     width:36px;
     height:36px;
     font-size:20px;
@@ -698,7 +699,7 @@
     gap:20px;
     font-family:'IBM Plex Mono', monospace;
     font-size:14px;
-    color: var(--text-muted);
+    color: var(--text-primary);
   }
   .filter-modal-body .filter-info .counts span{color:var(--text-primary); font-weight:600;}
   .filter-modal-body .filter-actions{display:flex; gap:10px; flex-wrap:wrap;}
@@ -746,12 +747,12 @@
     align-items:center;
     gap:4px;
     font-size:12px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     cursor:pointer;
   }
   .filter-modal-body .transp-filter-item .transp-check-label input[type="checkbox"]{width:16px; height:16px; cursor:pointer; accent-color: var(--accent);}
   .filter-modal-body .transp-filter-item .transp-count{
-    color: var(--text-faint);
+    color: var(--text-muted);
     font-size:11px;
     font-family:'IBM Plex Mono', monospace;
     margin-left:4px;
@@ -817,7 +818,7 @@
   .modal-header .close-btn{
     background:transparent;
     border:1px solid var(--border-color);
-    color:var(--text-muted);
+    color:var(--text-primary);
     width:36px;
     height:36px;
     font-size:20px;
@@ -835,7 +836,7 @@
   .filter-container label{
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     text-transform:uppercase;
     letter-spacing:.04em;
   }
@@ -858,7 +859,7 @@
   .filter-badge{
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     background: var(--bg-white);
     padding:4px 14px;
     border:1px solid var(--border-color);
@@ -891,7 +892,7 @@
   .modal-body .stats .stat .lbl{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
-    color: var(--text-faint);
+    color: var(--text-muted);
     text-transform:uppercase;
     letter-spacing:.06em;
   }
@@ -917,7 +918,7 @@
   .modal-body .ids-list .id-item:last-child{border-bottom:none;}
   .modal-body .ids-list .id-item .id-checkbox{display:flex; align-items:center; justify-content:center;}
   .modal-body .ids-list .id-item .id-checkbox input[type="checkbox"]{width:18px; height:18px; accent-color:var(--accent); cursor:pointer;}
-  .modal-body .ids-list .id-item .id-index{color:var(--text-faint); font-size:12px; text-align:right;}
+  .modal-body .ids-list .id-item .id-index{color:var(--text-muted); font-size:12px; text-align:right;}
   .modal-body .ids-list .id-item .id-num{color:var(--text-primary); font-weight:500; letter-spacing:.5px; font-size:15px;}
   .modal-body .ids-list .id-item .id-valor{color:var(--success); font-size:13px; font-weight:600; text-align:right;}
   .modal-body .ids-list .id-item .id-motorista{color:var(--text-muted); font-size:12px; font-family:'Inter', sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -942,7 +943,7 @@
   .selecao-bar .info{
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
   }
   .selecao-bar .info span{color:var(--text-primary); font-weight:600;}
   .selecao-bar .btn-resposta{
@@ -965,7 +966,7 @@
     padding:6px 16px;
     font-size:12px;
     background:transparent;
-    color:var(--text-muted);
+    color:var(--text-primary);
     border:1px solid var(--border-color);
     cursor:pointer;
     border-radius:4px;
@@ -1036,7 +1037,7 @@
   .resposta-modal .modal-body .campo label{
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     display:block;
     margin-bottom:6px;
   }
@@ -1066,7 +1067,7 @@
   .resposta-modal .modal-body .resumo-selecao .label{
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
   }
   .resposta-modal .modal-body .resumo-selecao .label span{color:var(--text-primary); font-weight:600;}
   .resposta-modal .modal-body .resumo-selecao .ids-list{
@@ -1107,7 +1108,7 @@
     border-radius:6px;
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     max-height:220px;
     overflow-y:auto;
   }
@@ -1125,7 +1126,7 @@
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
     color: var(--text-on-blue);
-    opacity:0.8;
+    opacity:1; /* ← contraste máximo */
     letter-spacing:.04em;
   }
   .role-badge{
@@ -1149,11 +1150,28 @@
     border-radius:4px;
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     display:inline-block;
     margin-left:10px;
   }
   .filter-info-transp strong{color:var(--text-primary);}
+  /* --- Correções de contraste em elementos menores --- */
+  .record-count{
+    color: var(--text-primary);
+  }
+  .status-bar .info #recordCountPacotes,
+  .status-bar .info #recordCountInventario,
+  .status-bar .info #recordCountCruzamento,
+  .status-bar .info #recordCountRespostas{
+    color: var(--text-primary);
+  }
+  .preview-box .empty-message .loading-spinner span{
+    color: var(--text-primary);
+  }
+  .cruzamento-stat .sub-label{
+    color: var(--text-primary);
+  }
+  /* -------------------------- */
   @media (max-width:860px){
     .kpi-strip{grid-template-columns:1fr 1fr;}
     .kpi-strip.kpi-5{grid-template-columns:1fr 1fr 1fr;}
@@ -1222,11 +1240,11 @@
   <!-- TAB PACOTES -->
   <div class="tab-content active" id="tabPacotes">
     <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotPacotes"></span><span id="statusTextPacotes">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountPacotes" style="color:var(--text-muted);"></span><span id="roleBadgeContainer"></span><span id="filterInfoTransp" class="filter-info-transp" style="display:none;"></span></div>
+      <div class="info"><span class="dot-status loading" id="statusDotPacotes"></span><span id="statusTextPacotes">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountPacotes" style="color:var(--text-primary);"></span><span id="roleBadgeContainer"></span><span id="filterInfoTransp" class="filter-info-transp" style="display:none;"></span></div>
       <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
     </div>
     <div class="preview-box" id="previewPacotes"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
-    <div class="debug-box" id="debugPacotes"><div style="color:var(--text-muted);">Aguardando autenticação...</div></div>
+    <div class="debug-box" id="debugPacotes"><div style="color:var(--text-primary);">Aguardando autenticação...</div></div>
     <div class="kpi-strip" id="kpiStripPacotes"></div>
     <div class="charts-grid">
       <div class="chart-card"><h3>📊 Pacotes por Transportadora</h3><div class="chart-container"><canvas id="chartQuantidade"></canvas></div></div>
@@ -1245,11 +1263,11 @@
   <!-- TAB INVENTÁRIO -->
   <div class="tab-content" id="tabInventario">
     <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotInventario"></span><span id="statusTextInventario">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountInventario" style="color:var(--text-muted);"></span><span id="roleBadgeContainerInventario"></span></div>
+      <div class="info"><span class="dot-status loading" id="statusDotInventario"></span><span id="statusTextInventario">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountInventario" style="color:var(--text-primary);"></span><span id="roleBadgeContainerInventario"></span></div>
       <button class="btn btn-primary" id="refreshInventario">🔄 Atualizar</button>
     </div>
     <div class="preview-box" id="previewInventario"><div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Aguardando autenticação...</span></div></div></div>
-    <div class="debug-box" id="debugInventario"><div style="color:var(--text-muted);">Aguardando autenticação...</div></div>
+    <div class="debug-box" id="debugInventario"><div style="color:var(--text-primary);">Aguardando autenticação...</div></div>
     <div class="kpi-strip kpi-5" id="kpiStripInventario"></div>
     <div class="charts-grid">
       <div class="chart-card"><h3>📊 Status por Zona</h3><div class="chart-container"><canvas id="chartZona"></canvas></div></div>
@@ -1268,7 +1286,7 @@
   <!-- TAB CRUZAMENTO -->
   <div class="tab-content" id="tabCruzamento">
     <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotCruzamento"></span><span id="statusTextCruzamento">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountCruzamento" style="color:var(--text-muted);"></span><span id="roleBadgeContainerCruzamento"></span></div>
+      <div class="info"><span class="dot-status loading" id="statusDotCruzamento"></span><span id="statusTextCruzamento">🔑 Clique em "Login" para acessar os dados</span><span id="recordCountCruzamento" style="color:var(--text-primary);"></span><span id="roleBadgeContainerCruzamento"></span></div>
       <button class="btn btn-cruzamento" id="refreshCruzamento">🔄 Atualizar Cruzamento</button>
     </div>
     <div class="cruzamento-stats" id="cruzamentoStats">
@@ -1280,7 +1298,7 @@
     <div style="margin-top:28px;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
         <h2 style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.03em;font-weight:500;color:var(--text-muted);">🚚 Total por Transportadora (Em Ambos)</h2>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-faint);">Pacotes que estão com transportadora E faltantes no inventário</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-muted);">Pacotes que estão com transportadora E faltantes no inventário</span>
       </div>
       <div class="cruzamento-transp-grid" id="cruzamentoTranspGrid"><div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;">Aguardando autenticação...</div></div>
     </div>
@@ -1294,14 +1312,14 @@
   <!-- TAB RESPOSTAS (SEM PAGINAÇÃO) -->
   <div class="tab-content" id="tabRespostas">
     <div class="status-bar">
-      <div class="info"><span class="dot-status loading" id="statusDotRespostas"></span><span id="statusTextRespostas">📥 Carregando respostas...</span><span id="recordCountRespostas" style="color:var(--text-muted);"></span><span id="roleBadgeContainerRespostas"></span></div>
+      <div class="info"><span class="dot-status loading" id="statusDotRespostas"></span><span id="statusTextRespostas">📥 Carregando respostas...</span><span id="recordCountRespostas" style="color:var(--text-primary);"></span><span id="roleBadgeContainerRespostas"></span></div>
       <button class="btn btn-primary" id="refreshRespostas">🔄 Atualizar</button>
     </div>
     <div style="display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; background:var(--bg-white); padding:14px 20px; border:1px solid var(--border-color); border-radius:6px;">
-      <div><label style="font-size:13px; color:var(--text-muted);">🔍 Filtrar por:</label><select id="filtroRespostasTransportadora" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"><option value="TODAS">Todas transportadoras</option></select></div>
-      <div><label style="font-size:13px; color:var(--text-muted);">👤 Responsável:</label><input type="text" id="filtroRespostasResponsavel" placeholder="Nome..." style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px; width:160px;"></div>
-      <div><label style="font-size:13px; color:var(--text-muted);">📅 Data inicial:</label><input type="date" id="filtroRespostasDataInicio" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
-      <div><label style="font-size:13px; color:var(--text-muted);">📅 Data final:</label><input type="date" id="filtroRespostasDataFim" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
+      <div><label style="font-size:13px; color:var(--text-primary);">🔍 Filtrar por:</label><select id="filtroRespostasTransportadora" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"><option value="TODAS">Todas transportadoras</option></select></div>
+      <div><label style="font-size:13px; color:var(--text-primary);">👤 Responsável:</label><input type="text" id="filtroRespostasResponsavel" placeholder="Nome..." style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px; width:160px;"></div>
+      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data inicial:</label><input type="date" id="filtroRespostasDataInicio" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
+      <div><label style="font-size:13px; color:var(--text-primary);">📅 Data final:</label><input type="date" id="filtroRespostasDataFim" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:6px 12px; border-radius:4px; font-size:13px;"></div>
       <button class="btn btn-success" id="btnFiltrarRespostas" style="padding:6px 20px; font-size:13px;">✅ Filtrar</button>
       <button class="btn btn-danger" id="btnLimparFiltrosRespostas" style="padding:6px 20px; font-size:13px;">❌ Limpar</button>
       <button class="btn btn-cruzamento" id="btnExportarRespostas" style="padding:6px 20px; font-size:13px;">📤 Exportar CSV</button>
@@ -1331,7 +1349,7 @@
       </div>
       <div style="overflow-x:auto; background:var(--bg-white); border:1px solid var(--border-color); border-radius:6px;">
         <table style="width:100%; font-size:14px; border-collapse:collapse; font-family:'IBM Plex Mono', monospace;">
-          <thead><tr style="background:var(--bg-secondary); color:var(--text-muted);"><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">E-mail</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Role</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Transportadora</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Ações</th></tr></thead>
+          <thead><tr style="background:var(--bg-secondary); color:var(--text-primary);"><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">E-mail</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Role</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Transportadora</th><th style="padding:12px 16px; text-align:left; border-bottom:2px solid var(--border-color);">Ações</th></tr></thead>
           <tbody id="adminUsuariosTbody"><tr><td colspan="4" style="text-align:center; padding:36px; color:var(--text-muted);">Carregando...</td></tr></tbody>
         </table>
       </div>
@@ -1367,7 +1385,7 @@
         <div class="status-msg" id="respostaStatus"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" id="respostaCancelar" style="background:transparent; color:var(--text-muted); border:1px solid var(--border-color); padding:10px 24px;">Cancelar</button>
+        <button class="btn-secondary" id="respostaCancelar" style="background:transparent; color:var(--text-primary); border:1px solid var(--border-color); padding:10px 24px;">Cancelar</button>
         <button class="btn-cruzamento" id="respostaEnviar" style="background:var(--cruzamento); color:#fff; border:none; padding:10px 24px;">📤 Enviar Respostas</button>
       </div>
     </div>
@@ -1379,7 +1397,7 @@
       <div class="filter-modal-header"><h2>🚚 Filtro por Transportadora</h2><button class="close-btn" id="filterModalClose">✕</button></div>
       <div class="filter-modal-body">
         <div class="filter-info"><div class="counts"><span>🔗 <span id="filterCountAmbos">0</span> selecionadas</span><span>📦 <span id="filterCountResp">0</span> selecionadas</span></div><div class="filter-actions"><button class="btn-sm btn-select-all" id="filterSelectAll">✅ Selecionar todas</button><button class="btn-sm btn-clear-all" id="filterClearAll">❌ Limpar todas</button></div></div>
-        <div class="transp-filter-container" id="transpFilterContainer"><span style="color:var(--text-muted);">Aguardando autenticação...</span></div>
+        <div class="transp-filter-container" id="transpFilterContainer"><span style="color:var(--text-primary);">Aguardando autenticação...</span></div>
       </div>
       <div class="filter-modal-footer"><button class="btn-apply" id="filterApplyBtn">✅ Aplicar Filtros</button></div>
     </div>
@@ -1388,7 +1406,7 @@
 
 <script>
 // ================================================================
-//  CONFIGURAÇÃO
+//  CONFIGURAÇÃO (JAVASCRIPT COMPLETO - MANTIDO INTEGRALMENTE)
 // ================================================================
 const CACHE_DURATION = 5 * 60 * 1000;
 const MAX_CACHE_SIZE = 5 * 1024 * 1024;
@@ -1910,7 +1928,7 @@ function renderPreviewInventario(processedData, weeklyStats) {
   const total = processedData.totalGeral;
   if (!weeklyStats || !Array.isArray(weeklyStats) || weeklyStats.length === 0) {
     const colorClass = processedData.taxaAcuraciaGeral >= 95 ? 'success' : processedData.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger';
-    preview.innerHTML = `<div style="text-align:center; padding:24px 0;"><div style="font-size:28px; margin-bottom:8px;">⚠️</div><div style="font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--warning);">Backups semanais não encontrados</div><div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Acurácia atual: <strong style="color:var(--${colorClass});">${processedData.taxaAcuraciaGeral.toFixed(1)}%</strong></div><div style="font-size:12px; color:var(--text-faint); margin-top:8px;">Verifique se o Apps Script está rodando diariamente.</div></div>`;
+    preview.innerHTML = `<div style="text-align:center; padding:24px 0;"><div style="font-size:28px; margin-bottom:8px;">⚠️</div><div style="font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--warning);">Backups semanais não encontrados</div><div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Acurácia atual: <strong style="color:var(--${colorClass});">${processedData.taxaAcuraciaGeral.toFixed(1)}%</strong></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Verifique se o Apps Script está rodando diariamente.</div></div>`;
     return;
   }
   const diasSemana = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
@@ -1929,7 +1947,7 @@ function renderPreviewInventario(processedData, weeklyStats) {
     const hasData = dia.existe && (dia.inventariado + dia.faltante) > 0;
     const displayAcuracia = hasData ? dia.acuracia.toFixed(1) : '—';
     const dataFormatada = dia.date ? dia.date.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : '--/--';
-    html += `<div style="background:var(--bg-secondary); border-radius:6px; padding:12px 8px; text-align:center; ${hojeClass} ${!hasData ? 'opacity:0.5;' : ''}"><div style="font-family:'Inter',sans-serif; font-size:13px; color:var(--text-muted); font-weight:500;">${diasSemana[index]}</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); margin-bottom:4px;">${dataFormatada}</div><div style="font-family:'Oswald',sans-serif; font-size:24px; font-weight:600; color:${hasData ? 'var(--' + colorClass + ')' : 'var(--text-faint)'};">${displayAcuracia}${hasData ? '%' : ''}</div>${hasData ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-faint);">✅${dia.inventariado} ❌${dia.faltante}</div>` : `<div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-faint);">📭 sem backup</div>`}</div>`;
+    html += `<div style="background:var(--bg-secondary); border-radius:6px; padding:12px 8px; text-align:center; ${hojeClass} ${!hasData ? 'opacity:0.5;' : ''}"><div style="font-family:'Inter',sans-serif; font-size:13px; color:var(--text-muted); font-weight:500;">${diasSemana[index]}</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); margin-bottom:4px;">${dataFormatada}</div><div style="font-family:'Oswald',sans-serif; font-size:24px; font-weight:600; color:${hasData ? 'var(--' + colorClass + ')' : 'var(--text-muted)'};">${displayAcuracia}${hasData ? '%' : ''}</div>${hasData ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-muted);">✅${dia.inventariado} ❌${dia.faltante}</div>` : `<div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--text-muted);">📭 sem backup</div>`}</div>`;
   });
   html += `</div>`;
   const colorClass = getColorClass(acuraciaMedia);
@@ -2386,7 +2404,7 @@ async function carregarDadosPacotes() {
     if (statusDot) statusDot.className = 'dot-status loading';
     if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-muted)'; }
     if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
-    if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-muted);">⏳ Buscando dados da planilha...</div>';
+    if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-primary);">⏳ Buscando dados da planilha...</div>';
     const data = await lerDados('pacotes');
     rawDataPacotes = data;
     if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--success);">✅ Sucesso</span></div><div class="debug-item"><span class="key">Registros:</span> <span class="value">${data.length}</span></div><div class="debug-item"><span class="key">Cabeçalhos:</span> <span class="value">${Object.keys(data[0]||{}).join(', ')}</span></div>`; }
@@ -2396,7 +2414,7 @@ async function carregarDadosPacotes() {
     if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`; }
     if (statusDot) statusDot.className = 'dot-status offline';
     if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-faint);">Verifique sua conexão ou tente recarregar.</span></div>`;
+    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-muted);">Verifique sua conexão ou tente recarregar.</span></div>`;
   }
 }
 
@@ -2409,7 +2427,7 @@ async function carregarDadosInventario() {
     if (statusDot) statusDot.className = 'dot-status loading';
     if (statusText) { statusText.textContent = 'Carregando dados...'; statusText.style.color = 'var(--text-muted)'; }
     if (preview) preview.innerHTML = `<div class="empty-message"><div class="loading-spinner"><div class="spinner"></div><span>Carregando...</span></div></div>`;
-    if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-muted);">⏳ Buscando dados do inventário...</div>';
+    if (debugBox) debugBox.innerHTML = '<div style="color:var(--text-primary);">⏳ Buscando dados do inventário...</div>';
     const data = await lerDados('inventario');
     rawDataInventario = data;
     processedDataInventario = processarDadosInventario(data);
@@ -2428,7 +2446,7 @@ async function carregarDadosInventario() {
     if (debugBox) { debugBox.innerHTML = `<div class="debug-item"><span class="key">Status:</span> <span class="value" style="color:var(--danger);">❌ Erro</span></div><div class="debug-item"><span class="key">Mensagem:</span> <span class="value">${error.message}</span></div>`; }
     if (statusDot) statusDot.className = 'dot-status offline';
     if (statusText) { statusText.textContent = `❌ Erro: ${error.message}`; statusText.style.color = 'var(--danger)'; }
-    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-faint);">Verifique sua conexão ou tente recarregar.</span></div>`;
+    if (preview) preview.innerHTML = `<div class="empty-message"><div style="font-size:28px;">⚠️</div>Erro: ${error.message}<br><span style="font-size:11px;color:var(--text-muted);">Verifique sua conexão ou tente recarregar.</span></div>`;
   }
 }
 
@@ -2704,7 +2722,7 @@ document.getElementById('refreshAdmin')?.addEventListener('click', carregarUsuar
 function renderFiltroTransportadoras(data) {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
-  if (!data || data.transportadoraList.length === 0) { container.innerHTML = `<span style="color:var(--text-muted); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`; return; }
+  if (!data || data.transportadoraList.length === 0) { container.innerHTML = `<span style="color:var(--text-primary); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`; return; }
 
   if (filtroTransportadoras.size === 0) { data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome)); }
   if (filtroTransportadorasResp.size === 0) { data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome)); }
