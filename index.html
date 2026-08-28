@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-  /* ===== ESTILOS COMPLETOS COM TAMANHOS MAIORES ===== */
+  /* ===== ESTILOS COMPLETOS ===== */
   :root{
     --bg:#14161a;
     --panel:#1b1e24;
@@ -1114,6 +1114,7 @@
     display:inline-block;
   }
   .role-badge.admin{background:var(--success); color:#fff;}
+  .role-badge.assist-adm{background:var(--cruzamento); color:#fff;}
   .role-badge.editor{background:var(--warning); color:#14161a;}
   .role-badge.viewer{background:var(--text-faint); color:#fff;}
   .filter-info-transp{
@@ -1289,11 +1290,12 @@
           <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Carregando respostas...</td></tr></tbody>
         </table>
       </div>
+      <!-- PAGINAÇÃO CORRIGIDA COM ONCLICK -->
       <div id="respostasPaginacao" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:10px;">
         <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);" id="respostasInfoPagina">Mostrando 0 a 0 de 0</span>
         <div style="display:flex; gap:10px;">
-          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>◀ Anterior</button>
-          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>Próximo ▶</button>
+          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('anterior')" disabled>◀ Anterior</button>
+          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('proximo')" disabled>Próximo ▶</button>
         </div>
       </div>
     </div>
@@ -1519,8 +1521,8 @@ function atualizarUIposLogin() {
   document.getElementById('statusTextPacotes').style.color = 'var(--success)';
   document.getElementById('statusDotPacotes').className = 'dot-status online';
   const containers = [ document.getElementById('roleBadgeContainer'), document.getElementById('roleBadgeContainerInventario'), document.getElementById('roleBadgeContainerCruzamento') ];
-  const roleNames = { 'admin':'👑 Admin','editor':'📦 Operador','viewer':'👁️ Viewer' };
-  const roleClasses = { 'admin':'admin','editor':'editor','viewer':'viewer' };
+  const roleNames = { 'admin':'👑 Admin', 'assist-adm':'🛠️ Assist-ADM', 'editor':'📦 Operador', 'viewer':'👁️ Viewer' };
+  const roleClasses = { 'admin':'admin', 'assist-adm':'assist-adm', 'editor':'editor', 'viewer':'viewer' };
   containers.forEach(container => {
     if (!container) return;
     container.innerHTML = '';
@@ -2093,7 +2095,7 @@ function renderTransportadoras(data) {
 }
 
 // ================================================================
-//  TAB RESPOSTAS (APENAS ADMIN) - CORRIGIDO COM FALLBACK
+//  TAB RESPOSTAS (APENAS ADMIN E ASSIST-ADM)
 // ================================================================
 let respostasData = [];
 let respostasFiltradas = [];
@@ -2108,10 +2110,10 @@ async function carregarRespostas() {
   const footerSpan = document.getElementById('footerTotalRespostas');
   const roleBadge = document.getElementById('roleBadgeContainerRespostas');
 
-  if (currentUserRole !== 'admin') {
-    if (statusText) statusText.textContent = '🔒 Acesso restrito apenas para administradores.';
+  if (currentUserRole !== 'admin' && currentUserRole !== 'assist-adm') {
+    if (statusText) statusText.textContent = '🔒 Acesso restrito apenas para administradores e assistentes.';
     if (statusDot) statusDot.className = 'dot-status offline';
-    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">Apenas administradores podem visualizar o histórico de respostas.</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">Apenas administradores e assistentes podem visualizar o histórico de respostas.</td></tr>`;
     if (countSpan) countSpan.textContent = '0 registros';
     if (footerSpan) footerSpan.textContent = '0 registros';
     if (roleBadge) roleBadge.innerHTML = '';
@@ -2142,8 +2144,8 @@ async function carregarRespostas() {
     if (roleBadge) {
       roleBadge.innerHTML = '';
       const badge = document.createElement('span');
-      badge.className = 'role-badge admin';
-      badge.textContent = '👑 Admin';
+      badge.className = `role-badge ${currentUserRole === 'admin' ? 'admin' : 'assist-adm'}`;
+      badge.textContent = currentUserRole === 'admin' ? '👑 Admin' : '🛠️ Assist-ADM';
       roleBadge.appendChild(badge);
     }
     if (statusDot) statusDot.className = 'dot-status online';
@@ -2231,6 +2233,20 @@ function renderizarRespostas() {
   }).join('');
 }
 
+// Função global para paginação das respostas (chamada via onclick)
+window.respostasIrParaPagina = function(direcao) {
+  if (direcao === 'anterior' && respostasPaginaAtual > 1) {
+    respostasPaginaAtual--;
+    renderizarRespostas();
+  } else if (direcao === 'proximo') {
+    const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
+    if (respostasPaginaAtual < totalPaginas) {
+      respostasPaginaAtual++;
+      renderizarRespostas();
+    }
+  }
+};
+
 // Eventos da aba Respostas
 document.getElementById('btnFiltrarRespostas')?.addEventListener('click', aplicarFiltrosRespostas);
 document.getElementById('btnLimparFiltrosRespostas')?.addEventListener('click', function() {
@@ -2240,16 +2256,9 @@ document.getElementById('btnLimparFiltrosRespostas')?.addEventListener('click', 
   document.getElementById('filtroRespostasDataFim').value = '';
   aplicarFiltrosRespostas();
 });
-document.getElementById('respostasPaginaAnterior')?.addEventListener('click', function() {
-  if (respostasPaginaAtual > 1) { respostasPaginaAtual--; renderizarRespostas(); }
-});
-document.getElementById('respostasPaginaProxima')?.addEventListener('click', function() {
-  const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
-  if (respostasPaginaAtual < totalPaginas) { respostasPaginaAtual++; renderizarRespostas(); }
-});
 document.getElementById('refreshRespostas')?.addEventListener('click', function() {
-  if (isAuthenticated && currentUserRole === 'admin') carregarRespostas();
-  else Swal.fire({ icon:'warning', title:'Acesso negado', text:'Apenas administradores.' });
+  if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) carregarRespostas();
+  else Swal.fire({ icon:'warning', title:'Acesso negado', text:'Apenas administradores e assistentes.' });
 });
 document.getElementById('btnExportarRespostas')?.addEventListener('click', function() {
   if (respostasFiltradas.length === 0) {
@@ -2526,21 +2535,56 @@ function carregarDadosExemplo() {
 //  PERFIL E PERMISSÕES
 // ================================================================
 function aplicarRestricoesPorPerfil() {
+  // Cruzamento: apenas admin
   const tabCruzamento = document.querySelector('.tab-btn[data-tab="tabCruzamento"]');
-  if (currentUserRole === 'admin') { if (tabCruzamento) tabCruzamento.style.display = 'block'; }
-  else { if (tabCruzamento) tabCruzamento.style.display = 'none'; const tabContentCruz = document.getElementById('tabCruzamento'); if (tabContentCruz && tabContentCruz.classList.contains('active')) { const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]'); if (tabPacotes) tabPacotes.click(); } }
+  if (tabCruzamento) {
+    tabCruzamento.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+  }
+
+  // Respostas: admin ou assist-adm
   const tabRespostas = document.querySelector('.tab-btn[data-tab="tabRespostas"]');
-  if (tabRespostas) { if (currentUserRole === 'admin') tabRespostas.style.display = 'block'; else tabRespostas.style.display = 'none'; }
+  if (tabRespostas) {
+    tabRespostas.style.display = (currentUserRole === 'admin' || currentUserRole === 'assist-adm') ? 'block' : 'none';
+  }
+
+  // Admin: apenas admin
   const tabAdmin = document.querySelector('.tab-btn[data-tab="tabAdmin"]');
-  if (tabAdmin) { if (currentUserRole === 'admin') tabAdmin.style.display = 'block'; else { tabAdmin.style.display = 'none'; const tabContentAdmin = document.getElementById('tabAdmin'); if (tabContentAdmin && tabContentAdmin.classList.contains('active')) { const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]'); if (tabPacotes) tabPacotes.click(); } } }
+  if (tabAdmin) {
+    tabAdmin.style.display = (currentUserRole === 'admin') ? 'block' : 'none';
+  }
+
+  // Se a aba atual for Cruzamento e o usuário não for admin, redirecionar para Pacotes
+  const tabContentCruz = document.getElementById('tabCruzamento');
+  if (tabContentCruz && tabContentCruz.classList.contains('active') && currentUserRole !== 'admin') {
+    const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
+    if (tabPacotes) tabPacotes.click();
+  }
+
+  // Se a aba atual for Admin e o usuário não for admin, redirecionar para Pacotes
+  const tabContentAdmin = document.getElementById('tabAdmin');
+  if (tabContentAdmin && tabContentAdmin.classList.contains('active') && currentUserRole !== 'admin') {
+    const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
+    if (tabPacotes) tabPacotes.click();
+  }
+
+  // Se a aba atual for Respostas e o usuário não for admin ou assist-adm, redirecionar para Pacotes
+  const tabContentRespostas = document.getElementById('tabRespostas');
+  if (tabContentRespostas && tabContentRespostas.classList.contains('active') && currentUserRole !== 'admin' && currentUserRole !== 'assist-adm') {
+    const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
+    if (tabPacotes) tabPacotes.click();
+  }
+
   const originalAbrirResposta = window.abrirModalResposta || function() {};
   window.abrirModalResposta = function() {
-    if (currentUserRole === 'viewer') { Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Você não tem permissão para responder pacotes. Contate o administrador.', confirmButtonColor:'#e8593f' }); return; }
+    if (currentUserRole === 'viewer') {
+      Swal.fire({ icon:'warning', title:'Acesso Negado', text:'Você não tem permissão para responder pacotes. Contate o administrador.', confirmButtonColor:'#e8593f' });
+      return;
+    }
     originalAbrirResposta();
   };
   const containers = [ document.getElementById('roleBadgeContainer'), document.getElementById('roleBadgeContainerInventario'), document.getElementById('roleBadgeContainerCruzamento') ];
-  const roleNames = { 'admin':'👑 Admin','editor':'📦 Operador','viewer':'👁️ Viewer' };
-  const roleClasses = { 'admin':'admin','editor':'editor','viewer':'viewer' };
+  const roleNames = { 'admin':'👑 Admin', 'assist-adm':'🛠️ Assist-ADM', 'editor':'📦 Operador', 'viewer':'👁️ Viewer' };
+  const roleClasses = { 'admin':'admin', 'assist-adm':'assist-adm', 'editor':'editor', 'viewer':'viewer' };
   containers.forEach(container => {
     if (!container) return;
     container.innerHTML = '';
@@ -2614,7 +2658,7 @@ function renderizarUsuarios(usuarios) {
   const tbody = document.getElementById('adminUsuariosTbody');
   if (!tbody) return;
   if (!usuarios || usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-faint);">Nenhum usuário cadastrado</td></tr>`; return; }
-  tbody.innerHTML = usuarios.map(u => `<tr><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);">${u.email}</td><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);"><select class="admin-role-select" data-email="${u.email}" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); border-radius:4px; padding:6px 12px; font-family:'IBM Plex Mono',monospace; font-size:13px;"><option value="admin" ${u.role==='admin'?'selected':''}>Admin</option><option value="editor" ${u.role==='editor'?'selected':''}>Editor</option><option value="viewer" ${u.role==='viewer'?'selected':''}>Viewer</option></select></td><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);"><input type="text" class="admin-transp-input" data-email="${u.email}" value="${u.transportadora||''}" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); border-radius:4px; padding:6px 12px; font-size:13px; width:160px;"></td><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);"><button class="btn-admin-salvar" data-email="${u.email}">Salvar</button><button class="btn-admin-excluir" data-email="${u.email}">Excluir</button></td></tr>`).join('');
+  tbody.innerHTML = usuarios.map(u => `<tr><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);">${u.email}</td><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);"><select class="admin-role-select" data-email="${u.email}" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); border-radius:4px; padding:6px 12px; font-family:'IBM Plex Mono',monospace; font-size:13px;"><option value="admin" ${u.role==='admin'?'selected':''}>Admin</option><option value="assist-adm" ${u.role==='assist-adm'?'selected':''}>Assist-ADM</option><option value="editor" ${u.role==='editor'?'selected':''}>Editor</option><option value="viewer" ${u.role==='viewer'?'selected':''}>Viewer</option></select></td><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);"><input type="text" class="admin-transp-input" data-email="${u.email}" value="${u.transportadora||''}" style="background:var(--bg); color:var(--text); border:1px solid var(--line-soft); border-radius:4px; padding:6px 12px; font-size:13px; width:160px;"></td><td style="padding:10px 16px; border-bottom:1px solid var(--line-soft);"><button class="btn-admin-salvar" data-email="${u.email}">Salvar</button><button class="btn-admin-excluir" data-email="${u.email}">Excluir</button></td></tr>`).join('');
   document.querySelectorAll('.btn-admin-salvar').forEach(btn => {
     btn.addEventListener('click', async function() {
       const email = this.dataset.email;
@@ -2653,7 +2697,7 @@ async function excluirUsuario(email) {
 document.getElementById('btnAdicionarUsuario')?.addEventListener('click', async function() {
   const { value: formValues } = await Swal.fire({
     title:'Adicionar novo usuário',
-    html:`<input id="swal-email" class="swal2-input" placeholder="E-mail" type="email"><input id="swal-senha" class="swal2-input" placeholder="Senha" type="password"><select id="swal-role" class="swal2-input" style="padding:12px 16px;"><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="admin">Admin</option></select><input id="swal-transp" class="swal2-input" placeholder="Transportadora (opcional)">`,
+    html:`<input id="swal-email" class="swal2-input" placeholder="E-mail" type="email"><input id="swal-senha" class="swal2-input" placeholder="Senha" type="password"><select id="swal-role" class="swal2-input" style="padding:12px 16px;"><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="assist-adm">Assist-ADM</option><option value="admin">Admin</option></select><input id="swal-transp" class="swal2-input" placeholder="Transportadora (opcional)">`,
     focusConfirm:false,
     preConfirm:() => {
       const email = document.getElementById('swal-email').value.trim();
@@ -2676,19 +2720,37 @@ document.getElementById('btnAdicionarUsuario')?.addEventListener('click', async 
 document.getElementById('refreshAdmin')?.addEventListener('click', carregarUsuarios);
 
 // ================================================================
-//  FILTROS E CRUZAMENTO
+//  FILTROS E CRUZAMENTO (CORRIGIDO)
 // ================================================================
 function renderFiltroTransportadoras(data) {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
   if (!data || data.transportadoraList.length === 0) { container.innerHTML = `<span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`; return; }
-  if (filtroTransportadoras.size === 0) data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome));
-  if (filtroTransportadorasResp.size === 0) data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome));
+
+  // Inicializa os filtros se estiverem vazios
+  if (filtroTransportadoras.size === 0) {
+    data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome));
+  }
+  if (filtroTransportadorasResp.size === 0) {
+    data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome));
+  }
+
   container.innerHTML = data.transportadoraList.map(t => {
     const checkedAmbos = filtroTransportadoras.has(t.nome) ? 'checked' : '';
     const checkedResp = filtroTransportadorasResp.has(t.nome) ? 'checked' : '';
-    return `<div class="transp-filter-item"><span class="transp-nome">${t.nome}</span><label class="transp-check-label"><input type="checkbox" class="cb-ambos" ${checkedAmbos} onclick="toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','ambos')"> 🔗</label><label class="transp-check-label"><input type="checkbox" class="cb-responsabilidade" ${checkedResp} onclick="toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','responsabilidade')"> 📦</label><span class="transp-count">(${t.quantidade})</span></div>`;
+    return `<div class="transp-filter-item">
+      <span class="transp-nome">${t.nome}</span>
+      <label class="transp-check-label">
+        <input type="checkbox" class="cb-ambos" ${checkedAmbos} onclick="toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','ambos')"> 🔗
+      </label>
+      <label class="transp-check-label">
+        <input type="checkbox" class="cb-responsabilidade" ${checkedResp} onclick="toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','responsabilidade')"> 📦
+      </label>
+      <span class="transp-count">(${t.quantidade})</span>
+    </div>`;
   }).join('');
+
+  // Atualiza contadores
   const filterCountAmbos = document.getElementById('filterCountAmbos');
   const filterCountResp = document.getElementById('filterCountResp');
   const filterFloatBadge = document.getElementById('filterFloatBadge');
@@ -2700,9 +2762,26 @@ function renderFiltroTransportadoras(data) {
   if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
 }
 
-function toggleTransportadora(nome, tipo) {
-  if (tipo === 'ambos') { if (filtroTransportadoras.has(nome)) filtroTransportadoras.delete(nome); else { filtroTransportadoras.add(nome); filtroTransportadorasResp.delete(nome); } }
-  else if (tipo === 'responsabilidade') { if (filtroTransportadorasResp.has(nome)) filtroTransportadorasResp.delete(nome); else { filtroTransportadorasResp.add(nome); filtroTransportadoras.delete(nome); } }
+window.toggleTransportadora = function(nome, tipo) {
+  if (tipo === 'ambos') {
+    if (filtroTransportadoras.has(nome)) {
+      filtroTransportadoras.delete(nome);
+    } else {
+      filtroTransportadoras.add(nome);
+      // Se marcar ambos, desmarca responsabilidade
+      filtroTransportadorasResp.delete(nome);
+    }
+  } else if (tipo === 'responsabilidade') {
+    if (filtroTransportadorasResp.has(nome)) {
+      filtroTransportadorasResp.delete(nome);
+    } else {
+      filtroTransportadorasResp.add(nome);
+      // Se marcar responsabilidade, desmarca ambos
+      filtroTransportadoras.delete(nome);
+    }
+  }
+
+  // Atualiza contadores
   const filterCountAmbos = document.getElementById('filterCountAmbos');
   const filterCountResp = document.getElementById('filterCountResp');
   const filterFloatBadge = document.getElementById('filterFloatBadge');
@@ -2712,6 +2791,8 @@ function toggleTransportadora(nome, tipo) {
   const totalSelecionadas = filtroTransportadoras.size + filtroTransportadorasResp.size;
   if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
   if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
+
+  // Atualiza os checkboxes na interface
   const container = document.getElementById('transpFilterContainer');
   if (container) {
     container.querySelectorAll('.transp-filter-item').forEach(item => {
@@ -2722,10 +2803,14 @@ function toggleTransportadora(nome, tipo) {
       if (cbResp) cbResp.checked = filtroTransportadorasResp.has(nome);
     });
   }
-  if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-}
 
-function selecionarTodasTransportadoras() {
+  // Re-renderiza o cruzamento com os novos filtros
+  if (dadosCruzamento) {
+    renderCruzamento(dadosCruzamento);
+  }
+};
+
+window.selecionarTodasTransportadoras = function() {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
   container.querySelectorAll('.transp-filter-item').forEach(item => {
@@ -2745,9 +2830,9 @@ function selecionarTodasTransportadoras() {
   if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
   if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
   if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-}
+};
 
-function limparTodasTransportadoras() {
+window.limparTodasTransportadoras = function() {
   const container = document.getElementById('transpFilterContainer');
   if (!container) return;
   container.querySelectorAll('.transp-filter-item').forEach(item => {
@@ -2767,7 +2852,7 @@ function limparTodasTransportadoras() {
   if (filterFloatBadge) filterFloatBadge.textContent = '0';
   if (filterTranspCount) filterTranspCount.textContent = '0 selecionadas (0 🔗 + 0 📦)';
   if (dadosCruzamento) renderCruzamento(dadosCruzamento);
-}
+};
 
 function aplicarFiltroTransportadoras(data, tipo) {
   if (!data) return data;
@@ -2786,7 +2871,10 @@ function renderCruzamento(data) {
   const tbody = document.getElementById('cruzamentoTbody');
   const countSpan = document.getElementById('cruzamentoCount');
   const footerSpan = document.getElementById('footerTotalCruzamento');
+
+  // Atualiza o filtro de transportadoras
   renderFiltroTransportadoras(data);
+
   if (!data || data.dados.length === 0) {
     if (statsDiv) { statsDiv.innerHTML = `<div class="cruzamento-stat"><div class="num">0</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">0 faltantes no inventário</div></div><div class="cruzamento-stat"><div class="num">0</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">0 em ambos</div></div><div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">0</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">0 transportadoras selecionadas</div></div><div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">0</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">0 transportadoras selecionadas</div></div>`; }
     if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:24px;">Nenhum pacote em ambos</div>`;
@@ -2795,12 +2883,29 @@ function renderCruzamento(data) {
     if (footerSpan) footerSpan.textContent = '0 registros';
     return;
   }
+
+  // Aplica o filtro de "ambos"
   const dadosFiltradosEmAmbos = aplicarFiltroTransportadoras(data, 'ambos');
+
+  // Calcula o total de pacotes de responsabilidade (filtro resp)
   let totalPacotesResp = 0;
-  if (filtroTransportadorasResp.size > 0) { data.transportadoraList.forEach(t => { if (filtroTransportadorasResp.has(t.nome)) totalPacotesResp += t.quantidade; }); }
-  if (statsDiv) {
-    statsDiv.innerHTML = `<div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div><div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">${data.emAmbos} em ambos</div></div><div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">${dadosFiltradosEmAmbos.emAmbos}</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">${filtroTransportadoras.size} transportadoras selecionadas</div></div><div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">${totalPacotesResp}</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">${filtroTransportadorasResp.size} transportadoras selecionadas</div></div>`;
+  if (filtroTransportadorasResp.size > 0) {
+    data.transportadoraList.forEach(t => {
+      if (filtroTransportadorasResp.has(t.nome)) totalPacotesResp += t.quantidade;
+    });
   }
+
+  // Atualiza os cards de estatísticas
+  if (statsDiv) {
+    statsDiv.innerHTML = `
+      <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div>
+      <div class="cruzamento-stat"><div class="num">${data.totalFaltantes}</div><div class="label">❌ Total Faltantes no Inventário</div><div class="sub-label">${data.emAmbos} em ambos</div></div>
+      <div class="cruzamento-stat"><div class="num cruzamento" style="font-size:36px;">${dadosFiltradosEmAmbos.emAmbos}</div><div class="label">🔗 Em Ambos (Filtrado)</div><div class="sub-label">${filtroTransportadoras.size} transportadoras selecionadas</div></div>
+      <div class="cruzamento-stat"><div class="num responsabilidade" style="font-size:36px;">${totalPacotesResp}</div><div class="label">📦 Responsabilidade ID</div><div class="sub-label">${filtroTransportadorasResp.size} transportadoras selecionadas</div></div>
+    `;
+  }
+
+  // Atualiza o grid de transportadoras em ambos
   if (dadosFiltradosEmAmbos.transportadoraList.length === 0) {
     if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:24px;">Nenhum pacote em ambos para as transportadoras selecionadas</div>`;
   } else {
@@ -2812,9 +2917,12 @@ function renderCruzamento(data) {
       }).join('');
     }
   }
+
+  // Atualiza a tabela detalhada
   const dadosParaTabela = dadosFiltradosEmAmbos.dados;
   if (countSpan) countSpan.textContent = `${dadosParaTabela.length} registros`;
   if (footerSpan) footerSpan.textContent = `${dadosParaTabela.length} registros`;
+
   if (dadosParaTabela.length === 0) {
     if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:36px;">Nenhum registro em ambos para as transportadoras selecionadas</td></tr>`;
   } else {
@@ -3025,8 +3133,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const filterBtn = document.getElementById('filterFloatBtn');
       if (filterBtn) { if (targetId === 'tabCruzamento') filterBtn.classList.remove('hidden'); else filterBtn.classList.add('hidden'); }
       if (targetId === 'tabRespostas') {
-        if (isAuthenticated && currentUserRole === 'admin') carregarRespostas();
-        else { const tbody = document.getElementById('respostasTbody'); if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Apenas administradores podem acessar esta aba.</td></tr>`; } const statusText = document.getElementById('statusTextRespostas'); if (statusText) statusText.textContent = '🔒 Acesso restrito a administradores'; }
+        if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) {
+          carregarRespostas();
+        } else {
+          const tbody = document.getElementById('respostasTbody');
+          if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Apenas administradores e assistentes podem acessar esta aba.</td></tr>`; }
+          const statusText = document.getElementById('statusTextRespostas');
+          if (statusText) statusText.textContent = '🔒 Acesso restrito a administradores e assistentes';
+        }
       }
       setTimeout(() => { try { if (chartQuantidade && typeof chartQuantidade.resize === 'function') chartQuantidade.resize(); if (chartValor && typeof chartValor.resize === 'function') chartValor.resize(); if (chartZona && typeof chartZona.resize === 'function') chartZona.resize(); if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize(); } catch(e) {} }, 100);
     });
@@ -3060,6 +3174,7 @@ window.toggleSelecao = toggleSelecao;
 window.toggleTransportadora = toggleTransportadora;
 window.selecionarTodasTransportadoras = selecionarTodasTransportadoras;
 window.limparTodasTransportadoras = limparTodasTransportadoras;
+window.respostasIrParaPagina = respostasIrParaPagina;
 </script>
 </body>
 </html>
