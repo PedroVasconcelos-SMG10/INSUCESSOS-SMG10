@@ -1290,12 +1290,11 @@
           <tbody id="respostasTbody"><tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Carregando respostas...</td></tr></tbody>
         </table>
       </div>
-      <!-- PAGINAÇÃO CORRIGIDA COM ONCLICK -->
       <div id="respostasPaginacao" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:var(--panel-alt); border-top:1px solid var(--line-soft); flex-wrap:wrap; gap:10px;">
         <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim);" id="respostasInfoPagina">Mostrando 0 a 0 de 0</span>
         <div style="display:flex; gap:10px;">
-          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('anterior')" disabled>◀ Anterior</button>
-          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" onclick="respostasIrParaPagina('proximo')" disabled>Próximo ▶</button>
+          <button class="btn-secondary" id="respostasPaginaAnterior" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>◀ Anterior</button>
+          <button class="btn-secondary" id="respostasPaginaProxima" style="padding:6px 18px; font-size:13px; background:var(--panel);" disabled>Próximo ▶</button>
         </div>
       </div>
     </div>
@@ -2195,58 +2194,85 @@ function aplicarFiltrosRespostas() {
 }
 
 function renderizarRespostas() {
-    const tbody = document.getElementById('respostasTbody');
-    const countSpan = document.getElementById('respostasCount');
-    const footerSpan = document.getElementById('footerTotalRespostas');
-    const infoPagina = document.getElementById('respostasInfoPagina');
+  const tbody = document.getElementById('respostasTbody');
+  const countSpan = document.getElementById('respostasCount');
+  const footerSpan = document.getElementById('footerTotalRespostas');
+  const infoPagina = document.getElementById('respostasInfoPagina');
 
-    const total = respostasFiltradas.length;
-    const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
-    const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
-    const start = (pagina - 1) * RESPOSTAS_POR_PAGINA;
-    const end = Math.min(start + RESPOSTAS_POR_PAGINA, total);
-    const paginaData = respostasFiltradas.slice(start, end);
+  const total = respostasFiltradas.length;
+  const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
+  const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
+  const start = (pagina - 1) * RESPOSTAS_POR_PAGINA;
+  const end = Math.min(start + RESPOSTAS_POR_PAGINA, total);
+  const paginaData = respostasFiltradas.slice(start, end);
 
-    if (countSpan) countSpan.textContent = `${total} registros`;
-    if (footerSpan) footerSpan.textContent = `${total} registros`;
+  if (countSpan) countSpan.textContent = `${total} registros`;
+  if (footerSpan) footerSpan.textContent = `${total} registros`;
 
-    if (infoPagina) {
-        infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro';
-    }
+  if (infoPagina) {
+    infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro';
+  }
 
-    // Atualiza o estado dos botões
-    atualizarPaginacaoRespostas();
+  // Atualiza estado dos botões
+  atualizarPaginacaoRespostas();
 
-    if (paginaData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
-        return;
-    }
+  if (paginaData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
+    return;
+  }
 
-    tbody.innerHTML = paginaData.map((row, index) => {
-        const globalIndex = start + index + 1;
-        const id = row['ID'] || row['ID do envio'] || '';
-        const transportadora = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
-        const motorista = row['Motorista'] || row['motorista'] || row['MOTORISTA'] || '';
-        const responsavel = row['Nome_Responsavel'] || row['Nome Responsável'] || row['responsavel'] || row['DISPATCHER'] || '';
-        const justificativa = row['Justificativa'] || row['justificativa'] || row['MOTIVO'] || '';
-        const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
-        return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
-    }).join('');
+  tbody.innerHTML = paginaData.map((row, index) => {
+    const globalIndex = start + index + 1;
+    const id = row['ID'] || row['ID do envio'] || '';
+    const transportadora = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
+    const motorista = row['Motorista'] || row['motorista'] || row['MOTORISTA'] || '';
+    const responsavel = row['Nome_Responsavel'] || row['Nome Responsável'] || row['responsavel'] || row['DISPATCHER'] || '';
+    const justificativa = row['Justificativa'] || row['justificativa'] || row['MOTIVO'] || '';
+    const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
+    return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
+  }).join('');
 }
-// Função global para paginação das respostas (chamada via onclick)
-window.respostasIrParaPagina = function(direcao) {
-  if (direcao === 'anterior' && respostasPaginaAtual > 1) {
-    respostasPaginaAtual--;
-    renderizarRespostas();
-  } else if (direcao === 'proximo') {
+
+// Funções de paginação
+function atualizarPaginacaoRespostas() {
+  const btnAnterior = document.getElementById('respostasPaginaAnterior');
+  const btnProximo = document.getElementById('respostasPaginaProximo');
+  const total = respostasFiltradas.length;
+  const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
+  const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
+
+  if (btnAnterior) btnAnterior.disabled = pagina <= 1;
+  if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
+}
+
+function configurarBotoesRespostas() {
+  const btnAnterior = document.getElementById('respostasPaginaAnterior');
+  const btnProximo = document.getElementById('respostasPaginaProximo');
+
+  // Remove listeners antigos clonando e substituindo (seguro)
+  const novoAnterior = btnAnterior.cloneNode(true);
+  const novoProximo = btnProximo.cloneNode(true);
+  btnAnterior.parentNode.replaceChild(novoAnterior, btnAnterior);
+  btnProximo.parentNode.replaceChild(novoProximo, btnProximo);
+
+  document.getElementById('respostasPaginaAnterior').addEventListener('click', function() {
+    if (respostasPaginaAtual > 1) {
+      respostasPaginaAtual--;
+      renderizarRespostas();
+    }
+  });
+
+  document.getElementById('respostasPaginaProximo').addEventListener('click', function() {
     const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
     if (respostasPaginaAtual < totalPaginas) {
       respostasPaginaAtual++;
       renderizarRespostas();
-      atualizarPaginacaoRespostas();
     }
-  }
-};
+  });
+
+  // Estado inicial
+  atualizarPaginacaoRespostas();
+}
 
 // Eventos da aba Respostas
 document.getElementById('btnFiltrarRespostas')?.addEventListener('click', aplicarFiltrosRespostas);
@@ -2728,13 +2754,8 @@ function renderFiltroTransportadoras(data) {
   if (!container) return;
   if (!data || data.transportadoraList.length === 0) { container.innerHTML = `<span style="color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 0;">Nenhuma transportadora encontrada</span>`; return; }
 
-  // Inicializa os filtros se estiverem vazios
-  if (filtroTransportadoras.size === 0) {
-    data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome));
-  }
-  if (filtroTransportadorasResp.size === 0) {
-    data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome));
-  }
+  if (filtroTransportadoras.size === 0) { data.transportadoraList.forEach(t => filtroTransportadoras.add(t.nome)); }
+  if (filtroTransportadorasResp.size === 0) { data.transportadoraList.forEach(t => filtroTransportadorasResp.add(t.nome)); }
 
   container.innerHTML = data.transportadoraList.map(t => {
     const checkedAmbos = filtroTransportadoras.has(t.nome) ? 'checked' : '';
@@ -2742,16 +2763,15 @@ function renderFiltroTransportadoras(data) {
     return `<div class="transp-filter-item">
       <span class="transp-nome">${t.nome}</span>
       <label class="transp-check-label">
-        <input type="checkbox" class="cb-ambos" ${checkedAmbos} onclick="toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','ambos')"> 🔗
+        <input type="checkbox" class="cb-ambos" ${checkedAmbos} onclick="window.toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','ambos')"> 🔗
       </label>
       <label class="transp-check-label">
-        <input type="checkbox" class="cb-responsabilidade" ${checkedResp} onclick="toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','responsabilidade')"> 📦
+        <input type="checkbox" class="cb-responsabilidade" ${checkedResp} onclick="window.toggleTransportadora('${t.nome.replace(/'/g,"\\'")}','responsabilidade')"> 📦
       </label>
       <span class="transp-count">(${t.quantidade})</span>
     </div>`;
   }).join('');
 
-  // Atualiza contadores
   const filterCountAmbos = document.getElementById('filterCountAmbos');
   const filterCountResp = document.getElementById('filterCountResp');
   const filterFloatBadge = document.getElementById('filterFloatBadge');
@@ -2769,7 +2789,6 @@ window.toggleTransportadora = function(nome, tipo) {
       filtroTransportadoras.delete(nome);
     } else {
       filtroTransportadoras.add(nome);
-      // Se marcar ambos, desmarca responsabilidade
       filtroTransportadorasResp.delete(nome);
     }
   } else if (tipo === 'responsabilidade') {
@@ -2777,12 +2796,10 @@ window.toggleTransportadora = function(nome, tipo) {
       filtroTransportadorasResp.delete(nome);
     } else {
       filtroTransportadorasResp.add(nome);
-      // Se marcar responsabilidade, desmarca ambos
       filtroTransportadoras.delete(nome);
     }
   }
 
-  // Atualiza contadores
   const filterCountAmbos = document.getElementById('filterCountAmbos');
   const filterCountResp = document.getElementById('filterCountResp');
   const filterFloatBadge = document.getElementById('filterFloatBadge');
@@ -2793,7 +2810,6 @@ window.toggleTransportadora = function(nome, tipo) {
   if (filterFloatBadge) filterFloatBadge.textContent = totalSelecionadas;
   if (filterTranspCount) filterTranspCount.textContent = `${totalSelecionadas} selecionadas (${filtroTransportadoras.size} 🔗 + ${filtroTransportadorasResp.size} 📦)`;
 
-  // Atualiza os checkboxes na interface
   const container = document.getElementById('transpFilterContainer');
   if (container) {
     container.querySelectorAll('.transp-filter-item').forEach(item => {
@@ -2805,7 +2821,6 @@ window.toggleTransportadora = function(nome, tipo) {
     });
   }
 
-  // Re-renderiza o cruzamento com os novos filtros
   if (dadosCruzamento) {
     renderCruzamento(dadosCruzamento);
   }
@@ -2873,7 +2888,6 @@ function renderCruzamento(data) {
   const countSpan = document.getElementById('cruzamentoCount');
   const footerSpan = document.getElementById('footerTotalCruzamento');
 
-  // Atualiza o filtro de transportadoras
   renderFiltroTransportadoras(data);
 
   if (!data || data.dados.length === 0) {
@@ -2885,10 +2899,8 @@ function renderCruzamento(data) {
     return;
   }
 
-  // Aplica o filtro de "ambos"
   const dadosFiltradosEmAmbos = aplicarFiltroTransportadoras(data, 'ambos');
 
-  // Calcula o total de pacotes de responsabilidade (filtro resp)
   let totalPacotesResp = 0;
   if (filtroTransportadorasResp.size > 0) {
     data.transportadoraList.forEach(t => {
@@ -2896,7 +2908,6 @@ function renderCruzamento(data) {
     });
   }
 
-  // Atualiza os cards de estatísticas
   if (statsDiv) {
     statsDiv.innerHTML = `
       <div class="cruzamento-stat"><div class="num">${data.totalComTransportadora}</div><div class="label">📦 Total com Transportadora</div><div class="sub-label">${data.totalFaltantes} faltantes no inventário</div></div>
@@ -2906,7 +2917,6 @@ function renderCruzamento(data) {
     `;
   }
 
-  // Atualiza o grid de transportadoras em ambos
   if (dadosFiltradosEmAmbos.transportadoraList.length === 0) {
     if (transpGrid) transpGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:24px;">Nenhum pacote em ambos para as transportadoras selecionadas</div>`;
   } else {
@@ -2919,7 +2929,6 @@ function renderCruzamento(data) {
     }
   }
 
-  // Atualiza a tabela detalhada
   const dadosParaTabela = dadosFiltradosEmAmbos.dados;
   if (countSpan) countSpan.textContent = `${dadosParaTabela.length} registros`;
   if (footerSpan) footerSpan.textContent = `${dadosParaTabela.length} registros`;
@@ -3095,47 +3104,7 @@ async function toggleStatus(id, transportadora, motorista) {
     else carregarTodosOsDados();
   } catch (error) { Swal.fire({ icon:'error', title:'Erro', text:'Ocorreu um erro ao alternar status.', confirmButtonColor:'#e8593f' }); console.error(error); }
 }
-// ================================================================
-//  PAGINAÇÃO DAS RESPOSTAS - VERSÃO ROBUSTA
-// ================================================================
-function configurarBotoesRespostas() {
-    const btnAnterior = document.getElementById('respostasPaginaAnterior');
-    const btnProximo = document.getElementById('respostasPaginaProximo');
 
-    // Remove event listeners antigos (se houver)
-    const novoAnterior = btnAnterior.cloneNode(true);
-    const novoProximo = btnProximo.cloneNode(true);
-    btnAnterior.parentNode.replaceChild(novoAnterior, btnAnterior);
-    btnProximo.parentNode.replaceChild(novoProximo, btnProximo);
-
-    // Adiciona os novos listeners
-    document.getElementById('respostasPaginaAnterior').addEventListener('click', function() {
-        if (respostasPaginaAtual > 1) {
-            respostasPaginaAtual--;
-            renderizarRespostas();
-        }
-    });
-
-    document.getElementById('respostasPaginaProximo').addEventListener('click', function() {
-        const totalPaginas = Math.ceil(respostasFiltradas.length / RESPOSTAS_POR_PAGINA);
-        if (respostasPaginaAtual < totalPaginas) {
-            respostasPaginaAtual++;
-            renderizarRespostas();
-        }
-    });
-}
-
-// Chame esta função sempre que os dados forem filtrados ou recarregados
-function atualizarPaginacaoRespostas() {
-    const btnAnterior = document.getElementById('respostasPaginaAnterior');
-    const btnProximo = document.getElementById('respostasPaginaProximo');
-    const total = respostasFiltradas.length;
-    const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
-    const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
-
-    if (btnAnterior) btnAnterior.disabled = pagina <= 1;
-    if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
-}
 // ================================================================
 //  EVENT LISTENERS
 // ================================================================
@@ -3176,6 +3145,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (targetId === 'tabRespostas') {
         if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) {
           carregarRespostas();
+          // Configura os botões após carregar os dados
+          setTimeout(function() { configurarBotoesRespostas(); }, 100);
         } else {
           const tbody = document.getElementById('respostasTbody');
           if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Apenas administradores e assistentes podem acessar esta aba.</td></tr>`; }
@@ -3192,6 +3163,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const temSessao = verificarSessao();
   if (!temSessao) carregarDadosExemplo();
+
+  // Configurar botões de paginação das respostas após um pequeno delay
+  setTimeout(function() {
+    configurarBotoesRespostas();
+  }, 500);
 
   setInterval(() => { if (isAuthenticated) { carregarDadosInventario(); carregarCruzamento(); } }, 300000);
 });
@@ -3215,7 +3191,6 @@ window.toggleSelecao = toggleSelecao;
 window.toggleTransportadora = toggleTransportadora;
 window.selecionarTodasTransportadoras = selecionarTodasTransportadoras;
 window.limparTodasTransportadoras = limparTodasTransportadoras;
-window.respostasIrParaPagina = respostasIrParaPagina;
 </script>
 </body>
 </html>
