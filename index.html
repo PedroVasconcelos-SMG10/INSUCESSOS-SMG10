@@ -2195,44 +2195,44 @@ function aplicarFiltrosRespostas() {
 }
 
 function renderizarRespostas() {
-  const tbody = document.getElementById('respostasTbody');
-  const countSpan = document.getElementById('respostasCount');
-  const footerSpan = document.getElementById('footerTotalRespostas');
-  const infoPagina = document.getElementById('respostasInfoPagina');
-  const btnAnterior = document.getElementById('respostasPaginaAnterior');
-  const btnProximo = document.getElementById('respostasPaginaProximo');
+    const tbody = document.getElementById('respostasTbody');
+    const countSpan = document.getElementById('respostasCount');
+    const footerSpan = document.getElementById('footerTotalRespostas');
+    const infoPagina = document.getElementById('respostasInfoPagina');
 
-  const total = respostasFiltradas.length;
-  const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
-  const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
-  const start = (pagina - 1) * RESPOSTAS_POR_PAGINA;
-  const end = Math.min(start + RESPOSTAS_POR_PAGINA, total);
-  const paginaData = respostasFiltradas.slice(start, end);
+    const total = respostasFiltradas.length;
+    const totalPaginas = Math.ceil(total / RESPOSTAS_POR_PAGINA);
+    const pagina = Math.min(respostasPaginaAtual, totalPaginas || 1);
+    const start = (pagina - 1) * RESPOSTAS_POR_PAGINA;
+    const end = Math.min(start + RESPOSTAS_POR_PAGINA, total);
+    const paginaData = respostasFiltradas.slice(start, end);
 
-  if (countSpan) countSpan.textContent = `${total} registros`;
-  if (footerSpan) footerSpan.textContent = `${total} registros`;
+    if (countSpan) countSpan.textContent = `${total} registros`;
+    if (footerSpan) footerSpan.textContent = `${total} registros`;
 
-  if (infoPagina) { infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro'; }
-  if (btnAnterior) btnAnterior.disabled = pagina <= 1;
-  if (btnProximo) btnProximo.disabled = pagina >= totalPaginas;
+    if (infoPagina) {
+        infoPagina.textContent = total > 0 ? `Mostrando ${start+1} a ${end} de ${total}` : 'Nenhum registro';
+    }
 
-  if (paginaData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
-    return;
-  }
+    // Atualiza o estado dos botões
+    atualizarPaginacaoRespostas();
 
-  tbody.innerHTML = paginaData.map((row, index) => {
-    const globalIndex = start + index + 1;
-    const id = row['ID'] || row['ID do envio'] || '';
-    const transportadora = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
-    const motorista = row['Motorista'] || row['motorista'] || row['MOTORISTA'] || '';
-    const responsavel = row['Nome_Responsavel'] || row['Nome Responsável'] || row['responsavel'] || row['DISPATCHER'] || '';
-    const justificativa = row['Justificativa'] || row['justificativa'] || row['MOTIVO'] || '';
-    const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
-    return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
-  }).join('');
+    if (paginaData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:36px;">Nenhuma resposta encontrada com os filtros atuais.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = paginaData.map((row, index) => {
+        const globalIndex = start + index + 1;
+        const id = row['ID'] || row['ID do envio'] || '';
+        const transportadora = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
+        const motorista = row['Motorista'] || row['motorista'] || row['MOTORISTA'] || '';
+        const responsavel = row['Nome_Responsavel'] || row['Nome Responsável'] || row['responsavel'] || row['DISPATCHER'] || '';
+        const justificativa = row['Justificativa'] || row['justificativa'] || row['MOTIVO'] || '';
+        const dataHora = row['Data_Hora'] || row['Data/Hora'] || row['data_hora'] || row['DATA RESPOSTA'] || '';
+        return `<tr><td>${globalIndex}</td><td><strong>${id}</strong></td><td>${transportadora}</td><td>${motorista}</td><td>${responsavel}</td><td style="max-width:280px; white-space:normal; word-break:break-word;">${justificativa}</td><td>${dataHora}</td></tr>`;
+    }).join('');
 }
-
 // Função global para paginação das respostas (chamada via onclick)
 window.respostasIrParaPagina = function(direcao) {
   if (direcao === 'anterior' && respostasPaginaAtual > 1) {
@@ -2243,6 +2243,7 @@ window.respostasIrParaPagina = function(direcao) {
     if (respostasPaginaAtual < totalPaginas) {
       respostasPaginaAtual++;
       renderizarRespostas();
+      atualizarPaginacaoRespostas();
     }
   }
 };
