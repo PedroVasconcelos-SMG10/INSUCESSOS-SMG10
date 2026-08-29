@@ -565,6 +565,16 @@
       color: var(--success);
     }
 
+    /* ===== KPIs PACOTES — 3 em uma linha ===== */
+    #kpiStripPacotes {
+      flex-wrap: nowrap;
+    }
+    #kpiStripPacotes .kpi {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: none;
+    }
+
     /* ===== KPIs INVENTÁRIO — 5 em uma linha ===== */
     #kpiStripInventario {
       flex-wrap: nowrap;
@@ -2446,6 +2456,13 @@
         grid-template-columns: 1fr 1fr 1fr;
       }
 
+      #kpiStripPacotes {
+        flex-wrap: wrap;
+      }
+      #kpiStripPacotes .kpi {
+        flex: 1 1 200px;
+        min-width: 160px;
+      }
       #kpiStripInventario {
         flex-wrap: wrap;
       }
@@ -2671,16 +2688,6 @@
             style="color:var(--text-primary);"></span><span id="roleBadgeContainer"></span><span id="filterInfoTransp"
             class="filter-info-transp" style="display:none;"></span></div>
         <button class="btn btn-primary" id="refreshPacotes">🔄 Atualizar</button>
-      </div>
-      <div class="preview-box" id="previewPacotes">
-        <div class="empty-message">
-          <div class="loading-spinner">
-            <div class="spinner"></div><span>Aguardando autenticação...</span>
-          </div>
-        </div>
-      </div>
-      <div class="debug-box" id="debugPacotes">
-        <div style="color:var(--text-primary);">Aguardando autenticação...</div>
       </div>
       <div class="kpi-strip" id="kpiStripPacotes"></div>
       <div class="charts-grid">
