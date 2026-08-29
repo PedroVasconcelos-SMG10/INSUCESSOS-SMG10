@@ -565,6 +565,27 @@
       color: var(--success);
     }
 
+    /* ===== KPIs INVENTÁRIO — 5 em uma linha ===== */
+    #kpiStripInventario {
+      flex-wrap: nowrap;
+    }
+    #kpiStripInventario .kpi {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: none;
+      padding: 16px 12px 14px;
+    }
+    #kpiStripInventario .kpi .num {
+      font-size: 32px;
+    }
+    #kpiStripInventario .kpi .tag {
+      font-size: 11px;
+      letter-spacing: .06em;
+    }
+    #kpiStripInventario .kpi .sub {
+      font-size: 11px;
+    }
+
 
     /* ===== TABELA ADMIN ===== */
     .admin-table-wrap {
@@ -1489,8 +1510,6 @@
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      max-height: 260px;
-      overflow: auto;
       margin-top: 18px;
       border-radius: 10px;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
@@ -2427,6 +2446,14 @@
         grid-template-columns: 1fr 1fr 1fr;
       }
 
+      #kpiStripInventario {
+        flex-wrap: wrap;
+      }
+      #kpiStripInventario .kpi {
+        flex: 1 1 180px;
+        min-width: 140px;
+      }
+
       .cruzamento-stats {
         grid-template-columns: 1fr 1fr;
       }
@@ -2496,6 +2523,13 @@
 
       .kpi-strip.kpi-5 {
         grid-template-columns: 1fr;
+      }
+
+      #kpiStripInventario .kpi .num {
+        font-size: 26px;
+      }
+      #kpiStripInventario .kpi .tag {
+        font-size: 10px;
       }
 
       .cruzamento-stats {
@@ -3434,8 +3468,6 @@
     <div class="kpi"><div class="tag">❌ Faltantes</div><div class="num danger">${data.totalFaltante}</div><div class="sub">${(totalBase > 0 ? (data.totalFaltante / totalBase * 100) : 0).toFixed(1)}%</div></div>
     <div class="kpi"><div class="tag">🟣 Intrusos</div><div class="num purple">${data.totalIntruso}</div><div class="sub">${data.totalIntruso > 0 ? `+ ${data.totalIntruso}` : '✅ Nenhum'}</div></div>
     <div class="kpi"><div class="tag">📊 Acurácia</div><div class="num ${data.taxaAcuraciaGeral >= 95 ? 'success' : data.taxaAcuraciaGeral >= 80 ? 'warning' : 'danger'}">${data.taxaAcuraciaGeral.toFixed(1)}%</div><div class="sub">${data.totalNaoClassificado > 0 ? `⚠️ ${data.totalNaoClassificado} NC` : '✅ OK'}</div></div>
-    <div class="kpi"><div class="tag">🔴 SVC</div><div class="num svc">${data.totalSVC}</div><div class="sub">${(totalBase > 0 ? (data.totalSVC / totalBase * 100) : 0).toFixed(1)}%</div></div>
-    <div class="kpi"><div class="tag">🟢 Transportadora</div><div class="num transp">${data.totalTransportadora}</div><div class="sub">${(totalBase > 0 ? (data.totalTransportadora / totalBase * 100) : 0).toFixed(1)}%</div></div>
   `;
       const footerTotal = document.getElementById('footerTotalInventario');
       if (footerTotal) footerTotal.textContent = `${totalBase} registros (${data.totalIntruso} intrusos excluídos)`;
