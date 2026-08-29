@@ -928,6 +928,11 @@
     body[data-theme="light"] .admin-table-wrap {
       color: var(--text-primary);
     }
+
+    /* Ocultar filtros para usuários editor na aba Respostas */
+    body.editor-view .respostas-filtros {
+      display: none !important;
+    }
     body[data-theme="light"] #tituloSecaoTransportadoras,
     body[data-theme="light"] #legendaSecaoTransportadoras,
     body[data-theme="light"] .zona-grid + div h2,
@@ -3828,10 +3833,10 @@
       const footerSpan = document.getElementById('footerTotalRespostas');
       const roleBadge = document.getElementById('roleBadgeContainerRespostas');
 
-      if (currentUserRole !== 'admin' && currentUserRole !== 'assist-adm') {
-        if (statusText) statusText.textContent = '🔒 Acesso restrito apenas para administradores e assistentes.';
+      if (currentUserRole !== 'admin' && currentUserRole !== 'assist-adm' && currentUserRole !== 'editor') {
+        if (statusText) statusText.textContent = '🔒 Acesso restrito.';
         if (statusDot) statusDot.className = 'dot-status offline';
-        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">Apenas administradores e assistentes podem visualizar o histórico de respostas.</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">Você não tem permissão para visualizar o histórico de respostas.</td></tr>`;
         if (countSpan) countSpan.textContent = '0 registros';
         if (footerSpan) footerSpan.textContent = '0 registros';
         if (roleBadge) roleBadge.innerHTML = '';
@@ -3866,7 +3871,13 @@
           roleBadge.appendChild(badge);
         }
         if (statusDot) statusDot.className = 'dot-status online';
-        if (statusText) statusText.textContent = `✅ ${respostasData.length} respostas carregadas`;
+        if (statusText) {
+          if (currentUserRole === 'editor' && usuarioTransportadora) {
+            statusText.textContent = `✅ Respostas da transportadora ${usuarioTransportadora}`;
+          } else {
+            statusText.textContent = `✅ ${respostasData.length} respostas carregadas`;
+          }
+        }
         aplicarFiltrosRespostas();
       } catch (error) {
         console.error('[Respostas] Erro ao carregar:', error);
@@ -3877,10 +3888,16 @@
     }
 
     function aplicarFiltrosRespostas() {
-      const transpFiltro = document.getElementById('filtroRespostasTransportadora')?.value || 'TODAS';
+      let transpFiltro = document.getElementById('filtroRespostasTransportadora')?.value || 'TODAS';
       const responsavelFiltro = document.getElementById('filtroRespostasResponsavel')?.value.trim().toLowerCase() || '';
       const dataInicio = document.getElementById('filtroRespostasDataInicio')?.value;
       const dataFim = document.getElementById('filtroRespostasDataFim')?.value;
+
+      // Editor vê apenas respostas da sua transportadora
+      if (currentUserRole === 'editor' && usuarioTransportadora) {
+        const transps = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean);
+        if (transps.length > 0) transpFiltro = transps[0];
+      }
 
       respostasFiltradas = respostasData.filter(row => {
         const transp = row['Transportadora'] || row['transportadora'] || row['TRANSPORTADORA'] || '';
@@ -3946,8 +3963,8 @@
       aplicarFiltrosRespostas();
     });
     document.getElementById('refreshRespostas')?.addEventListener('click', function () {
-      if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) carregarRespostas();
-      else Swal.fire({ icon: 'warning', title: 'Acesso negado', text: 'Apenas administradores e assistentes.' });
+      if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm' || currentUserRole === 'editor')) carregarRespostas();
+      else Swal.fire({ icon: 'warning', title: 'Acesso negado', text: 'Você não tem permissão.' });
     });
     document.getElementById('btnExportarRespostas')?.addEventListener('click', function () {
       if (respostasFiltradas.length === 0) {
@@ -4231,7 +4248,7 @@
       }
       const tabRespostas = document.querySelector('.tab-btn[data-tab="tabRespostas"]');
       if (tabRespostas) {
-        tabRespostas.style.display = (currentUserRole === 'admin' || currentUserRole === 'assist-adm') ? 'block' : 'none';
+        tabRespostas.style.display = (currentUserRole === 'admin' || currentUserRole === 'assist-adm' || currentUserRole === 'editor') ? 'block' : 'none';
       }
       const tabAdmin = document.querySelector('.tab-btn[data-tab="tabAdmin"]');
       if (tabAdmin) {
@@ -4248,7 +4265,7 @@
         if (tabPacotes) tabPacotes.click();
       }
       const tabContentRespostas = document.getElementById('tabRespostas');
-      if (tabContentRespostas && tabContentRespostas.classList.contains('active') && currentUserRole !== 'admin' && currentUserRole !== 'assist-adm') {
+      if (tabContentRespostas && tabContentRespostas.classList.contains('active') && currentUserRole !== 'admin' && currentUserRole !== 'assist-adm' && currentUserRole !== 'editor') {
         const tabPacotes = document.querySelector('.tab-btn[data-tab="tabPacotes"]');
         if (tabPacotes) tabPacotes.click();
       }
@@ -4277,6 +4294,9 @@
         if (usuarioTransportadora) { filterInfo.style.display = 'inline-block'; const nomes = usuarioTransportadora.split(';').map(s => s.trim()).filter(Boolean).join(', '); filterInfo.innerHTML = `🚚 <strong>${nomes}</strong> (filtro automático)`; }
         else filterInfo.style.display = 'none';
       }
+      // Adiciona classe ao body para estilos específicos de role
+      if (currentUserRole === 'editor') document.body.classList.add('editor-view');
+      else document.body.classList.remove('editor-view');
       const debugBoxes = document.querySelectorAll('.debug-box');
       if (usuarioTransportadora) debugBoxes.forEach(el => { if (el) el.style.display = 'none'; });
       else debugBoxes.forEach(el => { if (el) el.style.display = 'block'; });
@@ -4886,13 +4906,13 @@
           const filterBtn = document.getElementById('filterFloatBtn');
           if (filterBtn) { if (targetId === 'tabCruzamento') filterBtn.classList.remove('hidden'); else filterBtn.classList.add('hidden'); }
           if (targetId === 'tabRespostas') {
-            if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm')) {
+            if (isAuthenticated && (currentUserRole === 'admin' || currentUserRole === 'assist-adm' || currentUserRole === 'editor')) {
               carregarRespostas();
             } else {
               const tbody = document.getElementById('respostasTbody');
-              if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Apenas administradores e assistentes podem acessar esta aba.</td></tr>`; }
+              if (tbody) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:36px;">🔒 Acesso restrito.</td></tr>`; }
               const statusText = document.getElementById('statusTextRespostas');
-              if (statusText) statusText.textContent = '🔒 Acesso restrito a administradores e assistentes';
+              if (statusText) statusText.textContent = '🔒 Acesso restrito';
             }
           }
           setTimeout(() => { try { if (chartQuantidade && typeof chartQuantidade.resize === 'function') chartQuantidade.resize(); if (chartValor && typeof chartValor.resize === 'function') chartValor.resize(); if (chartZona && typeof chartZona.resize === 'function') chartZona.resize(); if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize(); } catch (e) { } }, 100);
