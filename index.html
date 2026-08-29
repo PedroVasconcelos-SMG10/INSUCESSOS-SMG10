@@ -929,6 +929,96 @@
       color: var(--text-primary);
     }
 
+    /* ===== TOOLTIP RESPOSTA (HOVER NO ID) ===== */
+    .id-resposta-tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .id-resposta-tooltip .tooltip-box {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      z-index: 100;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 260px;
+      max-width: 340px;
+      background: var(--bg-white);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      transition: opacity .2s ease;
+      pointer-events: none;
+      text-align: left;
+    }
+    .id-resposta-tooltip .tooltip-box::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: var(--bg-white) transparent transparent transparent;
+    }
+    .id-resposta-tooltip:hover .tooltip-box {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip-box .tt-titulo {
+      font-family: 'Oswald', sans-serif;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--success);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tooltip-box .tt-linha {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+    .tooltip-box .tt-linha strong {
+      color: var(--text-primary);
+    }
+    .tooltip-box .tt-justificativa {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-top: 6px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .id-com-resposta {
+      position: relative;
+    }
+    .id-com-resposta::after {
+      content: "✓";
+      position: absolute;
+      top: -4px;
+      right: -10px;
+      background: var(--success);
+      color: #fff;
+      font-size: 9px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
     /* Ocultar filtros para usuários editor na aba Respostas */
     body.editor-view .respostas-filtros {
       display: none !important;
@@ -3076,6 +3166,7 @@
     let modalTotalIds = [], modalTotalValores = [], modalTotalMotoristas = [];
     let descricaoMap = {};
     let respostasSet = new Set();
+    let respostasDetalhadas = {}; // id -> { justificativa, responsavel, data, motorista }
 
     // ================================================================
     //  FILTROS DO CRUZAMENTO (NOVOS)
@@ -3129,6 +3220,10 @@
     function escapeAttr(str) {
       if (!str) return '';
       return str.replace(/'/g, "\'").replace(/"/g, '\"');
+    }
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     function parseDataBR(texto) {
       if (!texto) return null;
@@ -3313,12 +3408,47 @@
         } else { descricaoMap = {}; console.log('[Descrições] Nenhuma descrição encontrada'); }
         const respData = await lerAbaViaAPI('RESPOSTAS');
         respostasSet = new Set();
+        respostasDetalhadas = {};
         if (respData && respData.length > 0) {
           const headers = Object.keys(respData[0]);
           const idCol = headers.indexOf('ID') !== -1 ? headers.indexOf('ID') : 0;
-          respData.forEach(row => { const rowValues = Object.values(row); const id = rowValues[idCol]?.trim() || ''; if (id) respostasSet.add(id); });
+          const transpCol = headers.indexOf('Transportadora') !== -1 ? headers.indexOf('Transportadora') : headers.indexOf('transportadora') !== -1 ? headers.indexOf('transportadora') : headers.indexOf('TRANSPORTADORA') !== -1 ? headers.indexOf('TRANSPORTADORA') : -1;
+          const motCol = headers.indexOf('Motorista') !== -1 ? headers.indexOf('Motorista') : headers.indexOf('motorista') !== -1 ? headers.indexOf('motorista') : headers.indexOf('MOTORISTA') !== -1 ? headers.indexOf('MOTORISTA') : -1;
+          const respCol = headers.indexOf('Nome_Responsavel') !== -1 ? headers.indexOf('Nome_Responsavel') : headers.indexOf('Nome Responsável') !== -1 ? headers.indexOf('Nome Responsável') : headers.indexOf('responsavel') !== -1 ? headers.indexOf('responsavel') : headers.indexOf('DISPATCHER') !== -1 ? headers.indexOf('DISPATCHER') : -1;
+          const justCol = headers.indexOf('Justificativa') !== -1 ? headers.indexOf('Justificativa') : headers.indexOf('justificativa') !== -1 ? headers.indexOf('justificativa') : headers.indexOf('MOTIVO') !== -1 ? headers.indexOf('MOTIVO') : -1;
+          const dataCol = headers.indexOf('Data_Hora') !== -1 ? headers.indexOf('Data_Hora') : headers.indexOf('Data/Hora') !== -1 ? headers.indexOf('Data/Hora') : headers.indexOf('data_hora') !== -1 ? headers.indexOf('data_hora') : headers.indexOf('DATA RESPOSTA') !== -1 ? headers.indexOf('DATA RESPOSTA') : -1;
+          respData.forEach(row => {
+            const rowValues = Object.values(row);
+            const id = rowValues[idCol]?.trim() || '';
+            if (id) {
+              const novaResposta = {
+                transportadora: transpCol >= 0 ? (rowValues[transpCol]?.trim() || '') : '',
+                motorista: motCol >= 0 ? (rowValues[motCol]?.trim() || '') : '',
+                responsavel: respCol >= 0 ? (rowValues[respCol]?.trim() || '') : '',
+                justificativa: justCol >= 0 ? (rowValues[justCol]?.trim() || '') : '',
+                data: dataCol >= 0 ? (rowValues[dataCol]?.trim() || '') : ''
+              };
+              // Se já existe resposta para este ID, manter apenas a mais recente
+              const existente = respostasDetalhadas[id];
+              if (!existente) {
+                respostasDetalhadas[id] = novaResposta;
+              } else {
+                const dataNova = parseDataBR(novaResposta.data);
+                const dataExistente = parseDataBR(existente.data);
+                if (dataNova && dataExistente) {
+                  if (dataNova > dataExistente) respostasDetalhadas[id] = novaResposta;
+                } else if (dataNova) {
+                  respostasDetalhadas[id] = novaResposta;
+                } else if (!dataExistente) {
+                  // Se nenhuma tem data válida, manter a mais recente (última do array)
+                  respostasDetalhadas[id] = novaResposta;
+                }
+              }
+              respostasSet.add(id);
+            }
+          });
           console.log(`[Descrições] Carregadas ${respostasSet.size} respostas`);
-        } else respostasSet = new Set();
+        } else { respostasSet = new Set(); respostasDetalhadas = {}; }
       } catch (error) { console.warn('[Descrições] Erro ao carregar descrições/respostas:', error); descricaoMap = {}; respostasSet = new Set(); }
     }
 
@@ -3745,7 +3875,26 @@
           const statusClass = justificado ? 'justificado' : 'pendente';
           const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
           const link = linksPagina[index] || '';
+          const respInfo = respostasDetalhadas[id];
+          const temResposta = !!respInfo;
           let idHtml = link ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;">${id}</a>` : `<strong>${id}</strong>`;
+          // Tooltip de resposta no hover (apenas para visão de transportadora)
+          if (usuarioTransportadora && temResposta) {
+            const ttTransp = escapeHtml(respInfo.transportadora || '-');
+            const ttMot = escapeHtml(respInfo.motorista || '-');
+            const ttResp = escapeHtml(respInfo.responsavel || '-');
+            const ttData = escapeHtml(respInfo.data || '-');
+            const ttJust = escapeHtml(respInfo.justificativa || '-');
+            idHtml = `<span class="id-resposta-tooltip id-com-resposta">${idHtml}
+              <div class="tooltip-box">
+                <div class="tt-titulo">✅ Resposta Enviada</div>
+                <div class="tt-linha"><strong>Responsável:</strong> ${ttResp}</div>
+                <div class="tt-linha"><strong>Motorista:</strong> ${ttMot}</div>
+                <div class="tt-linha"><strong>Data:</strong> ${ttData}</div>
+                <div class="tt-justificativa">${ttJust}</div>
+              </div>
+            </span>`;
+          }
           let row = `<tr><td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}','${escapeAttr(motorista)}')"></td><td>${globalIndex}</td><td>${idHtml}</td><td>${descricao}</td><td>R$ ${valor.toFixed(2)}</td><td>${motorista}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
           if (isAdmin) { const btnText = justificado ? 'Desmarcar' : 'Justificar'; const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle'; row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}','${escapeAttr(objOrdenado.nome)}','${escapeAttr(motorista)}')">${btnText}</button></td>`; }
           row += `</tr>`;
