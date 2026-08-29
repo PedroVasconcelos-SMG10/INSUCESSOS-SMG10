@@ -462,8 +462,9 @@
     }
 
     .kpi-strip {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 2px;
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.25);
@@ -474,6 +475,9 @@
     }
 
     .kpi {
+      flex: 1 1 240px;
+      max-width: 360px;
+      text-align: center;
       background: var(--bg-card);
       backdrop-filter: blur(20px) saturate(1.2);
       -webkit-backdrop-filter: blur(20px) saturate(1.2);
@@ -504,6 +508,7 @@
       font-weight: 600;
       margin-top: 8px;
       color: var(--text-primary);
+      white-space: nowrap;
     }
 
     .kpi .pct {
@@ -558,6 +563,356 @@
 
     .kpi .num.transp {
       color: var(--success);
+    }
+
+
+    /* ===== TABELA ADMIN ===== */
+    .admin-table-wrap {
+      color: var(--text-primary);
+    }
+
+    .admin-table-wrap td {
+      color: var(--text-primary);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .admin-table-wrap th {
+      color: var(--text-primary);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+      background: var(--bg-secondary);
+    }
+
+    /* ===== BOTÕES ADMIN ===== */
+    .btn-admin-salvar,
+    .btn-admin-excluir {
+      font-family: 'Oswald', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 6px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .2s;
+      margin-right: 6px;
+    }
+
+    .btn-admin-salvar {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-admin-salvar:hover {
+      background: #1B5E20;
+      transform: translateY(-1px);
+    }
+
+    .btn-admin-excluir {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-admin-excluir:hover {
+      background: #B71C1C;
+      transform: translateY(-1px);
+    }
+
+    .admin-role-select,
+    .admin-transp-input {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .admin-role-select:focus,
+    .admin-transp-input:focus {
+      border-color: var(--accent);
+    }
+
+
+    /* ===== TOGGLE DE TEMA ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 140px;
+      z-index: 9998;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--text-primary);
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transition: all .3s ease;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1) rotate(15deg);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    }
+
+    /* ===== VARIÁVEIS TEMA CLARO ===== */
+    body[data-theme="light"] {
+      --bg-gradient: linear-gradient(105deg, #E8EDF5 0%, #F0E8F0 18%, #F5E8EC 32%, #F5E0E0 48%, #F5E8E0 62%, #F5F0E0 76%, #FDF8E8 90%, #FFFBE8 100%);
+      --bg-gradient-dark: linear-gradient(105deg, #E8EDF5 0%, #F0E8F0 30%, #F5E8EC 60%, #F5E0E0 100%);
+      --btn-gradient: linear-gradient(135deg, #E57373 0%, #FF8A65 100%);
+      --btn-gradient-hover: linear-gradient(135deg, #C62828 0%, #E65100 100%);
+      --bg-primary: #1a3a6b;
+      --bg-secondary: #F5F7FA;
+      --bg-white: #FFFFFF;
+      --bg-card: rgba(255, 255, 255, 0.72);
+      --bg-panel: rgba(245, 249, 255, 0.68);
+      --glass-border: rgba(255, 255, 255, 0.55);
+      --glass-glow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(255, 214, 0, 0.04);
+      --text-primary: #1a2a4a;
+      --text-on-blue: #1a2a4a;
+      --text-muted: #5a6a8a;
+      --text-faint: #8a9ab5;
+      --border-color: #D0D8E8;
+      --accent: #D32F2F;
+      --accent-hover: #B71C1C;
+    }
+
+    body[data-theme="light"] .masthead {
+      background: linear-gradient(105deg, #E8EDF5 0%, #F0E8F0 30%, #F5E8EC 60%, #F5E0E0 100%);
+      border-bottom: 2px solid rgba(15, 42, 92, 0.08);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    }
+    body[data-theme="light"] .masthead::before {
+      opacity: 0.6;
+    }
+    body[data-theme="light"] h1,
+    body[data-theme="light"] .masthead p,
+    body[data-theme="light"] .eyebrow {
+      color: #1a2a4a;
+      text-shadow: none;
+    }
+    body[data-theme="light"] .masthead p b {
+      color: #C62828;
+    }
+    body[data-theme="light"] .eyebrow .dot {
+      box-shadow: 0 0 10px rgba(198, 40, 40, 0.4);
+    }
+    body[data-theme="light"] .logo-id .logo-id-sub {
+      color: #1a2a4a;
+      text-shadow: none;
+    }
+    body[data-theme="light"] footer {
+      border-top: 2px solid rgba(15, 42, 92, 0.1);
+    }
+    body[data-theme="light"] footer span {
+      background: rgba(255, 255, 255, 0.6);
+      color: #1a2a4a;
+      text-shadow: none;
+    }
+    body[data-theme="light"] .tab-btn {
+      color: var(--text-muted);
+    }
+    body[data-theme="light"] .tab-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+    body[data-theme="light"] .tab-btn.active {
+      color: #fff;
+    }
+    body[data-theme="light"] .status-bar .info {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .kpi-strip,
+    body[data-theme="light"] .charts-grid,
+    body[data-theme="light"] .transportadoras-grid,
+    body[data-theme="light"] .zona-grid,
+    body[data-theme="light"] .cruzamento-stats,
+    body[data-theme="light"] .cruzamento-transp-grid {
+      background: rgba(255, 255, 255, 0.35);
+      border-color: rgba(15, 42, 92, 0.08);
+    }
+    body[data-theme="light"] .kpi:hover,
+    body[data-theme="light"] .chart-card:hover,
+    body[data-theme="light"] .cruzamento-stat:hover {
+      background: rgba(255, 255, 255, 0.95);
+    }
+    body[data-theme="light"] .ids-tabela-wrap .header h3,
+    body[data-theme="light"] .cruzamento-tabela-wrap .header h3,
+    body[data-theme="light"] .modal-header h2,
+    body[data-theme="light"] .filter-modal-header h2 {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .ids-tabela table th,
+    body[data-theme="light"] .cruzamento-tabela table th {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-bottom-color: var(--border-color);
+    }
+    body[data-theme="light"] .ids-tabela table td,
+    body[data-theme="light"] .cruzamento-tabela table td {
+      color: var(--text-primary);
+      border-bottom-color: var(--border-color);
+    }
+    body[data-theme="light"] .ids-tabela table tr:hover td,
+    body[data-theme="light"] .cruzamento-tabela table tr:hover td {
+      background: var(--bg-secondary);
+    }
+    body[data-theme="light"] .modal,
+    body[data-theme="light"] .filter-modal {
+      background: var(--bg-white);
+      border-color: rgba(15, 42, 92, 0.1);
+    }
+    body[data-theme="light"] .modal-header,
+    body[data-theme="light"] .modal-footer,
+    body[data-theme="light"] .filter-modal-header,
+    body[data-theme="light"] .filter-modal-footer {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .modal-body .stats .stat {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .modal-body .ids-list {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .selecao-bar {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .selecao-bar .info {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .preview-box {
+      background: var(--bg-card);
+      border-color: rgba(15, 42, 92, 0.08);
+    }
+    body[data-theme="light"] .preview-box .empty-message {
+      color: var(--text-muted);
+    }
+    body[data-theme="light"] .debug-box {
+      background: var(--bg-card);
+      border-color: rgba(15, 42, 92, 0.08);
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .debug-box .debug-item {
+      border-bottom-color: var(--border-color);
+    }
+    body[data-theme="light"] .debug-box .debug-item .key {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .debug-box .debug-item .value {
+      color: var(--text-muted);
+    }
+    body[data-theme="light"] .btn-secondary {
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .btn-secondary:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .filter-container label {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .filter-container select {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .filter-badge {
+      background: var(--bg-white);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .resposta-modal .modal-body .campo label {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .resposta-modal .modal-body .campo input,
+    body[data-theme="light"] .resposta-modal .modal-body .campo textarea {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .resposta-modal .modal-body .resumo-selecao {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .resposta-modal .modal-body .resumo-selecao .label {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .resposta-modal .modal-body .resumo-selecao .ids-list span {
+      background: var(--bg-white);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .no-data {
+      color: var(--text-muted);
+    }
+    body[data-theme="light"] .loading-spinner span {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .filter-info-transp {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .record-count {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .status-bar .info #recordCountPacotes,
+    body[data-theme="light"] .status-bar .info #recordCountInventario,
+    body[data-theme="light"] .status-bar .info #recordCountCruzamento,
+    body[data-theme="light"] .status-bar .info #recordCountRespostas {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .admin-table-wrap td,
+    body[data-theme="light"] .admin-table-wrap th {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] .admin-role-select,
+    body[data-theme="light"] .admin-transp-input {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    body[data-theme="light"] .admin-table-wrap {
+      color: var(--text-primary);
+    }
+    body[data-theme="light"] #tituloSecaoTransportadoras,
+    body[data-theme="light"] #legendaSecaoTransportadoras,
+    body[data-theme="light"] .zona-grid + div h2,
+    body[data-theme="light"] .zona-grid + div span,
+    body[data-theme="light"] .cruzamento-transp-grid + div h2,
+    body[data-theme="light"] .cruzamento-transp-grid + div span {
+      color: var(--text-primary) !important;
+      text-shadow: none !important;
+    }
+    body[data-theme="light"] .tab-content > div h2 {
+      color: var(--text-primary) !important;
+      text-shadow: none !important;
+    }
+    body[data-theme="light"] .tab-content > div span {
+      color: var(--text-muted) !important;
+      text-shadow: none !important;
     }
 
     @media (max-width:860px) {
@@ -2128,6 +2483,10 @@
         align-items: flex-start;
         gap: 14px;
       }
+      .theme-toggle {
+        top: 16px;
+        right: 120px;
+      }
     }
 
     @media (max-width:480px) {
@@ -2240,6 +2599,7 @@
     }
   </style>
   <base target="_blank">
+<base target="_blank">
 </head>
 
 <body>
@@ -3055,7 +3415,7 @@
       const strip = document.getElementById('kpiStripPacotes');
       if (!strip) return;
       if (!data) { strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">0</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">0</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num">R$ 0,00</div></div>`; return; }
-      strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">${data.totalGeral}</div><div class="pct">${data.idsEncontrados} IDs encontrados</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">${data.transportadoras.length}</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num" style="font-size:32px;">${data.valorTotalGeral}</div></div>`;
+      strip.innerHTML = `<div class="kpi total"><div class="tag">Total de Pacotes</div><div class="num">${data.totalGeral}</div><div class="pct">${data.idsEncontrados} IDs encontrados</div></div><div class="kpi"><div class="tag">Transportadoras</div><div class="num">${data.transportadoras.length}</div></div><div class="kpi"><div class="tag">Valor Total</div><div class="num">${data.valorTotalGeral}</div></div>`;
       const footerTotal = document.getElementById('footerTotalPacotes');
       if (footerTotal) footerTotal.textContent = `${data.totalGeral} registros`;
     }
@@ -4424,6 +4784,37 @@
       if (isAuthenticated && currentUserRole === 'admin') { clearCache(); carregarUsuarios(); } else Swal.fire({ icon: 'warning', title: 'Acesso negado', text: 'Apenas administradores.' });
     });
 
+
+    // ================================================================
+    //  TOGGLE DE TEMA ESCURO/CLARO
+    // ================================================================
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.getElementById('themeToggle');
+      const current = body.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', next);
+      localStorage.setItem('wms_theme', next);
+      if (btn) btn.innerHTML = next === 'dark' ? '🌙' : '☀️';
+      // Forçar resize dos gráficos para evitar glitch visual
+      setTimeout(() => {
+        try {
+          if (chartQuantidade && typeof chartQuantidade.resize === 'function') chartQuantidade.resize();
+          if (chartValor && typeof chartValor.resize === 'function') chartValor.resize();
+          if (chartZona && typeof chartZona.resize === 'function') chartZona.resize();
+          if (chartOverview && typeof chartOverview.resize === 'function') chartOverview.resize();
+        } catch (e) {}
+      }, 150);
+    }
+
+    function aplicarTemaSalvo() {
+      const saved = localStorage.getItem('wms_theme') || 'dark';
+      const body = document.body;
+      const btn = document.getElementById('themeToggle');
+      body.setAttribute('data-theme', saved);
+      if (btn) btn.innerHTML = saved === 'dark' ? '🌙' : '☀️';
+    }
+
     // ================================================================
     //  INICIALIZAÇÃO
     // ================================================================
@@ -4434,6 +4825,16 @@
       loginBtn.className = 'login-btn';
       loginBtn.onclick = function () { if (isAuthenticated) logout(); else mostrarModalLogin(); };
       document.body.appendChild(loginBtn);
+
+      // Botão toggle de tema
+      const themeBtn = document.createElement('button');
+      themeBtn.id = 'themeToggle';
+      themeBtn.className = 'theme-toggle';
+      themeBtn.title = 'Alternar tema';
+      themeBtn.innerHTML = '🌙';
+      themeBtn.onclick = toggleTheme;
+      document.body.appendChild(themeBtn);
+      aplicarTemaSalvo();
 
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function () {
