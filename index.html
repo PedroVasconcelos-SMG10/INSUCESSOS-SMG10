@@ -26,8 +26,10 @@
       --bg-primary: #123A6B;
       --bg-secondary: #EEF3FB;
       --bg-white: #FFFFFF;
-      --bg-card: rgba(255, 255, 255, 0.95);
-      --bg-panel: rgba(245, 249, 255, 0.92);
+      --bg-card: rgba(255, 255, 255, 0.82);
+      --bg-panel: rgba(245, 249, 255, 0.78);
+      --glass-border: rgba(255, 255, 255, 0.35);
+      --glass-glow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(255, 214, 0, 0.08);
       --text-primary: #123A6B;
       --text-on-blue: #FFFFFF;
       --text-muted: #4A6A8A;
@@ -165,7 +167,7 @@
       padding: 36px 32px 30px 32px;
       position: relative;
       overflow: hidden;
-      border-radius: 12px;
+      border-radius: 16px;
       margin-bottom: 8px;
       margin-top: 18px;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
@@ -270,11 +272,11 @@
       display: flex;
       gap: 4px;
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       padding: 4px;
       margin-top: 30px;
-      border-radius: 6px;
+      border-radius: 10px;
       flex-wrap: wrap;
       border: 1px solid rgba(255, 255, 255, 0.35);
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
@@ -305,7 +307,7 @@
     .tab-btn.active {
       background: var(--bg-gradient-dark);
       color: var(--text-on-blue);
-      box-shadow: inset 0 -3px 0 var(--grad-yellow);
+      box-shadow: inset 0 -3px 0 var(--grad-yellow), 0 2px 12px rgba(255, 214, 0, 0.25);
     }
 
     .tab-btn.tab-cruzamento.active {
@@ -343,12 +345,12 @@
 
     .status-bar {
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       padding: 18px 28px;
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -463,20 +465,26 @@
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 2px;
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
 
     .kpi {
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       padding: 20px 20px 18px;
       position: relative;
+      transition: all 0.3s ease;
+    }
+    .kpi:hover {
+      background: rgba(255, 255, 255, 0.92);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
     .kpi .tag {
@@ -568,19 +576,23 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2px;
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
 
     .chart-card {
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       padding: 24px;
+      transition: all 0.3s ease;
+    }
+    .chart-card:hover {
+      background: rgba(255, 255, 255, 0.9);
     }
 
     .chart-card h3 {
@@ -602,10 +614,10 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 2px;
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
@@ -659,12 +671,12 @@
     }
 
     .ids-tabela-wrap {
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       width: 100%;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
@@ -791,10 +803,10 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 2px;
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
@@ -898,20 +910,25 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 2px;
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
 
     .cruzamento-stat {
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       padding: 24px;
       text-align: center;
+      transition: all 0.3s ease;
+    }
+    .cruzamento-stat:hover {
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-2px);
     }
 
     .cruzamento-stat .num {
@@ -953,10 +970,10 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 2px;
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
@@ -1010,12 +1027,12 @@
     }
 
     .cruzamento-tabela-wrap {
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       margin-top: 28px;
-      border-radius: 6px;
+      border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
@@ -1107,10 +1124,10 @@
     }
 
     .preview-box {
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
       padding: 16px;
       min-height: 100px;
       display: flex;
@@ -1120,7 +1137,7 @@
       max-height: 260px;
       overflow: auto;
       margin-top: 18px;
-      border-radius: 6px;
+      border-radius: 10px;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
     }
 
@@ -1235,13 +1252,13 @@
 
     .filter-modal {
       background: var(--bg-white);
-      border: 1px solid var(--border-color);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       max-width: 800px;
       width: 100%;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
-      border-radius: 10px;
+      border-radius: 14px;
       box-shadow: 0 8px 48px rgba(0, 0, 0, 0.25);
     }
 
@@ -1452,13 +1469,13 @@
 
     .modal {
       background: var(--bg-white);
-      border: 1px solid var(--border-color);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       max-width: 1200px;
       width: 100%;
       max-height: 92vh;
       display: flex;
       flex-direction: column;
-      border-radius: 6px;
+      border-radius: 14px;
       box-shadow: 0 8px 48px rgba(0, 0, 0, 0.25);
     }
 
@@ -1934,12 +1951,12 @@
 
     .debug-box {
       background: var(--bg-card);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       padding: 14px 18px;
       margin-top: 14px;
-      border-radius: 6px;
+      border-radius: 10px;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 13px;
       color: var(--text-primary);
@@ -2681,6 +2698,32 @@
     // ================================================================
     //  FUNÇÃO AUXILIAR
     // ================================================================
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    function getHoverColor(cor) {
+      if (cor.startsWith("#") && cor.length === 7) return hexToRgba(cor, 0.8);
+      if (cor.startsWith("rgba")) return cor.replace(/[0-9.]+\)$/, "0.8)");
+      if (cor.startsWith("rgb")) return cor.replace(")", ", 0.8)");
+      return cor;
+    }
+    function criarGradienteBarra(ctx, corBase) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+      if (corBase === '#1565C0') { gradient.addColorStop(0, '#42A5F5'); gradient.addColorStop(1, '#1565C0'); }
+      else if (corBase === '#2E7D32') { gradient.addColorStop(0, '#66BB6A'); gradient.addColorStop(1, '#2E7D32'); }
+      else if (corBase === '#F57F17') { gradient.addColorStop(0, '#FFB74D'); gradient.addColorStop(1, '#F57F17'); }
+      else if (corBase === '#C62828') { gradient.addColorStop(0, '#EF5350'); gradient.addColorStop(1, '#C62828'); }
+      else if (corBase === '#6A1B9A') { gradient.addColorStop(0, '#AB47BC'); gradient.addColorStop(1, '#6A1B9A'); }
+      else { gradient.addColorStop(0, corBase); gradient.addColorStop(1, corBase); }
+      return gradient;
+    }
+    function escapeAttr(str) {
+      if (!str) return '';
+      return str.replace(/'/g, "\'").replace(/"/g, '\"');
+    }
     function parseDataBR(texto) {
       if (!texto) return null;
       texto = texto.trim();
@@ -3069,19 +3112,19 @@
             labels: sortedLabels,
             datasets: [
               { label: 'Valores', data: sortedValues, backgroundColor: corBarra, borderColor: corBarra, borderWidth: 1, borderRadius: 4, order: 1, yAxisID: 'y', hoverBackgroundColor: corBarra.replace(')', ',0.8)') },
-              { label: 'Porcentagem Acumulada (%)', data: porcentagens, type: 'line', borderColor: '#C62828', backgroundColor: 'rgba(198,40,40,0.1)', borderWidth: 3, pointBackgroundColor: '#C62828', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.3, order: 0, yAxisID: 'y1' }
+              { label: 'Porcentagem Acumulada (%)', data: porcentagens, type: 'line', borderColor: '#E65100', backgroundColor: 'rgba(230,81,0,0.08)', borderWidth: 3, pointBackgroundColor: '#FFD600', pointBorderColor: '#E65100', pointBorderWidth: 2, pointRadius: 5, pointHoverRadius: 8, fill: true, tension: 0.35, order: 0, yAxisID: 'y1' }
             ]
           },
           options: {
             responsive: true, maintainAspectRatio: false,
             plugins: {
               legend: { position: 'bottom', labels: { color: '#4A6A8A', font: { size: 11, weight: '500', family: 'Inter' }, boxWidth: 14, padding: 16, usePointStyle: true, pointStyle: 'circle' } },
-              tooltip: { backgroundColor: 'rgba(18,58,107,0.92)', titleColor: '#fff', bodyColor: '#fff', borderColor: '#B0C4DE', borderWidth: 1, padding: 12, cornerRadius: 8, callbacks: { label: function (context) { if (context.datasetIndex === 0) return ` ${context.dataset.label}: ${formatadorTooltip ? formatadorTooltip(context.raw) : context.raw}`; else return ` ${context.dataset.label}: ${context.raw}%`; } } }
+              tooltip: { backgroundColor: 'rgba(15,42,92,0.92)', titleColor: '#FFD600', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, padding: 14, cornerRadius: 10, titleFont: { family: 'Oswald', size: 14 }, bodyFont: { family: 'Inter', size: 13 }, callbacks: { label: function (context) { if (context.datasetIndex === 0) return ` ${context.dataset.label}: ${formatadorTooltip ? formatadorTooltip(context.raw) : context.raw}`; else return ` ${context.dataset.label}: ${context.raw}%`; } } }
             },
             scales: {
-              y: { beginAtZero: true, position: 'left', max: yMax, ticks: { color: '#4A6A8A', font: { size: 10 }, stepSize: stepSize, maxTicksLimit: 20 }, grid: { color: '#B0C4DE' } },
-              y1: { beginAtZero: true, position: 'right', max: 100, ticks: { color: '#4A6A8A', font: { size: 10 }, callback: function (value) { return value + '%'; } }, grid: { drawOnChartArea: false } },
-              x: { ticks: { color: '#4A6A8A', font: { size: 9 } }, grid: { display: false } }
+              y: { beginAtZero: true, position: 'left', max: yMax, ticks: { color: '#4A6A8A', font: { size: 10, family: 'Inter' }, stepSize: stepSize, maxTicksLimit: 20 }, grid: { color: 'rgba(176,196,222,0.3)' } },
+              y1: { beginAtZero: true, position: 'right', max: 100, ticks: { color: '#4A6A8A', font: { size: 10, family: 'Inter' }, callback: function (value) { return value + '%'; } }, grid: { drawOnChartArea: false } },
+              x: { ticks: { color: '#4A6A8A', font: { size: 9, family: 'Inter' } }, grid: { display: false } }
             }
           }
         });
@@ -3110,8 +3153,8 @@
         const labels = data.transportadoras.map(t => t.nome.length > 20 ? t.nome.substring(0, 18) + '...' : t.nome);
         const quantidades = data.transportadoras.map(t => t.quantidade);
         const valores = data.transportadoras.map(t => t.valorTotal);
-        chartQuantidade = new Chart(chartQuant, { type: 'bar', data: { labels, datasets: [{ label: 'Pacotes', data: quantidades, backgroundColor: '#F57F17', borderColor: '#F57F17', borderWidth: 1, borderRadius: 4, hoverBackgroundColor: '#F9A825' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#4A6A8A', font: { size: 10 }, maxTicksLimit: 15 }, grid: { color: '#B0C4DE' } }, x: { ticks: { color: '#4A6A8A', font: { size: 9 } }, grid: { display: false } } } } });
-        chartValor = new Chart(chartVal, { type: 'bar', data: { labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: '#2E7D32', borderColor: '#2E7D32', borderWidth: 1, borderRadius: 4, hoverBackgroundColor: '#388E3C' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#4A6A8A', font: { size: 10 }, callback: function (value) { return 'R$ ' + value.toLocaleString('pt-BR'); }, maxTicksLimit: 15 }, grid: { color: '#B0C4DE' } }, x: { ticks: { color: '#4A6A8A', font: { size: 9 } }, grid: { display: false } } } } });
+        chartQuantidade = new Chart(chartQuant, { type: 'bar', data: { labels, datasets: [{ label: 'Pacotes', data: quantidades, backgroundColor: function(ctx) { const c = ctx.chart.ctx; return criarGradienteBarra(c, '#F57F17'); }, borderColor: '#F57F17', borderWidth: 1, borderRadius: 6, hoverBackgroundColor: '#FFB74D' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15,42,92,0.92)', titleColor: '#FFD600', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, padding: 12, cornerRadius: 8 } }, scales: { y: { beginAtZero: true, ticks: { color: '#4A6A8A', font: { size: 10, family: 'Inter' }, maxTicksLimit: 15 }, grid: { color: 'rgba(176,196,222,0.3)' } }, x: { ticks: { color: '#4A6A8A', font: { size: 9, family: 'Inter' } }, grid: { display: false } } } } });
+        chartValor = new Chart(chartVal, { type: 'bar', data: { labels, datasets: [{ label: 'Valor Total (R$)', data: valores, backgroundColor: function(ctx) { const c = ctx.chart.ctx; return criarGradienteBarra(c, '#2E7D32'); }, borderColor: '#2E7D32', borderWidth: 1, borderRadius: 6, hoverBackgroundColor: '#66BB6A' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15,42,92,0.92)', titleColor: '#FFD600', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, padding: 12, cornerRadius: 8, callbacks: { label: function (context) { return 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#4A6A8A', font: { size: 10, family: 'Inter' }, callback: function (value) { return 'R$ ' + value.toLocaleString('pt-BR'); }, maxTicksLimit: 15 }, grid: { color: 'rgba(176,196,222,0.3)' } }, x: { ticks: { color: '#4A6A8A', font: { size: 9, family: 'Inter' } }, grid: { display: false } } } } });
         const h3s = document.querySelectorAll('.chart-card h3');
         if (h3s.length >= 2) { h3s[0].textContent = '📊 Pacotes por Transportadora'; h3s[1].textContent = '💰 Valor Total por Transportadora'; }
       }
@@ -3128,8 +3171,8 @@
       const faltante = data.zonas.slice(0, 15).map(z => z.faltante);
       const intruso = data.zonas.slice(0, 15).map(z => z.intruso);
       try {
-        chartZona = new Chart(ctxZona, { type: 'bar', data: { labels, datasets: [{ label: 'Inventariados', data: inventariado, backgroundColor: '#2E7D32', borderColor: '#2E7D32', borderWidth: 1, borderRadius: 2 }, { label: 'Faltantes', data: faltante, backgroundColor: '#C62828', borderColor: '#C62828', borderWidth: 1, borderRadius: 2 }, { label: 'Intrusos', data: intruso, backgroundColor: '#6A1B9A', borderColor: '#6A1B9A', borderWidth: 1, borderRadius: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#4A6A8A', font: { size: 10 } } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#4A6A8A', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: '#B0C4DE' } }, x: { stacked: true, ticks: { color: '#4A6A8A', font: { size: 9 } }, grid: { display: false } } } } });
-        chartOverview = new Chart(ctxOverview, { type: 'doughnut', data: { labels: ['Inventariados', 'Faltantes', 'Intrusos'], datasets: [{ data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], backgroundColor: ['#2E7D32', '#C62828', '#6A1B9A'], borderColor: ['#2E7D32', '#C62828', '#6A1B9A'], borderWidth: 2, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#4A6A8A', font: { size: 11 }, padding: 16 } } }, cutout: '60%' } });
+        chartZona = new Chart(ctxZona, { type: 'bar', data: { labels, datasets: [{ label: 'Inventariados', data: inventariado, backgroundColor: function(ctx) { const c = ctx.chart.ctx; return criarGradienteBarra(c, '#2E7D32'); }, borderColor: '#2E7D32', borderWidth: 1, borderRadius: 4 }, { label: 'Faltantes', data: faltante, backgroundColor: function(ctx) { const c = ctx.chart.ctx; return criarGradienteBarra(c, '#C62828'); }, borderColor: '#C62828', borderWidth: 1, borderRadius: 4 }, { label: 'Intrusos', data: intruso, backgroundColor: function(ctx) { const c = ctx.chart.ctx; return criarGradienteBarra(c, '#6A1B9A'); }, borderColor: '#6A1B9A', borderWidth: 1, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#4A6A8A', font: { size: 11, family: 'Inter' } } }, tooltip: { backgroundColor: 'rgba(15,42,92,0.92)', titleColor: '#FFD600', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, padding: 12, cornerRadius: 8 } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: '#4A6A8A', font: { size: 10, family: 'Inter' }, maxTicksLimit: 10 }, grid: { color: 'rgba(176,196,222,0.3)' } }, x: { stacked: true, ticks: { color: '#4A6A8A', font: { size: 9, family: 'Inter' } }, grid: { display: false } } } } });
+        chartOverview = new Chart(ctxOverview, { type: 'doughnut', data: { labels: ['Inventariados', 'Faltantes', 'Intrusos'], datasets: [{ data: [data.totalInventariado, data.totalFaltante, data.totalIntruso], backgroundColor: ['#43A047', '#E53935', '#8E24AA'], borderColor: ['#2E7D32', '#C62828', '#6A1B9A'], borderWidth: 2, hoverOffset: 12, hoverBorderColor: '#FFD600', hoverBorderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#4A6A8A', font: { size: 12, family: 'Inter', weight: '500' }, padding: 20, usePointStyle: true, pointStyle: 'circle' } }, tooltip: { backgroundColor: 'rgba(15,42,92,0.92)', titleColor: '#FFD600', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.2)', borderWidth: 1, padding: 14, cornerRadius: 10, callbacks: { label: function(ctx) { const val = ctx.raw; const total = ctx.chart._metasets[ctx.datasetIndex].total; const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0; return ` ${ctx.label}: ${val} (${pct}%)`; } } } }, cutout: '58%' } });
       } catch (e) { console.warn('Erro ao renderizar gráficos de inventário:', e); }
     }
 
@@ -3299,8 +3342,8 @@
           const statusText = justificado ? '✅ Justificado' : '❌ Pendente';
           const link = linksPagina[index] || '';
           let idHtml = link ? `<a href="${link}" target="_blank" style="color:var(--info); text-decoration:underline; cursor:pointer; font-weight:600;">${id}</a>` : `<strong>${id}</strong>`;
-          let row = `<tr><td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}','${motorista.replace(/'/g, "\\'")}')"></td><td>${globalIndex}</td><td>${idHtml}</td><td>${descricao}</td><td>R$ ${valor.toFixed(2)}</td><td>${motorista}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
-          if (isAdmin) { const btnText = justificado ? 'Desmarcar' : 'Justificar'; const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle'; row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}','${objOrdenado.nome.replace(/'/g, "\\'")}','${motorista.replace(/'/g, "\\'")}')">${btnText}</button></td>`; }
+          let row = `<tr><td><input type="checkbox" class="id-checkbox-ids" data-id="${id}" data-motorista="${motorista}" onchange="toggleSelecaoIds('${id}','${escapeAttr(motorista)}')"></td><td>${globalIndex}</td><td>${idHtml}</td><td>${descricao}</td><td>R$ ${valor.toFixed(2)}</td><td>${motorista}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td>`;
+          if (isAdmin) { const btnText = justificado ? 'Desmarcar' : 'Justificar'; const btnClass = justificado ? 'btn-toggle remover' : 'btn-toggle'; row += `<td><button class="${btnClass}" onclick="toggleStatus('${id}','${escapeAttr(objOrdenado.nome)}','${escapeAttr(motorista)}')">${btnText}</button></td>`; }
           row += `</tr>`;
           tableHtml += row;
         });
@@ -3923,7 +3966,7 @@
       const result = await Swal.fire({ title: 'Confirmar exclusão', text: `Tem certeza que deseja excluir o usuário ${email}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#C62828', cancelButtonColor: '#4A6A8A', confirmButtonText: 'Sim, excluir', cancelButtonText: 'Cancelar' });
       if (!result.isConfirmed) return;
       try {
-        const response = await fetch(`/api/admin/usuarios?email=${encodeURIComponent(email)}`, { method: 'DELETE', headers: { 'x-user-role': currentUserRole } });
+        const response = await fetch(`/api/admin/usuarios?email=${encodeURIComponent(email)}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole }, body: JSON.stringify({ action: 'delete' }) });
         const data = await response.json();
         if (data.success) { Swal.fire({ icon: 'success', title: 'Excluído!', text: 'Usuário removido com sucesso.', timer: 1500, showConfirmButton: false }); carregarUsuarios(); }
         else Swal.fire({ icon: 'error', title: 'Erro', text: data.error || 'Erro ao excluir' });
@@ -3981,10 +4024,10 @@
         return `<div class="transp-filter-item">
       <span class="transp-nome">${t.nome}</span>
       <label class="filter-check-label svc-label">
-        <input type="checkbox" class="cb-svc" ${checkedSVC} onclick="window.toggleFiltro('${t.nome.replace(/'/g, "\\'")}','svc')"> 🔴 SVC
+        <input type="checkbox" class="cb-svc" ${checkedSVC} onclick="window.toggleFiltro('${escapeAttr(t.nome)}','svc')"> 🔴 SVC
       </label>
       <label class="filter-check-label transp-label">
-        <input type="checkbox" class="cb-transp" ${checkedTransp} onclick="window.toggleFiltro('${t.nome.replace(/'/g, "\\'")}','transp')"> 🟢 Transportadora
+        <input type="checkbox" class="cb-transp" ${checkedTransp} onclick="window.toggleFiltro('${escapeAttr(t.nome)}','transp')"> 🟢 Transportadora
       </label>
       <span class="transp-count">(${t.quantidade})</span>
     </div>`;
@@ -4118,8 +4161,12 @@
       // Tabela de detalhamento: mostra SVC ou Transportadora conforme os filtros ativos
       let dadosParaTabela = [];
       let tituloTabela = '📦 Detalhamento dos Pacotes';
+      const nenhumFiltroAtivo = filtroSVC.size === 0 && filtroTransportadora.size === 0;
 
-      if (filtroSVC.size > 0 && totalSVC > 0) {
+      if (nenhumFiltroAtivo) {
+        dadosParaTabela = data.dados;
+        tituloTabela = '📦 Todos os Pacotes em Ambos';
+      } else if (filtroSVC.size > 0 && totalSVC > 0) {
         dadosParaTabela = dadosSVC;
         tituloTabela = '🔴 Pacotes de Responsabilidade SVC (Filtrados)';
       } else if (filtroTransportadora.size > 0 && totalTransp > 0) {
@@ -4204,7 +4251,7 @@
       let html = `<div class="selecao-bar" id="selecaoBar"><div class="info">📌 <span id="selecionadosCount">0</span> pacotes selecionados</div><button class="btn-resposta" id="btnAbrirResposta" disabled onclick="abrirModalResposta()">📝 Responder</button><button class="btn-selecionar" onclick="selecionarTodosPagina()">Selecionar todos</button><button class="btn-selecionar" onclick="limparSelecaoPagina()">Limpar</button></div>`;
       html += idsComDetalhes.map((item, index) => {
         const globalIndex = start + index;
-        return `<div class="id-item"><span class="id-checkbox"><input type="checkbox" class="id-checkbox-input" data-id="${item.id}" data-motorista="${item.motorista}" data-valor="${item.valor}" onchange="toggleSelecao('${item.id}','${item.motorista.replace(/'/g, "\\'")}')"></span><span class="id-index">#${globalIndex + 1}</span><span class="id-num">${item.id}</span><span class="id-valor">R$ ${item.valor.toFixed(2)}</span><span class="id-motorista">${item.motorista !== 'N/A' ? item.motorista : ''}</span></div>`;
+        return `<div class="id-item"><span class="id-checkbox"><input type="checkbox" class="id-checkbox-input" data-id="${item.id}" data-motorista="${item.motorista}" data-valor="${item.valor}" onchange="toggleSelecao('${item.id}','${escapeAttr(item.motorista)}')"></span><span class="id-index">#${globalIndex + 1}</span><span class="id-num">${item.id}</span><span class="id-valor">R$ ${item.valor.toFixed(2)}</span><span class="id-motorista">${item.motorista !== 'N/A' ? item.motorista : ''}</span></div>`;
       }).join('');
       if (hasMore) { html += `<div style="text-align:center; padding:14px; border-top:1px solid var(--border-color);"><button class="btn-carregar-mais" onclick="carregarMaisPagina()">📥 Carregar mais ${Math.min(ITEMS_PER_PAGE, modalTotalIds.length - end)} IDs</button></div>`; }
       document.getElementById('modalIds').innerHTML = html;
@@ -4328,9 +4375,9 @@
         let response;
         if (isJustificado) {
           response = await fetch('/api/admin/respostas', {
-            method: 'DELETE',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole },
-            body: JSON.stringify({ ids: [id] })
+            body: JSON.stringify({ action: 'delete', ids: [id] })
           });
         } else {
           const dataAtual = new Date().toLocaleString('pt-BR');
@@ -4419,6 +4466,41 @@
       if (!temSessao) carregarDadosExemplo();
 
       setInterval(() => { if (isAuthenticated) { carregarDadosInventario(); carregarCruzamento(); } }, 300000);
+
+      // Event listeners do filtro de cruzamento
+      const filterFloatBtn = document.getElementById('filterFloatBtn');
+      const filterModalOverlay = document.getElementById('filterModalOverlay');
+      const filterModalClose = document.getElementById('filterModalClose');
+      const filterApplyBtn = document.getElementById('filterApplyBtn');
+      const filterSelectAll = document.getElementById('filterSelectAll');
+      const filterClearAll = document.getElementById('filterClearAll');
+
+      if (filterFloatBtn && filterModalOverlay) {
+        filterFloatBtn.addEventListener('click', function() {
+          filterModalOverlay.classList.add('active');
+        });
+      }
+      if (filterModalClose && filterModalOverlay) {
+        filterModalClose.addEventListener('click', function() {
+          filterModalOverlay.classList.remove('active');
+        });
+      }
+      if (filterApplyBtn && filterModalOverlay) {
+        filterApplyBtn.addEventListener('click', function() {
+          filterModalOverlay.classList.remove('active');
+        });
+      }
+      if (filterModalOverlay) {
+        filterModalOverlay.addEventListener('click', function(e) {
+          if (e.target === this) this.classList.remove('active');
+        });
+      }
+      if (filterSelectAll) {
+        filterSelectAll.addEventListener('click', window.selecionarTodas);
+      }
+      if (filterClearAll) {
+        filterClearAll.addEventListener('click', window.limparTodas);
+      }
     });
 
     // ================================================================
