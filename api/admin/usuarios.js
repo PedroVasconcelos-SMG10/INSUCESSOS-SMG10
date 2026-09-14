@@ -4,7 +4,7 @@ const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmikMcDQPeIAPUS
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-user-role');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -44,15 +44,30 @@ export default async function handler(req, res) {
     }
   }
 
-  // ========== POST = Adicionar usuário ==========
+  // ========== POST = Adicionar OU Excluir ==========
   if (req.method === 'POST') {
     try {
+      // Detecta exclusão enviada como POST
+      if (req.body && req.body.action === 'delete') {
+        const response = await fetch(APP_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'excluirUsuario',
+            email: req.query.email
+          })
+        });
+        const data = await response.json();
+        return res.status(response.status).json(data);
+      }
+
+      // Adição normal
       const response = await fetch(APP_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'adicionarUsuario',
-          ...req.body
+          ...req.body,
+          action: 'adicionarUsuario'
         })
       });
       const data = await response.json();
@@ -80,7 +95,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // ========== DELETE = Excluir usuário ==========
+  // ========== DELETE = Excluir usuário (semântica REST correta) ==========
   if (req.method === 'DELETE') {
     try {
       const response = await fetch(APP_SCRIPT_URL, {
